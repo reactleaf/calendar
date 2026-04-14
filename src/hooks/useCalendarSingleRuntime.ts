@@ -29,16 +29,16 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
 
   const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en-US'
   const selection = useSingleSelection({
-    ...(value !== undefined ? { value } : {}),
-    ...(defaultValue !== undefined ? { defaultValue } : {}),
-    ...(disabled !== undefined ? { disabled } : {}),
-    ...(minDate !== undefined ? { minDate } : {}),
-    ...(maxDate !== undefined ? { maxDate } : {}),
-    ...(disabledDates !== undefined ? { disabledDates } : {}),
-    ...(disabledDays !== undefined ? { disabledDays } : {}),
-    ...(includeTime !== undefined ? { includeTime } : {}),
-    ...(minuteStep !== undefined ? { minuteStep } : {}),
-    ...(onSelect !== undefined ? { onSelect } : {}),
+    value,
+    defaultValue,
+    disabled,
+    minDate,
+    maxDate,
+    disabledDates,
+    disabledDays,
+    includeTime,
+    minuteStep,
+    onSelect,
   })
 
   const today = Temporal.Now.plainDateISO()
@@ -58,7 +58,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
       initialMonth,
       minMonth: minDay.toPlainYearMonth(),
       maxMonth: maxDay.toPlainYearMonth(),
-      ...(onMonthChange !== undefined ? { onMonthChange } : {}),
+      onMonthChange,
     })
 
   const setFocusedDate = useCallback(

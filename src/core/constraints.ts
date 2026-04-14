@@ -3,20 +3,22 @@ import type { DateValue } from './api.types'
 import { compareCalendarDays, sameCalendarDay, toPlainDate, type PlainDay } from './calendarDate'
 
 export interface DisableConstraints {
-  disabled?: boolean | undefined
-  minDate?: PlainDay | undefined
-  maxDate?: PlainDay | undefined
-  disabledDates?: readonly PlainDay[] | undefined
-  disabledDays?: readonly number[] | undefined
+  disabled?: boolean
+  minDate?: PlainDay
+  maxDate?: PlainDay
+  disabledDates?: readonly PlainDay[]
+  disabledDays?: readonly number[]
 }
 
-export function disableConstraintsFromOptions(input: {
-  disabled: boolean | undefined
-  minDate: DateValue | undefined
-  maxDate: DateValue | undefined
-  disabledDates: readonly DateValue[] | undefined
-  disabledDays: readonly number[] | undefined
-}): DisableConstraints {
+interface DisableConstraintsOptions {
+  disabled?: boolean
+  minDate?: DateValue
+  maxDate?: DateValue
+  disabledDates?: readonly DateValue[]
+  disabledDays?: readonly number[]
+}
+
+export function disableConstraintsFromOptions(input: DisableConstraintsOptions): DisableConstraints {
   return {
     disabled: input.disabled,
     minDate: input.minDate ? toPlainDate(input.minDate) : undefined,

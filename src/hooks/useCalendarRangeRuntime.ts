@@ -29,21 +29,20 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     onRangePreview,
   } = props
 
-  void minuteStep
-
   const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en-US'
   const rawSelection = useRangeSelection({
-    ...(value !== undefined ? { value } : {}),
-    ...(defaultValue !== undefined ? { defaultValue } : {}),
-    ...(disabled !== undefined ? { disabled } : {}),
-    ...(minDate !== undefined ? { minDate } : {}),
-    ...(maxDate !== undefined ? { maxDate } : {}),
-    ...(disabledDates !== undefined ? { disabledDates } : {}),
-    ...(disabledDays !== undefined ? { disabledDays } : {}),
-    ...(includeTime !== undefined ? { includeTime } : {}),
-    ...(onSelect !== undefined ? { onSelect } : {}),
-    ...(allowRangePreview !== undefined ? { allowRangePreview } : {}),
-    ...(onRangePreview !== undefined ? { onRangePreview } : {}),
+    value,
+    defaultValue,
+    disabled,
+    minDate,
+    maxDate,
+    disabledDates,
+    disabledDays,
+    includeTime,
+    minuteStep,
+    onSelect,
+    allowRangePreview,
+    onRangePreview,
   })
   const selection = {
     isSelected: rawSelection.isSelected,
@@ -72,7 +71,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
       initialMonth,
       minMonth: minDay.toPlainYearMonth(),
       maxMonth: maxDay.toPlainYearMonth(),
-      ...(onMonthChange !== undefined ? { onMonthChange } : {}),
+      onMonthChange,
     })
 
   const setFocusedDate = useCallback(

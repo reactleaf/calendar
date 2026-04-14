@@ -105,10 +105,10 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     previewCallback.current = onRangePreview
   }, [onRangePreview])
 
-  const lastPreviewKey = useRef<string | undefined>(undefined)
+  const lastPreviewKey = useRef<string | null>(null)
   useEffect(() => {
     const key = previewKey(preview)
-    if (lastPreviewKey.current === undefined) {
+    if (lastPreviewKey.current === null) {
       lastPreviewKey.current = key
       return
     }

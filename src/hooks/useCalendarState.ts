@@ -49,12 +49,12 @@ export function useCalendarState(options: UseCalendarStateOptions): UseCalendarS
     clampDay(initialFocusedDate ?? null, minDate, maxDate),
   )
 
-  const lastEmittedMonth = useRef<Temporal.PlainYearMonth | undefined>(undefined)
+  const lastEmittedMonth = useRef<Temporal.PlainYearMonth | null>(null)
 
   const emitMonthIfNeeded = useCallback(
     (day: PlainDay) => {
       const ym = toPlainDate(day).toPlainYearMonth()
-      if (lastEmittedMonth.current === undefined || !ym.equals(lastEmittedMonth.current)) {
+      if (lastEmittedMonth.current === null || !ym.equals(lastEmittedMonth.current)) {
         lastEmittedMonth.current = ym
         onMonthChange?.(ym)
       }

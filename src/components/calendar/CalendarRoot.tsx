@@ -13,8 +13,8 @@ interface CalendarRootBaseProps {
 type CalendarRootProps = CalendarProps & CalendarRootBaseProps
 
 interface CalendarRuntimeRootProps extends CalendarRootBaseProps {
-  id: string | undefined
-  className: string | undefined
+  id?: string
+  className?: string
 }
 
 function CalendarRuntimeRoot({ id, className, children, runtime }: CalendarRuntimeRootProps & { runtime: CalendarRuntime }) {
