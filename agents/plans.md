@@ -32,13 +32,13 @@
 
 1. 공개 API RFC 문서 작성 (`docs/api.md`)
    - `Calendar` props
-   - `mode`별 `value/onChange` 타입
+   - `mode`별 `value/onSelect` 타입
    - 접근성/키보드 동작 계약
 2. 날짜 도메인 정책 확정
    - timezone/UTC 기준
    - 값 normalize 규칙(일 단위, startOfDay 등)
 3. 이벤트 모델 정의
-   - `onChange` payload
+   - `onSelect` / `onRangePreview` 계약
    - range preview(hover) 모델
 4. 레거시 맵 작성
    - 이전 props → 신규 props 대응표
