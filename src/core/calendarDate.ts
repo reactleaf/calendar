@@ -22,3 +22,31 @@ export function selectionEquals(a: PlainDay | null, b: PlainDay): boolean {
   }
   return sameCalendarDay(a, b)
 }
+
+export function addCalendarDays(value: PlainDay, days: number): PlainDay {
+  if (value instanceof Temporal.PlainDate) {
+    return value.add({ days })
+  }
+  const time = value.toPlainTime()
+  return value.toPlainDate().add({ days }).toPlainDateTime(time)
+}
+
+export function toMonthStartPlain(value: PlainDay): Temporal.PlainDate {
+  const d = toPlainDate(value)
+  return Temporal.PlainDate.from({ year: d.year, month: d.month, day: 1 })
+}
+
+/** `includeTime`이면 같은 달력 날의 00:00 `PlainDateTime`, 아니면 `PlainDate` */
+export function toSelectionValue(day: PlainDay, includeTime?: boolean): PlainDay {
+  if (!includeTime) return toPlainDate(day)
+  if (day instanceof Temporal.PlainDateTime) return day
+  const d = toPlainDate(day)
+  return Temporal.PlainDateTime.from({
+    year: d.year,
+    month: d.month,
+    day: d.day,
+    hour: 0,
+    minute: 0,
+    second: 0,
+  })
+}

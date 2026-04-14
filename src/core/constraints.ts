@@ -1,11 +1,29 @@
 import { Temporal } from '@js-temporal/polyfill'
+import type { DateValue } from './api.types'
 import { compareCalendarDays, sameCalendarDay, toPlainDate, type PlainDay } from './calendarDate'
 
 export interface DisableConstraints {
-  minDate?: PlainDay
-  maxDate?: PlainDay
-  disabledDates?: readonly PlainDay[]
-  disabledDays?: readonly number[]
+  disabled?: boolean | undefined
+  minDate?: PlainDay | undefined
+  maxDate?: PlainDay | undefined
+  disabledDates?: readonly PlainDay[] | undefined
+  disabledDays?: readonly number[] | undefined
+}
+
+export function disableConstraintsFromOptions(input: {
+  disabled: boolean | undefined
+  minDate: DateValue | undefined
+  maxDate: DateValue | undefined
+  disabledDates: readonly DateValue[] | undefined
+  disabledDays: readonly number[] | undefined
+}): DisableConstraints {
+  return {
+    disabled: input.disabled,
+    minDate: input.minDate ? toPlainDate(input.minDate) : undefined,
+    maxDate: input.maxDate ? toPlainDate(input.maxDate) : undefined,
+    disabledDates: input.disabledDates ? input.disabledDates.map((d) => toPlainDate(d)) : undefined,
+    disabledDays: input.disabledDays,
+  }
 }
 
 function jsDayOfWeek(date: Temporal.PlainDate): number {
@@ -14,8 +32,9 @@ function jsDayOfWeek(date: Temporal.PlainDate): number {
 
 export function isDateDisabled(date: PlainDay, constraints: DisableConstraints): boolean {
   const plain = toPlainDate(date)
-  const { minDate, maxDate, disabledDates, disabledDays } = constraints
+  const { disabled, minDate, maxDate, disabledDates, disabledDays } = constraints
 
+  if (disabled) return true
   if (minDate !== undefined && compareCalendarDays(date, minDate) < 0) return true
   if (maxDate !== undefined && compareCalendarDays(date, maxDate) > 0) return true
 

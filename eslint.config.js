@@ -9,7 +9,7 @@ export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['**/*.test.ts'],
+    ignores: ['**/*.test.ts', '**/*.test.tsx'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
@@ -22,13 +22,14 @@ export default defineConfig([
     },
   },
   {
-    files: ['**/*.test.ts'],
+    files: ['**/*.{test.ts,test.tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
         ...globals.node,
         ...globals.vitest,
+        ...globals.browser,
       },
     },
   },
