@@ -1,21 +1,24 @@
 import type { ReactNode } from 'react'
-import type { CalendarSingleProps } from '../../core/api.types'
+import type { CalendarMultipleProps, CalendarProps, CalendarRangeProps, CalendarSingleProps } from '../../core/api.types'
+import { useCalendarMultipleRuntime } from '../../hooks/useCalendarMultipleRuntime'
+import { useCalendarRangeRuntime } from '../../hooks/useCalendarRangeRuntime'
+import { useCalendarSingleRuntime } from '../../hooks/useCalendarSingleRuntime'
 import { CalendarContext } from './context'
-import { useCalendarSingleRuntime } from './useCalendarSingleRuntime'
+import type { CalendarRuntime } from './types'
 
-interface CalendarRootProps extends CalendarSingleProps {
+interface CalendarRootBaseProps {
   children: ReactNode
 }
 
-export function CalendarRoot(props: CalendarRootProps) {
-  const { id, className, mode, children } = props
-  if (mode !== 'single') {
-    throw new Error('Calendar.Root currently supports only mode="single".')
-  }
+type CalendarRootProps = CalendarProps & CalendarRootBaseProps
 
-  const runtime = useCalendarSingleRuntime(props)
+interface CalendarRuntimeRootProps extends CalendarRootBaseProps {
+  id: string | undefined
+  className: string | undefined
+}
+
+function CalendarRuntimeRoot({ id, className, children, runtime }: CalendarRuntimeRootProps & { runtime: CalendarRuntime }) {
   const rootClass = ['calendar', className].filter(Boolean).join(' ')
-
   return (
     <CalendarContext.Provider value={runtime}>
       <div id={id} className={rootClass}>
@@ -23,4 +26,40 @@ export function CalendarRoot(props: CalendarRootProps) {
       </div>
     </CalendarContext.Provider>
   )
+}
+
+function CalendarRootSingle(props: CalendarSingleProps & CalendarRootBaseProps) {
+  const { id, className, children } = props
+  const runtime = useCalendarSingleRuntime(props)
+  return (
+    <CalendarRuntimeRoot id={id} className={className} runtime={runtime}>
+      {children}
+    </CalendarRuntimeRoot>
+  )
+}
+
+function CalendarRootMultiple(props: CalendarMultipleProps & CalendarRootBaseProps) {
+  const { id, className, children } = props
+  const runtime = useCalendarMultipleRuntime(props)
+  return (
+    <CalendarRuntimeRoot id={id} className={className} runtime={runtime}>
+      {children}
+    </CalendarRuntimeRoot>
+  )
+}
+
+function CalendarRootRange(props: CalendarRangeProps & CalendarRootBaseProps) {
+  const { id, className, children } = props
+  const runtime = useCalendarRangeRuntime(props)
+  return (
+    <CalendarRuntimeRoot id={id} className={className} runtime={runtime}>
+      {children}
+    </CalendarRuntimeRoot>
+  )
+}
+
+export function CalendarRoot(props: CalendarRootProps) {
+  if (props.mode === 'single') return <CalendarRootSingle {...props} />
+  if (props.mode === 'multiple') return <CalendarRootMultiple {...props} />
+  return <CalendarRootRange {...props} />
 }

@@ -161,7 +161,7 @@
 
 .app-calendar-demo {
   box-sizing: border-box;
-  max-width: 28rem;
+  max-width: 30rem;
   margin: 0 auto;
   padding: 2.5rem 1.25rem 3rem;
 }
@@ -178,6 +178,17 @@
   font-size: 0.9rem;
   color: var(--text);
   line-height: 1.45;
+}
+
+.app-calendar-demo__section {
+  margin: 0 0 2.25rem;
+}
+
+.app-calendar-demo__section > h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text-h);
 }
 
 .app-calendar-demo__value {

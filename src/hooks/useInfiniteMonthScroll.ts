@@ -8,7 +8,7 @@ import {
   compareMonth,
   monthKey,
   weekdayLabels,
-} from './utils'
+} from '../components/calendar/utils'
 
 interface UseInfiniteMonthScrollArgs {
   locale: string

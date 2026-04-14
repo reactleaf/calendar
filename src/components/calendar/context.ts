@@ -1,9 +1,9 @@
 import { createContext, useContext } from 'react'
-import type { SingleModeRuntime } from './types'
+import type { CalendarRuntime } from './types'
 
-export const CalendarContext = createContext<SingleModeRuntime | null>(null)
+export const CalendarContext = createContext<CalendarRuntime | null>(null)
 
-export function useCalendarContext(): SingleModeRuntime {
+export function useCalendarContext(): CalendarRuntime {
   const ctx = useContext(CalendarContext)
   if (!ctx) {
     throw new Error('Calendar compound component must be used within Calendar.Root')

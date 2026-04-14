@@ -139,6 +139,22 @@
   font-weight: 650;
 }
 
+.calendar__day--inRange {
+  background: color-mix(in srgb, var(--calendar-color-accent, var(--accent, #aa3bff)) 24%, #fff);
+  color: inherit;
+}
+
+.calendar__day--inPreviewRange {
+  background: color-mix(in srgb, var(--calendar-color-accent, var(--accent, #aa3bff)) 14%, #fff);
+}
+
+.calendar__day--rangeStart,
+.calendar__day--rangeEnd {
+  background: var(--calendar-color-accent, var(--accent, #aa3bff));
+  color: #fff;
+  font-weight: 650;
+}
+
 .calendar__day--today:not(.calendar__day--selected) {
   text-decoration: underline;
   text-underline-offset: 3px;

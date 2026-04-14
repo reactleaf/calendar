@@ -1,16 +1,16 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import type { CalendarSingleProps } from '../../core/api.types'
-import { toPlainDate } from '../../core/calendarDate'
-import { useSingleSelection } from '../../hooks/useSingleSelection'
-import type { SingleModeRuntime } from './types'
+import type { CalendarSingleProps } from '../core/api.types'
+import { toPlainDate } from '../core/calendarDate'
+import type { CalendarRuntime } from '../components/calendar/types'
+import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthKey } from '../components/calendar/utils'
+import { useSingleSelection } from './useSingleSelection'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
-import { DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, clampDate, monthKey } from './utils'
 
 /* eslint-disable react-hooks/preserve-manual-memoization -- Temporal 값 의존 useCallback 패턴 유지 */
 
-export function useCalendarSingleRuntime(props: CalendarSingleProps): SingleModeRuntime {
+export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRuntime {
   const {
     disabled,
     minDate,
@@ -114,6 +114,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): SingleMode
   }, [keepMonthVisible, months])
 
   return {
+    mode: 'single',
     locale,
     weekdays,
     keyboardNavigation,

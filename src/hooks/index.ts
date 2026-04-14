@@ -4,6 +4,10 @@ export type { UseCalendarKeyboardOptions, UseCalendarKeyboardResult } from './us
 export { useCalendarState } from './useCalendarState'
 export type { UseCalendarStateOptions, UseCalendarStateResult } from './useCalendarState'
 
+export { useCalendarSingleRuntime } from './useCalendarSingleRuntime'
+export { useCalendarMultipleRuntime } from './useCalendarMultipleRuntime'
+export { useCalendarRangeRuntime } from './useCalendarRangeRuntime'
+
 export { useMultipleSelection } from './useMultipleSelection'
 export type { UseMultipleSelectionOptions, UseMultipleSelectionResult } from './useMultipleSelection'
 
