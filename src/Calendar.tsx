@@ -1,12 +1,12 @@
 import type { JSX } from 'react'
-import type { CalendarProps } from '../core/api.types'
-import { CalendarHeader } from './calendar/CalendarHeader'
-import { CalendarMultipleMode } from './calendar/CalendarMultipleMode'
-import { CalendarRangeMode } from './calendar/CalendarRangeMode'
-import { CalendarRoot } from './calendar/CalendarRoot'
-import { CalendarSingleMode } from './calendar/CalendarSingleMode'
-import { CalendarWeekdays } from './calendar/CalendarWeekdays'
 import './Calendar.css'
+import { CalendarHeader } from './components/Calendar.Header'
+import { CalendarMultipleMode } from './components/Calendar.MultipleMode'
+import { CalendarRangeMode } from './components/Calendar.RangeMode'
+import { CalendarRoot } from './components/Calendar.Root'
+import { CalendarSingleMode } from './components/Calendar.SingleMode'
+import { CalendarWeekdays } from './components/Calendar.Weekdays'
+import type { CalendarProps } from './core/api.types'
 
 /* eslint-disable react-refresh/only-export-components -- compound component 정적 프로퍼티 조합 */
 

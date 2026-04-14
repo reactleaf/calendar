@@ -1,6 +1,6 @@
-import type { CalendarMode } from '../../core/api.types'
-import { monthLabel, monthKey, monthRows, sameDay } from './utils'
-import { useCalendarContext } from './context'
+import type { CalendarMode } from '../core/api.types'
+import { useCalendarContext } from './Calendar.context'
+import { monthLabel, monthKey, monthRows, sameDay } from './Calendar.utils'
 
 interface CalendarModeBodyProps {
   mode: CalendarMode

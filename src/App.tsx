@@ -1,8 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { useState } from 'react'
-import type { CalendarRangeValue, DateValue } from './core/api.types'
-import { Calendar } from './components/Calendar'
 import './App.css'
+import { Calendar } from './Calendar'
+import type { CalendarRangeValue, DateValue } from './core/api.types'
 
 function App() {
   const [singleSelected, setSingleSelected] = useState<DateValue | null>(Temporal.PlainDate.from('2026-04-14'))
@@ -23,6 +23,7 @@ function App() {
       <section className="app-calendar-demo__section">
         <h2>Single</h2>
         <Calendar
+          className="mx-auto"
           mode="single"
           value={singleSelected}
           onSelect={setSingleSelected}
@@ -37,6 +38,7 @@ function App() {
       <section className="app-calendar-demo__section">
         <h2>Multiple</h2>
         <Calendar
+          className="mx-auto"
           mode="multiple"
           value={multipleSelected}
           onSelect={setMultipleSelected}
@@ -45,13 +47,16 @@ function App() {
         />
         <p className="app-calendar-demo__value" aria-live="polite">
           선택됨:{' '}
-          <strong>{multipleSelected.length === 0 ? '없음' : multipleSelected.map((d) => d.toString()).join(', ')}</strong>
+          <strong>
+            {multipleSelected.length === 0 ? '없음' : multipleSelected.map((d) => d.toString()).join(', ')}
+          </strong>
         </p>
       </section>
 
       <section className="app-calendar-demo__section">
         <h2>Range</h2>
         <Calendar
+          className="mx-auto"
           mode="range"
           value={rangeSelected}
           onSelect={setRangeSelected}

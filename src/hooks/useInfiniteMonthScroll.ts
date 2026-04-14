@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { MutableRefObject, UIEvent } from 'react'
+import type { RefObject, UIEvent } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   EDGE_THRESHOLD_PX,
@@ -8,7 +8,7 @@ import {
   compareMonth,
   monthKey,
   weekdayLabels,
-} from '../components/calendar/utils'
+} from '../components/Calendar.utils'
 
 interface UseInfiniteMonthScrollArgs {
   locale: string
@@ -22,8 +22,8 @@ interface InfiniteMonthScrollRuntime {
   weekdays: string[]
   months: Temporal.PlainYearMonth[]
   isScrolling: boolean
-  monthRefs: MutableRefObject<Map<string, HTMLElement>>
-  scrollRef: MutableRefObject<HTMLDivElement | null>
+  monthRefs: RefObject<Map<string, HTMLElement>>
+  scrollRef: RefObject<HTMLDivElement | null>
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
   expandForTargetMonth: (target: Temporal.PlainYearMonth) => void
   keepMonthVisible: (month: Temporal.PlainYearMonth) => void

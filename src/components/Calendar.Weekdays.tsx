@@ -1,4 +1,4 @@
-import { useCalendarContext } from './context'
+import { useCalendarContext } from './Calendar.context'
 
 export function CalendarWeekdays() {
   const { weekdays } = useCalendarContext()

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import type { CalendarMultipleProps, CalendarProps, CalendarRangeProps, CalendarSingleProps } from '../../core/api.types'
-import { useCalendarMultipleRuntime } from '../../hooks/useCalendarMultipleRuntime'
-import { useCalendarRangeRuntime } from '../../hooks/useCalendarRangeRuntime'
-import { useCalendarSingleRuntime } from '../../hooks/useCalendarSingleRuntime'
-import { CalendarContext } from './context'
-import type { CalendarRuntime } from './types'
+import type { CalendarMultipleProps, CalendarProps, CalendarRangeProps, CalendarSingleProps } from '../core/api.types'
+import { useCalendarMultipleRuntime } from '../hooks/useCalendarMultipleRuntime'
+import { useCalendarRangeRuntime } from '../hooks/useCalendarRangeRuntime'
+import { useCalendarSingleRuntime } from '../hooks/useCalendarSingleRuntime'
+import { CalendarContext } from './Calendar.context'
+import type { CalendarRuntime } from './Calendar.types'
 
 interface CalendarRootBaseProps {
   children: ReactNode

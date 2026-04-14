@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { CalendarRuntime } from './types'
+import type { CalendarRuntime } from './Calendar.types'
 
 export const CalendarContext = createContext<CalendarRuntime | null>(null)
 

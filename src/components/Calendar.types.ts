@@ -1,6 +1,6 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import type { KeyboardEvent, MutableRefObject, UIEvent } from 'react'
-import type { CalendarMode } from '../../core/api.types'
+import type { KeyboardEvent, RefObject, UIEvent } from 'react'
+import type { CalendarMode } from '../core/api.types'
 
 export interface CalendarSelectionRuntime {
   isSelected: (date: Temporal.PlainDate) => boolean
@@ -19,8 +19,8 @@ export interface CalendarRuntime {
   keyboardNavigation: boolean
   isScrolling: boolean
   months: Temporal.PlainYearMonth[]
-  monthRefs: MutableRefObject<Map<string, HTMLElement>>
-  scrollRef: MutableRefObject<HTMLDivElement | null>
+  monthRefs: RefObject<Map<string, HTMLElement>>
+  scrollRef: RefObject<HTMLDivElement | null>
   focusedDate: Temporal.PlainDate
   today: Temporal.PlainDate
   selection: CalendarSelectionRuntime

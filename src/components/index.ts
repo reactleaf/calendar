@@ -6,4 +6,4 @@ export {
   CalendarRoot,
   CalendarSingleMode,
   CalendarWeekdays,
-} from './Calendar'
+} from '../Calendar'

@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { CalendarRangeValue } from '../../core/api.types'
+import type { CalendarRangeValue } from '../core/api.types'
 import { Calendar } from '../Calendar'
 
 function getGrid(container: HTMLElement): HTMLElement {
