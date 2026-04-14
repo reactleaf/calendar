@@ -159,6 +159,33 @@
   }
 }
 
+.app-calendar-demo {
+  box-sizing: border-box;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 3rem;
+}
+
+.app-calendar-demo__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.app-calendar-demo__hint {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.app-calendar-demo__value {
+  margin: 1.25rem 0 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
 .ticks {
   position: relative;
   width: 100%;

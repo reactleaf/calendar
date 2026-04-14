@@ -1,0 +1,180 @@
+.calendar {
+  --calendar-row-height: 2.75rem;
+  --calendar-cell-width: calc(100% / 7);
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, 22rem);
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 12px;
+  background: var(--calendar-color-bg, var(--bg, #fff));
+  color: var(--calendar-color-fg, var(--text-h, #111));
+  overflow: hidden;
+  font:
+    0.875rem/1.3 system-ui,
+    sans-serif;
+}
+
+.calendar__weekdays {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0.55rem 0.6rem;
+  margin: 0;
+  background: var(--calendar-color-bg, var(--bg, #fff));
+  color: var(--calendar-color-muted, var(--text, #6b6375));
+  border-bottom: 1px solid var(--border, #e5e4e7);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calendar__weekday {
+  text-align: center;
+}
+
+.calendar__scroll {
+  position: relative;
+  height: 27.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  outline: none;
+  padding: 0;
+}
+
+.calendar__scroll:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent-border, rgba(170, 59, 255, 0.45));
+}
+
+.calendar__month {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.calendar__monthRows {
+  position: relative;
+  border-bottom: 1px solid var(--border, #e9e9e9);
+  background: linear-gradient(180deg, hsla(0, 0%, 100%, 0) 50%, rgba(0, 0, 0, 0.05));
+}
+
+.calendar__monthRow {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  min-height: var(--calendar-row-height);
+}
+
+.calendar__monthRow.is-first {
+  text-align: right;
+}
+
+.calendar__monthRow.is-partial-first {
+  justify-content: flex-end;
+}
+
+.calendar__month--hasPrevious .calendar__monthRow.is-partial-first {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(var(--calendar-row-height) * -1);
+  pointer-events: none;
+}
+
+.calendar__month--hasPrevious .calendar__monthRow.is-partial-first .calendar__dayItem,
+.calendar__month--hasPrevious .calendar__monthRow.is-partial-first .calendar__day {
+  pointer-events: auto;
+}
+
+.calendar__monthRow.is-first .calendar__dayItem {
+  background-color: #fff;
+  box-shadow: 0 -1px 0 var(--border, #e9e9e9);
+}
+
+.calendar__month--hasPrevious .calendar__monthRow.is-partial-first .calendar__dayItem.is-first {
+  box-shadow:
+    0 -1px 0 var(--border, #e9e9e9),
+    inset 1px 0 0 var(--border, #e9e9e9);
+}
+
+.calendar__monthRow.is-partial-last .calendar__dayItem {
+  position: relative;
+  z-index: 1;
+}
+
+.calendar__dayItem {
+  width: var(--calendar-cell-width);
+}
+
+.calendar__day {
+  width: 100%;
+  height: var(--calendar-row-height);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.calendar__day:hover:not(:disabled) {
+  background: var(--accent-bg, rgba(170, 59, 255, 0.08));
+}
+
+.calendar__day:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.calendar__day--focused {
+  box-shadow: inset 0 0 0 2px var(--calendar-color-accent, var(--accent, #aa3bff));
+}
+
+.calendar__day--selected {
+  background: var(--calendar-color-accent, var(--accent, #aa3bff));
+  color: #fff;
+  font-weight: 650;
+}
+
+.calendar__day--today:not(.calendar__day--selected) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.calendar__monthOverlayBlock {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  background: color-mix(in srgb, var(--bg, #fff) 65%, transparent);
+  transition: opacity 0.18s ease;
+}
+
+.calendar__monthOverlayBlock > span {
+  position: absolute;
+  inset: 0 0 var(--calendar-row-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.calendar__monthOverlayBlock.is-fullLastRow > span {
+  inset: 0;
+}
+
+.calendar__monthOverlayBlock.is-partialFirstRow {
+  top: var(--calendar-row-height);
+}
+
+.calendar__scroll.is-scrolling .calendar__monthOverlayBlock {
+  opacity: 1;
+}
