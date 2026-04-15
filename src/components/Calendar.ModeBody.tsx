@@ -1,6 +1,6 @@
 import type { CalendarMode } from '../core/api.types'
 import { useCalendarContext } from './Calendar.context'
-import { monthLabel, monthKey, monthRows, sameDay } from './Calendar.utils'
+import { monthAtOffset, monthKey, monthLabel, monthRows, sameDay } from './Calendar.utils'
 
 interface CalendarModeBodyProps {
   mode: CalendarMode
@@ -11,7 +11,8 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
     locale,
     keyboardNavigation,
     isScrolling,
-    months,
+    minMonth,
+    monthVirtualizer,
     monthRefs,
     scrollRef,
     focusedDate,
@@ -22,6 +23,9 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
     handleKeyDown,
   } = useCalendarContext()
 
+  const virtualItems = monthVirtualizer.getVirtualItems()
+  const totalSize = monthVirtualizer.getTotalSize()
+
   return (
     <div
       ref={scrollRef}
@@ -31,21 +35,32 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
       onKeyDown={handleKeyDown}
       aria-label="무한 스크롤 달력"
     >
-      {months.map((month, monthIndex) => {
-        const key = monthKey(month)
-        const rows = monthRows(month)
-        const firstPartial = rows[0] ? rows[0].length !== 7 : false
-        const fullLastRow = (rows[rows.length - 1]?.length ?? 0) === 7
+      <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
+        {virtualItems.map((vi) => {
+          const month = monthAtOffset(minMonth, vi.index)
+          const key = monthKey(month)
+          const rows = monthRows(month)
+          const firstPartial = rows[0] ? rows[0].length !== 7 : false
+          const fullLastRow = (rows[rows.length - 1]?.length ?? 0) === 7
+          const hasPrevious = vi.index > 0
 
-        return (
-          <section
-            key={key}
-            className={`calendar__month${monthIndex > 0 ? ' calendar__month--hasPrevious' : ''}`}
-            ref={(node) => {
-              if (!node) monthRefs.current.delete(key)
-              else monthRefs.current.set(key, node)
-            }}
-          >
+          return (
+            <section
+              key={key}
+              className={`calendar__month${hasPrevious ? ' calendar__month--hasPrevious' : ''}`}
+              data-index={vi.index}
+              style={{
+                position: 'absolute',
+                top: `${vi.start}px`,
+                left: 0,
+                width: '100%',
+              }}
+              ref={(node) => {
+                monthVirtualizer.measureElement(node)
+                if (!node) monthRefs.current.delete(key)
+                else monthRefs.current.set(key, node)
+              }}
+            >
             <div className="calendar__monthRows">
               {rows.map((row, rowIndex) => {
                 const isPartial = row.length !== 7
@@ -118,7 +133,7 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
 
               <label
                 className={`calendar__monthOverlayBlock${
-                  firstPartial && monthIndex > 0 ? ' is-partialFirstRow' : ''
+                  firstPartial && hasPrevious ? ' is-partialFirstRow' : ''
                 }${fullLastRow ? ' is-fullLastRow' : ''}`}
                 aria-hidden="true"
               >
@@ -126,8 +141,9 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
               </label>
             </div>
           </section>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }

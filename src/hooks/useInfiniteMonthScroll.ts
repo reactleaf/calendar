@@ -1,12 +1,17 @@
-import { Temporal } from '@js-temporal/polyfill'
+import type { Temporal } from '@js-temporal/polyfill'
+import type { Rect, Virtualizer } from '@tanstack/react-virtual'
+import { observeElementRect as observeElementRectImpl, useVirtualizer } from '@tanstack/react-virtual'
 import type { RefObject, UIEvent } from 'react'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  EDGE_THRESHOLD_PX,
-  PAGE_MONTH_COUNT,
-  buildMonthWindow,
+  CALENDAR_ROW_HEIGHT_PX,
   compareMonth,
+  estimateMonthBlockHeightPx,
+  monthAtOffset,
+  monthIndexFromMin,
   monthKey,
+  monthRows,
+  monthsInclusiveCount,
   weekdayLabels,
 } from '../components/Calendar.utils'
 
@@ -18,9 +23,28 @@ interface UseInfiniteMonthScrollArgs {
   onMonthChange?: (monthStart: Temporal.PlainYearMonth) => void
 }
 
-interface InfiniteMonthScrollRuntime {
+function patchTestScrollViewport(scrollElement: Element | null) {
+  if (import.meta.env.MODE !== 'test' || !scrollElement) return
+  const el = scrollElement as HTMLElement
+  try {
+    Object.defineProperty(el, 'offsetHeight', { configurable: true, value: 440 })
+    Object.defineProperty(el, 'offsetWidth', { configurable: true, value: 352 })
+  } catch {
+    /* offset* may be non-configurable */
+  }
+}
+
+const observeElementRect = ((instance: Virtualizer<Element, Element>, cb: (rect: Rect) => void) => {
+  patchTestScrollViewport(instance.scrollElement)
+  return observeElementRectImpl(instance, cb)
+}) as typeof observeElementRectImpl
+
+export interface InfiniteMonthScrollRuntime {
   weekdays: string[]
-  months: Temporal.PlainYearMonth[]
+  minMonth: Temporal.PlainYearMonth
+  maxMonth: Temporal.PlainYearMonth
+  monthCount: number
+  monthVirtualizer: Virtualizer<HTMLDivElement, Element>
   currentMonth: Temporal.PlainYearMonth
   isScrolling: boolean
   monthRefs: RefObject<Map<string, HTMLElement>>
@@ -28,27 +52,55 @@ interface InfiniteMonthScrollRuntime {
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
   expandForTargetMonth: (target: Temporal.PlainYearMonth) => void
   keepMonthVisible: (month: Temporal.PlainYearMonth) => void
+  keepDateVisible: (date: Temporal.PlainDate) => void
 }
 
 export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): InfiniteMonthScrollRuntime {
   const { locale, initialMonth, minMonth, maxMonth, onMonthChange } = args
-  const [months, setMonths] = useState<Temporal.PlainYearMonth[]>(() =>
-    buildMonthWindow(initialMonth, minMonth, maxMonth),
+
+  const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
+  const estimatedMonthHeights = useMemo(
+    () =>
+      Array.from({ length: monthCount }, (_, index) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index)),
+    [minMonth, monthCount],
   )
+  const estimatedMonthOffsets = useMemo(() => {
+    const offsets: number[] = new Array(monthCount)
+    let acc = 0
+    for (let i = 0; i < monthCount; i += 1) {
+      offsets[i] = acc
+      acc += estimatedMonthHeights[i] ?? 0
+    }
+    return offsets
+  }, [estimatedMonthHeights, monthCount])
+  const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
+  const initialOffset = useMemo(() => {
+    const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
+    const offset = estimatedMonthOffsets[clamped] ?? 0
+    return Math.max(0, offset - 12)
+  }, [estimatedMonthOffsets, initialMonthIndex, monthCount])
+
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
   const [isScrolling, setIsScrolling] = useState(true)
 
-  const monthsRef = useRef(months)
   const monthRefs = useRef<Map<string, HTMLElement>>(new Map())
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prependAdjustRef = useRef<{ prevHeight: number } | null>(null)
-  const edgeBusyRef = useRef(false)
+
   const weekdays = useMemo(() => weekdayLabels(locale), [locale])
 
-  useEffect(() => {
-    monthsRef.current = months
-  }, [months])
+  const monthVirtualizer = useVirtualizer({
+    count: monthCount,
+    getScrollElement: () => scrollRef.current,
+    initialOffset,
+    estimateSize: (index) => estimatedMonthHeights[index] ?? CALENDAR_ROW_HEIGHT_PX * 5,
+    overscan: 4,
+    getItemKey: (index) => monthKey(monthAtOffset(minMonth, index)),
+    observeElementRect,
+  })
+
+  const virtualizerRef = useRef(monthVirtualizer)
+  virtualizerRef.current = monthVirtualizer
 
   useEffect(() => {
     scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 800)
@@ -61,126 +113,100 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     onMonthChange?.(currentMonth)
   }, [currentMonth, onMonthChange])
 
-  const expandForTargetMonth = useCallback(
-    (target: Temporal.PlainYearMonth) => {
-      setMonths((prev) => {
-        if (prev.length === 0) return buildMonthWindow(target, minMonth, maxMonth)
-        const first = prev[0]
-        const last = prev[prev.length - 1]
-        if (!first || !last) return prev
-
-        const prepend: Temporal.PlainYearMonth[] = []
-        let cursor = first
-        while (compareMonth(target, cursor) < 0) {
-          const candidate = cursor.subtract({ months: 1 })
-          if (compareMonth(candidate, minMonth) < 0) break
-          prepend.unshift(candidate)
-          cursor = candidate
-        }
-
-        const append: Temporal.PlainYearMonth[] = []
-        cursor = last
-        while (compareMonth(target, cursor) > 0) {
-          const candidate = cursor.add({ months: 1 })
-          if (compareMonth(candidate, maxMonth) > 0) break
-          append.push(candidate)
-          cursor = candidate
-        }
-
-        if (prepend.length === 0 && append.length === 0) return prev
-        return [...prepend, ...prev, ...append]
-      })
+  const scrollToMonthIndex = useCallback(
+    (index: number, align: 'start' | 'center' | 'end' | 'auto' = 'auto') => {
+      const clamped = Math.max(0, Math.min(monthCount - 1, index))
+      monthVirtualizer.scrollToIndex(clamped, { align })
     },
-    [maxMonth, minMonth],
+    [monthCount, monthVirtualizer],
   )
 
-  const keepMonthVisible = useCallback((month: Temporal.PlainYearMonth) => {
-    const scrollEl = scrollRef.current
-    const node = monthRefs.current.get(monthKey(month))
-    if (!scrollEl || !node) return
-    const top = node.offsetTop
-    const bottom = top + node.offsetHeight
-    const viewTop = scrollEl.scrollTop
-    const viewBottom = viewTop + scrollEl.clientHeight
-    if (top < viewTop + 12) scrollEl.scrollTo({ top: Math.max(0, top - 12) })
-    else if (bottom > viewBottom - 12) {
-      scrollEl.scrollTo({ top: Math.max(0, bottom - scrollEl.clientHeight + 12) })
-    }
-  }, [])
+  const expandForTargetMonth = useCallback(
+    (target: Temporal.PlainYearMonth) => {
+      if (compareMonth(target, minMonth) < 0 || compareMonth(target, maxMonth) > 0) return
+      scrollToMonthIndex(monthIndexFromMin(minMonth, target), 'auto')
+    },
+    [maxMonth, minMonth, scrollToMonthIndex],
+  )
 
-  const detectCurrentMonth = useCallback((scrollTop: number): Temporal.PlainYearMonth | null => {
-    const ordered = monthsRef.current
-    if (ordered.length === 0) return null
-    let candidate = ordered[0] ?? null
-    for (const month of ordered) {
-      const node = monthRefs.current.get(monthKey(month))
-      if (!node) continue
-      if (node.offsetTop <= scrollTop + 36) candidate = month
-      else break
-    }
-    return candidate
-  }, [])
+  const keepMonthVisible = useCallback(
+    (month: Temporal.PlainYearMonth) => {
+      expandForTargetMonth(month)
+    },
+    [expandForTargetMonth],
+  )
 
-  const appendAtBottom = useCallback(() => {
-    const last = monthsRef.current[monthsRef.current.length - 1]
-    if (!last) return
-    const toAppend: Temporal.PlainYearMonth[] = []
-    for (let i = 1; i <= PAGE_MONTH_COUNT; i += 1) {
-      const candidate = last.add({ months: i })
-      if (compareMonth(candidate, maxMonth) > 0) break
-      toAppend.push(candidate)
-    }
-    if (toAppend.length > 0) setMonths((prev) => [...prev, ...toAppend])
-  }, [maxMonth])
+  const getMonthStartOffset = useCallback(
+    (monthIndex: number): number => {
+      const v = virtualizerRef.current
+      const virtualItem = v.getVirtualItems().find((item) => item.index === monthIndex)
+      if (virtualItem) return virtualItem.start
+      const offset = v.getOffsetForIndex(monthIndex, 'start')
+      if (offset) return offset[0]
+      return estimatedMonthOffsets[monthIndex] ?? 0
+    },
+    [estimatedMonthOffsets],
+  )
 
-  const prependAtTop = useCallback(
-    (scrollHeight: number) => {
-      const first = monthsRef.current[0]
-      if (!first) return
-      const toPrepend: Temporal.PlainYearMonth[] = []
-      for (let i = PAGE_MONTH_COUNT; i >= 1; i -= 1) {
-        const candidate = first.subtract({ months: i })
-        if (compareMonth(candidate, minMonth) < 0) continue
-        toPrepend.push(candidate)
-      }
-      if (toPrepend.length > 0) {
-        prependAdjustRef.current = { prevHeight: scrollHeight }
-        setMonths((prev) => [...toPrepend, ...prev])
+  const keepDateVisible = useCallback(
+    (date: Temporal.PlainDate) => {
+      const scrollEl = scrollRef.current
+      if (!scrollEl) return
+      const month = date.toPlainYearMonth()
+      if (compareMonth(month, minMonth) < 0 || compareMonth(month, maxMonth) > 0) return
+
+      const monthIndex = monthIndexFromMin(minMonth, month)
+      const rows = monthRows(month)
+      const rowIndex = Math.max(
+        0,
+        rows.findIndex((row) => row.some((day) => day.day === date.day)),
+      )
+
+      const rowTop = getMonthStartOffset(monthIndex) + rowIndex * CALENDAR_ROW_HEIGHT_PX
+      const rowBottom = rowTop + CALENDAR_ROW_HEIGHT_PX
+      const viewTop = scrollEl.scrollTop + 12
+      const viewBottom = scrollEl.scrollTop + scrollEl.clientHeight - 12
+
+      if (rowTop < viewTop) monthVirtualizer.scrollToOffset(Math.max(0, rowTop - 12))
+      else if (rowBottom > viewBottom) {
+        monthVirtualizer.scrollToOffset(Math.max(0, rowBottom - scrollEl.clientHeight + 12))
       }
     },
-    [minMonth],
+    [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer],
   )
 
   const handleScroll = useCallback(
     (event: UIEvent<HTMLDivElement>) => {
       const el = event.currentTarget
-      const { scrollTop, scrollHeight, clientHeight } = el
+      const { scrollTop, clientHeight } = el
       setIsScrolling(true)
       if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
       scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 180)
-      const month = detectCurrentMonth(scrollTop)
-      if (month && compareMonth(month, currentMonth) !== 0) setCurrentMonth(month)
 
-      if (!edgeBusyRef.current && scrollTop < EDGE_THRESHOLD_PX) {
-        edgeBusyRef.current = true
-        prependAtTop(scrollHeight)
-      } else if (!edgeBusyRef.current && scrollTop + clientHeight > scrollHeight - EDGE_THRESHOLD_PX) {
-        edgeBusyRef.current = true
-        appendAtBottom()
+      const v = virtualizerRef.current
+      const centerOffset = scrollTop + clientHeight / 2
+      const item = v.getVirtualItemForOffset(centerOffset)
+      if (item) {
+        const next = monthAtOffset(minMonth, item.index)
+        setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(next, prev) !== 0 ? next : prev))
       }
     },
-    [appendAtBottom, currentMonth, detectCurrentMonth, prependAtTop],
+    [minMonth],
   )
 
-  useLayoutEffect(() => {
-    edgeBusyRef.current = false
-    const pending = prependAdjustRef.current
-    const scrollEl = scrollRef.current
-    if (pending && scrollEl) {
-      scrollEl.scrollTop += scrollEl.scrollHeight - pending.prevHeight
-      prependAdjustRef.current = null
-    }
-  }, [months])
-
-  return { weekdays, months, currentMonth, isScrolling, monthRefs, scrollRef, handleScroll, expandForTargetMonth, keepMonthVisible }
+  return {
+    weekdays,
+    minMonth,
+    maxMonth,
+    monthCount,
+    monthVirtualizer,
+    currentMonth,
+    isScrolling,
+    monthRefs,
+    scrollRef,
+    handleScroll,
+    expandForTargetMonth,
+    keepMonthVisible,
+    keepDateVisible,
+  }
 }

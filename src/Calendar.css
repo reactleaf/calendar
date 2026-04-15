@@ -15,9 +15,7 @@
 }
 
 .calendar__weekdays {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  position: relative;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   padding: 0.55rem 0;

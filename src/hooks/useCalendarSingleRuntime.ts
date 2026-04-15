@@ -4,7 +4,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { CalendarSingleProps } from '../core/api.types'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
-import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthKey } from '../components/Calendar.utils'
+import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
 import { useSingleSelection } from './useSingleSelection'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 
@@ -49,16 +49,26 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
 
   const [focusedDate, setFocusedDateState] = useState<Temporal.PlainDate>(initialDate)
   const initializedScrollRef = useRef(false)
-  const focusMonthRequestRef = useRef<Temporal.PlainYearMonth | null>(null)
+  const focusDateRequestRef = useRef<Temporal.PlainDate | null>(null)
 
-  const { weekdays, months, isScrolling, monthRefs, scrollRef, handleScroll, expandForTargetMonth, keepMonthVisible } =
-    useInfiniteMonthScroll({
-      locale,
-      initialMonth,
-      minMonth: minDay.toPlainYearMonth(),
-      maxMonth: maxDay.toPlainYearMonth(),
-      onMonthChange,
-    })
+  const {
+    weekdays,
+    minMonth,
+    maxMonth,
+    monthCount,
+    monthVirtualizer,
+    isScrolling,
+    monthRefs,
+    scrollRef,
+    handleScroll,
+    keepDateVisible,
+  } = useInfiniteMonthScroll({
+    locale,
+    initialMonth,
+    minMonth: minDay.toPlainYearMonth(),
+    maxMonth: maxDay.toPlainYearMonth(),
+    onMonthChange,
+  })
 
   const setFocusedDate = useCallback(
     (next: Temporal.PlainDate) => {
@@ -73,12 +83,10 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     (days: number) => {
       const next = clampDate(focusedDate.add({ days }), minDay, maxDay)
       setFocusedDate(next)
-      const nextMonth = next.toPlainYearMonth()
-      focusMonthRequestRef.current = nextMonth
-      expandForTargetMonth(nextMonth)
-      requestAnimationFrame(() => keepMonthVisible(nextMonth))
+      focusDateRequestRef.current = next
+      requestAnimationFrame(() => keepDateVisible(next))
     },
-    [expandForTargetMonth, focusedDate, keepMonthVisible, maxDay, minDay, setFocusedDate],
+    [focusedDate, keepDateVisible, maxDay, minDay, setFocusedDate],
   )
 
   const handleKeyDown = useCallback(
@@ -97,20 +105,17 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
 
   useLayoutEffect(() => {
     if (initializedScrollRef.current) return
-    const scrollEl = scrollRef.current
-    if (!scrollEl) return
-    const node = monthRefs.current.get(monthKey(initialMonth))
-    if (!node) return
-    scrollEl.scrollTop = Math.max(0, node.offsetTop - 12)
+    const idx = monthIndexFromMin(minMonth, initialMonth)
+    monthVirtualizer.scrollToIndex(Math.max(0, Math.min(monthCount - 1, idx)), { align: 'start' })
     initializedScrollRef.current = true
-  }, [initialMonth, monthRefs, months, scrollRef])
+  }, [initialMonth, minMonth, monthCount, monthVirtualizer])
 
   useLayoutEffect(() => {
-    const requested = focusMonthRequestRef.current
+    const requested = focusDateRequestRef.current
     if (!requested) return
-    keepMonthVisible(requested)
-    focusMonthRequestRef.current = null
-  }, [keepMonthVisible, months])
+    keepDateVisible(requested)
+    focusDateRequestRef.current = null
+  }, [keepDateVisible])
 
   return {
     mode: 'single',
@@ -120,7 +125,10 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     weekdays,
     keyboardNavigation,
     isScrolling,
-    months,
+    minMonth,
+    maxMonth,
+    monthCount,
+    monthVirtualizer,
     monthRefs,
     scrollRef,
     focusedDate,

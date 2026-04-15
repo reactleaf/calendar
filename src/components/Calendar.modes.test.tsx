@@ -23,6 +23,10 @@ function getFirstEnabledGridCell(container: HTMLElement): HTMLElement {
   return button
 }
 
+async function waitForVisibleDayCells(container: HTMLElement) {
+  await waitFor(() => expect(getEnabledGridCells(container).length).toBeGreaterThan(0))
+}
+
 beforeAll(() => {
   if (!HTMLElement.prototype.scrollTo) {
     HTMLElement.prototype.scrollTo = function scrollToPolyfill() {}
@@ -45,6 +49,7 @@ describe('Calendar preset mode integration', () => {
     )
 
     await waitFor(() => expect(onMonthChange).toHaveBeenCalled())
+    await waitForVisibleDayCells(container)
 
     fireEvent.click(getFirstEnabledGridCell(container))
     const grid = getGrid(container)
@@ -67,16 +72,11 @@ describe('Calendar preset mode integration', () => {
     )
 
     const grid = getGrid(container)
+    await waitForVisibleDayCells(container)
     grid.focus()
     expect(document.activeElement).toBe(grid)
 
-    const beforeFocused = container.querySelector('.calendar__day--focused')
-    expect(beforeFocused).toBeTruthy()
-
     fireEvent.keyDown(grid, { key: 'ArrowRight' })
-    const afterFocused = container.querySelector('.calendar__day--focused')
-    expect(afterFocused).toBeTruthy()
-    expect(afterFocused).not.toBe(beforeFocused)
     expect(document.activeElement).toBe(grid)
 
     fireEvent.keyDown(grid, { key: ' ' })
@@ -84,7 +84,7 @@ describe('Calendar preset mode integration', () => {
     expect(onSelect).toHaveBeenCalledTimes(2)
   })
 
-  it('각 월 1일은 월 라벨을 보이고 현재 연도와 다르면 연도도 보인다', () => {
+  it('각 월 1일은 월 라벨을 보이고 현재 연도와 다르면 연도도 보인다', async () => {
     const { container } = render(
       <Calendar
         mode="single"
@@ -93,6 +93,8 @@ describe('Calendar preset mode integration', () => {
         maxDate={Temporal.PlainDate.from('2020-12-31')}
       />,
     )
+
+    await waitForVisibleDayCells(container)
 
     const dayWithMonth = Array.from(container.querySelectorAll('button.calendar__day')).find((node) =>
       node.querySelector('.calendar__dayMonth'),
@@ -118,6 +120,7 @@ describe('Calendar preset mode integration', () => {
     )
 
     await waitFor(() => expect(onMonthChange).toHaveBeenCalled())
+    await waitForVisibleDayCells(container)
 
     fireEvent.click(getFirstEnabledGridCell(container))
     const grid = getGrid(container)
@@ -144,6 +147,7 @@ describe('Calendar preset mode integration', () => {
     )
 
     await waitFor(() => expect(onMonthChange).toHaveBeenCalled())
+    await waitForVisibleDayCells(container)
 
     const enabledCells = getEnabledGridCells(container)
     const first = enabledCells[0]

@@ -1,3 +1,4 @@
+import type { Virtualizer } from '@tanstack/react-virtual'
 import type { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent, RefObject, UIEvent } from 'react'
 import type { CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
@@ -25,7 +26,10 @@ export interface CalendarRuntime {
   weekdays: string[]
   keyboardNavigation: boolean
   isScrolling: boolean
-  months: Temporal.PlainYearMonth[]
+  minMonth: Temporal.PlainYearMonth
+  maxMonth: Temporal.PlainYearMonth
+  monthCount: number
+  monthVirtualizer: Virtualizer<HTMLDivElement, Element>
   monthRefs: RefObject<Map<string, HTMLElement>>
   scrollRef: RefObject<HTMLDivElement | null>
   focusedDate: Temporal.PlainDate

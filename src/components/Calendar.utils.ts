@@ -4,8 +4,12 @@ export const WEEK_STARTS_ON = 0 as const
 export const PRELOAD_MONTH_COUNT = 8
 export const PAGE_MONTH_COUNT = 6
 export const EDGE_THRESHOLD_PX = 220
-export const DEFAULT_MIN_DATE = Temporal.PlainDate.from('1900-01-01')
-export const DEFAULT_MAX_DATE = Temporal.PlainDate.from('2100-12-31')
+export const DEFAULT_MIN_DATE = Temporal.PlainDate.from('1980-01-01')
+export const DEFAULT_MAX_DATE = Temporal.PlainDate.from('2050-12-31')
+
+/** `3.2rem` 기준(루트 16px 가정) — 가상 스크롤 추정 높이용 */
+export const CALENDAR_ROW_HEIGHT_PX = Math.round(3.2 * 16)
+export const CALENDAR_MONTH_BORDER_PX = 1
 
 export function monthKey(month: Temporal.PlainYearMonth): string {
   return `${month.year}-${String(month.month).padStart(2, '0')}`
@@ -34,6 +38,25 @@ export function clampDate(
 
 export function compareMonth(a: Temporal.PlainYearMonth, b: Temporal.PlainYearMonth): number {
   return Temporal.PlainYearMonth.compare(a, b)
+}
+
+export function monthsInclusiveCount(minMonth: Temporal.PlainYearMonth, maxMonth: Temporal.PlainYearMonth): number {
+  return (maxMonth.year - minMonth.year) * 12 + (maxMonth.month - minMonth.month) + 1
+}
+
+export function monthAtOffset(minMonth: Temporal.PlainYearMonth, index: number): Temporal.PlainYearMonth {
+  return minMonth.add({ months: index })
+}
+
+export function monthIndexFromMin(minMonth: Temporal.PlainYearMonth, month: Temporal.PlainYearMonth): number {
+  return (month.year - minMonth.year) * 12 + (month.month - minMonth.month)
+}
+
+export function estimateMonthBlockHeightPx(month: Temporal.PlainYearMonth, monthIndex = 0): number {
+  const rows = monthRows(month)
+  const firstPartial = rows[0] ? rows[0].length !== 7 : false
+  const overlap = monthIndex > 0 && firstPartial ? CALENDAR_ROW_HEIGHT_PX : 0
+  return rows.length * CALENDAR_ROW_HEIGHT_PX + CALENDAR_MONTH_BORDER_PX - overlap
 }
 
 export function buildMonthWindow(
