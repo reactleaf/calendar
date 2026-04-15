@@ -1,6 +1,11 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent, RefObject, UIEvent } from 'react'
-import type { CalendarMode } from '../core/api.types'
+import type { CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
+
+export type CalendarSelectionSnapshot =
+  | { mode: 'single'; value: DateValue | null }
+  | { mode: 'multiple'; values: DateValue[] }
+  | { mode: 'range'; value: CalendarRangeValue }
 
 export interface CalendarSelectionRuntime {
   isSelected: (date: Temporal.PlainDate) => boolean
@@ -15,6 +20,8 @@ export interface CalendarSelectionRuntime {
 export interface CalendarRuntime {
   mode: CalendarMode
   locale: string
+  includeTime?: boolean
+  selectionSnapshot: CalendarSelectionSnapshot
   weekdays: string[]
   keyboardNavigation: boolean
   isScrolling: boolean

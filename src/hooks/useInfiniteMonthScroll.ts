@@ -21,6 +21,7 @@ interface UseInfiniteMonthScrollArgs {
 interface InfiniteMonthScrollRuntime {
   weekdays: string[]
   months: Temporal.PlainYearMonth[]
+  currentMonth: Temporal.PlainYearMonth
   isScrolling: boolean
   monthRefs: RefObject<Map<string, HTMLElement>>
   scrollRef: RefObject<HTMLDivElement | null>
@@ -181,5 +182,5 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     }
   }, [months])
 
-  return { weekdays, months, isScrolling, monthRefs, scrollRef, handleScroll, expandForTargetMonth, keepMonthVisible }
+  return { weekdays, months, currentMonth, isScrolling, monthRefs, scrollRef, handleScroll, expandForTargetMonth, keepMonthVisible }
 }

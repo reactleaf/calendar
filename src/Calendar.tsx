@@ -22,6 +22,7 @@ function CalendarImpl(props: CalendarProps) {
 
   return (
     <CalendarRoot {...props}>
+      <CalendarHeader />
       <CalendarWeekdays />
       {modeBody}
     </CalendarRoot>

@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { CalendarRangeValue } from '../core/api.types'
 import { Calendar } from '../Calendar'
 
@@ -11,7 +11,7 @@ function getGrid(container: HTMLElement): HTMLElement {
 }
 
 function getEnabledGridCells(container: HTMLElement): HTMLElement[] {
-  const cells = Array.from(container.querySelectorAll('button[role="gridcell"]')).filter(
+  const cells = Array.from(container.querySelectorAll('button.calendar__day')).filter(
     (node): node is HTMLElement => node instanceof HTMLElement && !node.hasAttribute('disabled'),
   )
   return cells
@@ -22,6 +22,12 @@ function getFirstEnabledGridCell(container: HTMLElement): HTMLElement {
   if (!button) throw new Error('활성화된 날짜 셀을 찾지 못했습니다.')
   return button
 }
+
+beforeAll(() => {
+  if (!HTMLElement.prototype.scrollTo) {
+    HTMLElement.prototype.scrollTo = function scrollToPolyfill() {}
+  }
+})
 
 describe('Calendar preset mode integration', () => {
   it('single 모드에서 클릭/키보드 선택 및 월 변경 콜백이 동작한다', async () => {
@@ -47,6 +53,54 @@ describe('Calendar preset mode integration', () => {
     expect(onSelect).toHaveBeenCalled()
     const last = onSelect.mock.calls.at(-1)?.[0]
     expect(last).toBeInstanceOf(Temporal.PlainDate)
+  })
+
+  it('single 모드에서 화살표 이동은 가상 하이라이트를 이동하고 Space/Enter로 선택한다', async () => {
+    const onSelect = vi.fn()
+    const { container } = render(
+      <Calendar
+        mode="single"
+        minDate={Temporal.PlainDate.from('2020-01-01')}
+        maxDate={Temporal.PlainDate.from('2030-12-31')}
+        onSelect={onSelect}
+      />,
+    )
+
+    const grid = getGrid(container)
+    grid.focus()
+    expect(document.activeElement).toBe(grid)
+
+    const beforeFocused = container.querySelector('.calendar__day--focused')
+    expect(beforeFocused).toBeTruthy()
+
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    const afterFocused = container.querySelector('.calendar__day--focused')
+    expect(afterFocused).toBeTruthy()
+    expect(afterFocused).not.toBe(beforeFocused)
+    expect(document.activeElement).toBe(grid)
+
+    fireEvent.keyDown(grid, { key: ' ' })
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    expect(onSelect).toHaveBeenCalledTimes(2)
+  })
+
+  it('각 월 1일은 월 라벨을 보이고 현재 연도와 다르면 연도도 보인다', () => {
+    const { container } = render(
+      <Calendar
+        mode="single"
+        defaultValue={Temporal.PlainDate.from('2020-01-01')}
+        minDate={Temporal.PlainDate.from('2020-01-01')}
+        maxDate={Temporal.PlainDate.from('2020-12-31')}
+      />,
+    )
+
+    const dayWithMonth = Array.from(container.querySelectorAll('button.calendar__day')).find((node) =>
+      node.querySelector('.calendar__dayMonth'),
+    )
+    if (!(dayWithMonth instanceof HTMLElement)) throw new Error('월 라벨이 있는 1일 셀을 찾지 못했습니다.')
+
+    const dayYear = dayWithMonth.querySelector('.calendar__dayYear')
+    expect(dayYear?.textContent).toBe('2020')
   })
 
   it('multiple 모드에서 클릭/키보드 토글 선택 및 월 변경 콜백이 동작한다', async () => {

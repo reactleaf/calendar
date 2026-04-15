@@ -47,7 +47,6 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     isDisabled: rawSelection.isDisabled,
     selectDate: rawSelection.toggleDate,
   }
-
   const today = Temporal.Now.plainDateISO()
   const selectedPlain = rawSelection.value[0] ? toPlainDate(rawSelection.value[0]) : null
   const minDay = minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE
@@ -123,6 +122,8 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
   return {
     mode: 'multiple',
     locale,
+    includeTime,
+    selectionSnapshot: { mode: 'multiple', values: rawSelection.value },
     weekdays,
     keyboardNavigation,
     isScrolling,

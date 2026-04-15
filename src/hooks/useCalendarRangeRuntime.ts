@@ -53,7 +53,6 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     isRangeStart: rawSelection.isRangeStart,
     isRangeEnd: rawSelection.isRangeEnd,
   }
-
   const today = Temporal.Now.plainDateISO()
   const selectedPlain = rawSelection.value.start ? toPlainDate(rawSelection.value.start) : null
   const minDay = minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE
@@ -130,6 +129,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
   return {
     mode: 'range',
     locale,
+    includeTime,
+    selectionSnapshot: { mode: 'range', value: rawSelection.value },
     weekdays,
     keyboardNavigation,
     isScrolling,

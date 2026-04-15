@@ -26,7 +26,6 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
     <div
       ref={scrollRef}
       className={`calendar__scroll${isScrolling ? ' is-scrolling' : ''}`}
-      role="grid"
       tabIndex={keyboardNavigation ? 0 : -1}
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
@@ -62,9 +61,13 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
                   .join(' ')
 
                 return (
-                  <ul key={`${key}-row-${rowIndex}`} className={rowClass} role="row">
+                  <ul key={`${key}-row-${rowIndex}`} className={rowClass}>
                     {row.map((date, cellIndex) => {
                       const isSelected = selection.isSelected(date)
+                      const isToday = sameDay(date, today)
+                      const isFirstOfMonth = date.day === 1
+                      const showYear = isFirstOfMonth && date.year !== today.year
+                      const monthShort = date.toLocaleString(locale, { month: 'short' })
                       const isRangeStart = mode === 'range' ? (selection.isRangeStart?.(date) ?? false) : false
                       const isRangeEnd = mode === 'range' ? (selection.isRangeEnd?.(date) ?? false) : false
                       const isInPreview = mode === 'range' ? (selection.isInPreviewRange?.(date) ?? false) : false
@@ -72,7 +75,7 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
                         'calendar__day',
                         sameDay(date, focusedDate) ? 'calendar__day--focused' : '',
                         isSelected ? 'calendar__day--selected' : '',
-                        sameDay(date, today) ? 'calendar__day--today' : '',
+                        isToday ? 'calendar__day--today' : '',
                         mode === 'range' && isSelected && !isRangeStart && !isRangeEnd ? 'calendar__day--inRange' : '',
                         mode === 'range' && isInPreview && !isSelected ? 'calendar__day--inPreviewRange' : '',
                         mode === 'range' && isRangeStart ? 'calendar__day--rangeStart' : '',
@@ -85,21 +88,26 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
                         <li key={date.toString()} className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`}>
                           <button
                             type="button"
-                            role="gridcell"
                             className={dayClass}
                             disabled={selection.isDisabled(date)}
                             tabIndex={-1}
-                            aria-selected={isSelected}
+                            aria-pressed={isSelected}
                             {...(sameDay(date, today) ? { 'aria-current': 'date' as const } : {})}
+                            onMouseDown={(event) => {
+                              event.preventDefault()
+                            }}
                             onMouseEnter={() => {
                               if (mode === 'range') selection.previewDate?.(date, 'hover')
                             }}
                             onClick={() => {
                               setFocusedDate(date)
                               selection.selectDate(date, 'click')
+                              scrollRef.current?.focus({ preventScroll: true })
                             }}
                           >
-                            {date.day}
+                            {isFirstOfMonth ? <span className="calendar__dayMonth">{monthShort}</span> : null}
+                            <span className="calendar__dayNumber">{date.day}</span>
+                            {showYear ? <span className="calendar__dayYear">{date.year}</span> : null}
                           </button>
                         </li>
                       )

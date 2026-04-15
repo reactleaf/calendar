@@ -40,7 +40,6 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     minuteStep,
     onSelect,
   })
-
   const today = Temporal.Now.plainDateISO()
   const selectedPlain = selection.value ? toPlainDate(selection.value) : null
   const minDay = minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE
@@ -116,6 +115,8 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
   return {
     mode: 'single',
     locale,
+    includeTime,
+    selectionSnapshot: { mode: 'single', value: selection.value },
     weekdays,
     keyboardNavigation,
     isScrolling,
