@@ -58,6 +58,7 @@ function App() {
         <Calendar
           className="mx-auto"
           mode="range"
+          includeTime
           value={rangeSelected}
           onSelect={setRangeSelected}
           allowRangePreview

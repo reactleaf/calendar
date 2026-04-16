@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRangeValue, DateValue } from '../core/api.types'
-import { sameCalendarDay, toPlainDate, toSelectionValue, type PlainDay } from '../core/calendarDate'
+import { sameCalendarDay, toPlainDate, toSelectionValue, withTime, type PlainDay } from '../core/calendarDate'
 import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
 import { isDayInInclusiveRange } from '../core/rangeHighlight'
 import {
@@ -35,6 +35,7 @@ export interface UseRangeSelectionResult {
   isDisabled: (date: DateValue) => boolean
   selectDate: (date: DateValue, source?: 'click' | 'keyboard') => void
   previewDate: (date: DateValue, source?: 'hover' | 'keyboard') => void
+  setRangeTime: (edge: 'start' | 'end', hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -63,6 +64,7 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     disabledDates,
     disabledDays,
     includeTime,
+    minuteStep,
     allowRangePreview,
     onSelect,
     onRangePreview,
@@ -191,6 +193,22 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     if (!isControlled) setInternalCommitted(EMPTY)
   }, [isControlled])
 
+  const setRangeTime = useCallback(
+    (edge: 'start' | 'end', hour: number, minute: number) => {
+      if (!includeTime) return
+      const target = committed[edge]
+      if (!target) return
+      const payload: CalendarRangeValue = {
+        start: committed.start,
+        end: committed.end,
+      }
+      payload[edge] = withTime(target, hour, minute, minuteStep)
+      onSelect?.(payload)
+      if (!isControlled) setInternalCommitted(payload)
+    },
+    [committed, includeTime, isControlled, minuteStep, onSelect],
+  )
+
   return {
     value: committed,
     preview,
@@ -201,6 +219,7 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     isDisabled,
     selectDate,
     previewDate,
+    setRangeTime,
     clear,
   }
 }

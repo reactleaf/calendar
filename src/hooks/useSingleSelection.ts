@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { DateValue } from '../core/api.types'
-import { selectionEquals, toSelectionValue } from '../core/calendarDate'
+import { selectionEquals, toSelectionValue, withTime } from '../core/calendarDate'
 import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
 import { nextSingleSelection } from '../core/selection/single'
 
@@ -23,6 +23,7 @@ export interface UseSingleSelectionResult {
   isSelected: (date: DateValue) => boolean
   isDisabled: (date: DateValue) => boolean
   selectDate: (date: DateValue, source?: 'click' | 'keyboard') => void
+  setSelectedTime: (hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -36,6 +37,7 @@ export function useSingleSelection(options: UseSingleSelectionOptions): UseSingl
     disabledDates,
     disabledDays,
     includeTime,
+    minuteStep,
     onSelect,
     allowDeselect = false,
   } = options
@@ -74,11 +76,20 @@ export function useSingleSelection(options: UseSingleSelectionOptions): UseSingl
 
   const clear = useCallback(() => commit(null), [commit])
 
+  const setSelectedTime = useCallback(
+    (hour: number, minute: number) => {
+      if (!includeTime || value === null) return
+      commit(withTime(value, hour, minute, minuteStep))
+    },
+    [commit, includeTime, minuteStep, value],
+  )
+
   return {
     value: value ?? null,
     isSelected,
     isDisabled,
     selectDate,
+    setSelectedTime,
     clear,
   }
 }

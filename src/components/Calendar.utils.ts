@@ -15,6 +15,10 @@ export function monthKey(month: Temporal.PlainYearMonth): string {
   return `${month.year}-${String(month.month).padStart(2, '0')}`
 }
 
+export function dayStamp(date: Temporal.PlainDate): number {
+  return date.year * 10000 + date.month * 100 + date.day
+}
+
 export function weekdayLabels(locale: string): string[] {
   const sunday = Temporal.PlainDate.from({ year: 2026, month: 1, day: 4 })
   return Array.from({ length: 7 }, (_, i) =>
@@ -106,5 +110,11 @@ export function monthLabel(month: Temporal.PlainYearMonth, locale: string): stri
   return Temporal.PlainDate.from({ year: month.year, month: month.month, day: 1 }).toLocaleString(locale, {
     month: 'long',
     year: 'numeric',
+  })
+}
+
+export function monthShortLabel(month: Temporal.PlainYearMonth, locale: string): string {
+  return Temporal.PlainDate.from({ year: month.year, month: month.month, day: 1 }).toLocaleString(locale, {
+    month: 'short',
   })
 }

@@ -1,28 +1,64 @@
+import type { Temporal } from '@js-temporal/polyfill'
+import { memo } from 'react'
+import type { KeyboardEvent, RefObject, UIEvent } from 'react'
 import type { CalendarMode } from '../core/api.types'
-import { useCalendarContext } from './Calendar.context'
-import { monthAtOffset, monthKey, monthLabel, monthRows, sameDay } from './Calendar.utils'
+import { dayStamp, monthAtOffset, monthKey, monthLabel, monthRows, monthShortLabel } from './Calendar.utils'
 
 interface CalendarModeBodyProps {
   mode: CalendarMode
+  locale: string
+  keyboardNavigation: boolean
+  isScrolling: boolean
+  minMonth: Temporal.PlainYearMonth
+  monthVirtualizer: {
+    getVirtualItems: () => Array<{ index: number; start: number }>
+    getTotalSize: () => number
+    measureElement: (node: Element | null) => void
+  }
+  monthRefs: RefObject<Map<string, HTMLElement>>
+  scrollRef: RefObject<HTMLDivElement | null>
+  focusedDateStamp: number
+  todayDateStamp: number
+  todayYear: number
+  isDateSelected: (date: Temporal.PlainDate) => boolean
+  isDateDisabled: (date: Temporal.PlainDate) => boolean
+  isRangeStart: (date: Temporal.PlainDate) => boolean
+  isRangeEnd: (date: Temporal.PlainDate) => boolean
+  isInPreviewRange: (date: Temporal.PlainDate) => boolean
+  onDateHover: (date: Temporal.PlainDate) => void
+  onDateClick: (date: Temporal.PlainDate) => void
+  onScroll: (event: UIEvent<HTMLDivElement>) => void
+  onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
+  selectionRenderKey: string
+  previewIdentity?: unknown
 }
 
-export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
-  const {
-    locale,
-    keyboardNavigation,
-    isScrolling,
-    minMonth,
-    monthVirtualizer,
-    monthRefs,
-    scrollRef,
-    focusedDate,
-    today,
-    selection,
-    setFocusedDate,
-    handleScroll,
-    handleKeyDown,
-  } = useCalendarContext()
-
+function CalendarModeBodyImpl({
+  mode,
+  locale,
+  keyboardNavigation,
+  isScrolling,
+  minMonth,
+  monthVirtualizer,
+  monthRefs,
+  scrollRef,
+  focusedDateStamp,
+  todayDateStamp,
+  todayYear,
+  isDateSelected,
+  isDateDisabled,
+  isRangeStart,
+  isRangeEnd,
+  isInPreviewRange,
+  onDateHover,
+  onDateClick,
+  onScroll,
+  onKeyDown,
+  selectionRenderKey,
+  previewIdentity,
+}: CalendarModeBodyProps) {
+  void selectionRenderKey
+  void previewIdentity
   const virtualItems = monthVirtualizer.getVirtualItems()
   const totalSize = monthVirtualizer.getTotalSize()
 
@@ -31,8 +67,8 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
       ref={scrollRef}
       className={`calendar__scroll${isScrolling ? ' is-scrolling' : ''}`}
       tabIndex={keyboardNavigation ? 0 : -1}
-      onScroll={handleScroll}
-      onKeyDown={handleKeyDown}
+      onScroll={onScroll}
+      onKeyDown={onKeyDown}
       aria-label="무한 스크롤 달력"
     >
       <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
@@ -40,6 +76,7 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
           const month = monthAtOffset(minMonth, vi.index)
           const key = monthKey(month)
           const rows = monthRows(month)
+          const monthShort = monthShortLabel(month, locale)
           const firstPartial = rows[0] ? rows[0].length !== 7 : false
           const fullLastRow = (rows[rows.length - 1]?.length ?? 0) === 7
           const hasPrevious = vi.index > 0
@@ -78,46 +115,44 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
                 return (
                   <ul key={`${key}-row-${rowIndex}`} className={rowClass}>
                     {row.map((date, cellIndex) => {
-                      const isSelected = selection.isSelected(date)
-                      const isToday = sameDay(date, today)
+                      const dateKey = dayStamp(date)
+                      const isSelected = isDateSelected(date)
+                      const isToday = dateKey === todayDateStamp
                       const isFirstOfMonth = date.day === 1
-                      const showYear = isFirstOfMonth && date.year !== today.year
-                      const monthShort = date.toLocaleString(locale, { month: 'short' })
-                      const isRangeStart = mode === 'range' ? (selection.isRangeStart?.(date) ?? false) : false
-                      const isRangeEnd = mode === 'range' ? (selection.isRangeEnd?.(date) ?? false) : false
-                      const isInPreview = mode === 'range' ? (selection.isInPreviewRange?.(date) ?? false) : false
+                      const showYear = isFirstOfMonth && date.year !== todayYear
+                      const isRangeStartDate = mode === 'range' ? isRangeStart(date) : false
+                      const isRangeEndDate = mode === 'range' ? isRangeEnd(date) : false
+                      const isInPreview = mode === 'range' ? isInPreviewRange(date) : false
                       const dayClass = [
                         'calendar__day',
-                        sameDay(date, focusedDate) ? 'calendar__day--focused' : '',
+                        dateKey === focusedDateStamp ? 'calendar__day--focused' : '',
                         isSelected ? 'calendar__day--selected' : '',
                         isToday ? 'calendar__day--today' : '',
-                        mode === 'range' && isSelected && !isRangeStart && !isRangeEnd ? 'calendar__day--inRange' : '',
+                        mode === 'range' && isSelected && !isRangeStartDate && !isRangeEndDate ? 'calendar__day--inRange' : '',
                         mode === 'range' && isInPreview && !isSelected ? 'calendar__day--inPreviewRange' : '',
-                        mode === 'range' && isRangeStart ? 'calendar__day--rangeStart' : '',
-                        mode === 'range' && isRangeEnd ? 'calendar__day--rangeEnd' : '',
+                        mode === 'range' && isRangeStartDate ? 'calendar__day--rangeStart' : '',
+                        mode === 'range' && isRangeEndDate ? 'calendar__day--rangeEnd' : '',
                       ]
                         .filter(Boolean)
                         .join(' ')
 
                       return (
-                        <li key={date.toString()} className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`}>
+                        <li key={dateKey} className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`}>
                           <button
                             type="button"
                             className={dayClass}
-                            disabled={selection.isDisabled(date)}
+                            disabled={isDateDisabled(date)}
                             tabIndex={-1}
                             aria-pressed={isSelected}
-                            {...(sameDay(date, today) ? { 'aria-current': 'date' as const } : {})}
+                            {...(isToday ? { 'aria-current': 'date' as const } : {})}
                             onMouseDown={(event) => {
                               event.preventDefault()
                             }}
                             onMouseEnter={() => {
-                              if (mode === 'range') selection.previewDate?.(date, 'hover')
+                              if (mode === 'range') onDateHover(date)
                             }}
                             onClick={() => {
-                              setFocusedDate(date)
-                              selection.selectDate(date, 'click')
-                              scrollRef.current?.focus({ preventScroll: true })
+                              onDateClick(date)
                             }}
                           >
                             {isFirstOfMonth ? <span className="calendar__dayMonth">{monthShort}</span> : null}
@@ -147,3 +182,32 @@ export function CalendarModeBody({ mode }: CalendarModeBodyProps) {
     </div>
   )
 }
+
+function equalModeBodyProps(prev: CalendarModeBodyProps, next: CalendarModeBodyProps) {
+  return (
+    prev.mode === next.mode &&
+    prev.locale === next.locale &&
+    prev.keyboardNavigation === next.keyboardNavigation &&
+    prev.isScrolling === next.isScrolling &&
+    prev.minMonth === next.minMonth &&
+    prev.monthVirtualizer === next.monthVirtualizer &&
+    prev.monthRefs === next.monthRefs &&
+    prev.scrollRef === next.scrollRef &&
+    prev.focusedDateStamp === next.focusedDateStamp &&
+    prev.todayDateStamp === next.todayDateStamp &&
+    prev.todayYear === next.todayYear &&
+    prev.isDateSelected === next.isDateSelected &&
+    prev.isDateDisabled === next.isDateDisabled &&
+    prev.isRangeStart === next.isRangeStart &&
+    prev.isRangeEnd === next.isRangeEnd &&
+    prev.isInPreviewRange === next.isInPreviewRange &&
+    prev.onDateHover === next.onDateHover &&
+    prev.onDateClick === next.onDateClick &&
+    prev.onScroll === next.onScroll &&
+    prev.onKeyDown === next.onKeyDown &&
+    prev.selectionRenderKey === next.selectionRenderKey &&
+    prev.previewIdentity === next.previewIdentity
+  )
+}
+
+export const CalendarModeBody = memo(CalendarModeBodyImpl, equalModeBodyProps)

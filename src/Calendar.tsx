@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import './Calendar.css'
 import { CalendarHeader } from './components/Calendar.Header'
+import { CalendarTimeInput } from './components/Calendar.TimeInput'
 import { CalendarMultipleMode } from './components/Calendar.MultipleMode'
 import { CalendarRangeMode } from './components/Calendar.RangeMode'
 import { CalendarRoot } from './components/Calendar.Root'
@@ -32,6 +33,7 @@ function CalendarImpl(props: CalendarProps) {
 type CalendarCompound = ((props: CalendarProps) => JSX.Element) & {
   Root: typeof CalendarRoot
   Header: typeof CalendarHeader
+  TimeInput: typeof CalendarTimeInput
   Weekdays: typeof CalendarWeekdays
   SingleMode: typeof CalendarSingleMode
   MultipleMode: typeof CalendarMultipleMode
@@ -41,10 +43,19 @@ type CalendarCompound = ((props: CalendarProps) => JSX.Element) & {
 export const Calendar: CalendarCompound = Object.assign(CalendarImpl, {
   Root: CalendarRoot,
   Header: CalendarHeader,
+  TimeInput: CalendarTimeInput,
   Weekdays: CalendarWeekdays,
   SingleMode: CalendarSingleMode,
   MultipleMode: CalendarMultipleMode,
   RangeMode: CalendarRangeMode,
 })
 
-export { CalendarHeader, CalendarMultipleMode, CalendarRangeMode, CalendarRoot, CalendarSingleMode, CalendarWeekdays }
+export {
+  CalendarHeader,
+  CalendarMultipleMode,
+  CalendarRangeMode,
+  CalendarRoot,
+  CalendarSingleMode,
+  CalendarTimeInput,
+  CalendarWeekdays,
+}

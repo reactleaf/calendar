@@ -1,6 +1,7 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { useCallback, useMemo, useState } from 'react'
 import type { DateValue } from '../core/api.types'
-import { toPlainDate, toSelectionValue } from '../core/calendarDate'
+import { toPlainDate, toSelectionValue, withTime } from '../core/calendarDate'
 import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
 import { toggleMultipleSelection } from '../core/selection/multiple'
 
@@ -23,6 +24,7 @@ export interface UseMultipleSelectionResult {
   isSelected: (date: DateValue) => boolean
   isDisabled: (date: DateValue) => boolean
   toggleDate: (date: DateValue, source?: 'click' | 'keyboard') => void
+  setLatestSelectedTime: (hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -36,6 +38,7 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
     disabledDates,
     disabledDays,
     includeTime,
+    minuteStep,
     maxSelections,
     onSelect,
   } = options
@@ -77,5 +80,23 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
 
   const clear = useCallback(() => commit([]), [commit])
 
-  return { value, isSelected, isDisabled, toggleDate, clear }
+  const setLatestSelectedTime = useCallback(
+    (hour: number, minute: number) => {
+      if (!includeTime || value.length === 0) return
+
+      let targetIndex = 0
+      for (let i = 1; i < value.length; i += 1) {
+        const current = value[i]
+        const target = value[targetIndex]
+        if (!current || !target) continue
+        if (Temporal.PlainDate.compare(toPlainDate(current), toPlainDate(target)) > 0) targetIndex = i
+      }
+
+      const next = value.map((v, i) => (i === targetIndex ? withTime(v, hour, minute, minuteStep) : v))
+      commit(next)
+    },
+    [commit, includeTime, minuteStep, value],
+  )
+
+  return { value, isSelected, isDisabled, toggleDate, setLatestSelectedTime, clear }
 }

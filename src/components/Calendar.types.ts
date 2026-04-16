@@ -12,6 +12,8 @@ export interface CalendarSelectionRuntime {
   isSelected: (date: Temporal.PlainDate) => boolean
   isDisabled: (date: Temporal.PlainDate) => boolean
   selectDate: (date: Temporal.PlainDate, source?: 'click' | 'keyboard') => void
+  setSelectedTime?: (hour: number, minute: number) => void
+  setRangeTime?: (edge: 'start' | 'end', hour: number, minute: number) => void
   previewDate?: (date: Temporal.PlainDate, source?: 'hover' | 'keyboard') => void
   isInPreviewRange?: (date: Temporal.PlainDate) => boolean
   isRangeStart?: (date: Temporal.PlainDate) => boolean
@@ -22,6 +24,7 @@ export interface CalendarRuntime {
   mode: CalendarMode
   locale: string
   includeTime?: boolean
+  minuteStep?: number
   selectionSnapshot: CalendarSelectionSnapshot
   weekdays: string[]
   keyboardNavigation: boolean

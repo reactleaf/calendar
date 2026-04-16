@@ -121,6 +121,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     mode: 'single',
     locale,
     includeTime,
+    minuteStep,
     selectionSnapshot: { mode: 'single', value: selection.value },
     weekdays,
     keyboardNavigation,

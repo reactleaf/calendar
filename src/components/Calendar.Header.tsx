@@ -1,9 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import { toPlainDate } from '../core/calendarDate'
-import type { CalendarSelectionSnapshot } from './Calendar.types'
+import { toPlainDate, toSelectionValue } from '../core/calendarDate'
+import type { DateValue } from '../core/api.types'
 import { useCalendarContext } from './Calendar.context'
+import { CalendarTimeInput } from './Calendar.TimeInput'
+import type { CalendarSelectionSnapshot } from './Calendar.types'
 
 interface CalendarHeaderProps {
   className?: string
@@ -14,19 +16,12 @@ function formatDay(day: Temporal.PlainDate, locale: string) {
   return day.toLocaleString(locale, { month: 'short', day: 'numeric' })
 }
 
-function formatTime(value: Temporal.PlainDateTime, locale: string) {
-  return value.toLocaleString(locale, { hour: 'numeric', minute: '2-digit' })
-}
-
 function labelsFromSnapshot(
   locale: string,
-  includeTime: boolean | undefined,
   snapshot: CalendarSelectionSnapshot,
-): { headerYear: string | null; headerDate: string; showTimeRow: boolean; headerTime: string | null } {
-  const showTimeRow = includeTime === true
+): { headerYear: string | null; headerDate: string } {
   let headerYear: string | null = null
   let headerDate = ''
-  let headerTime: string | null = null
 
   switch (snapshot.mode) {
     case 'single': {
@@ -34,9 +29,6 @@ function labelsFromSnapshot(
       const selectedDay = v ? toPlainDate(v) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
       headerDate = selectedDay ? formatDay(selectedDay, locale) : 'Select a date...'
-      if (showTimeRow) {
-        headerTime = v instanceof Temporal.PlainDateTime ? formatTime(v, locale) : 'Time selection coming soon'
-      }
       break
     }
     case 'multiple': {
@@ -45,10 +37,6 @@ function labelsFromSnapshot(
       const selectedDay = selectedValue ? toPlainDate(selectedValue) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
       headerDate = selectedDay ? formatDay(selectedDay, locale) : 'Select a date...'
-      if (showTimeRow) {
-        headerTime =
-          selectedValue instanceof Temporal.PlainDateTime ? formatTime(selectedValue, locale) : 'Time selection coming soon'
-      }
       break
     }
     case 'range': {
@@ -69,37 +57,74 @@ function labelsFromSnapshot(
           : startDay
             ? `${formatDay(startDay, locale)} - ?`
             : 'Select a date...'
-      if (showTimeRow) {
-        if (start instanceof Temporal.PlainDateTime && end instanceof Temporal.PlainDateTime) {
-          headerTime = `${formatTime(start, locale)} - ${formatTime(end, locale)}`
-        } else if (start instanceof Temporal.PlainDateTime) {
-          headerTime = `${formatTime(start, locale)} - ?`
-        } else {
-          headerTime = 'Time selection coming soon'
-        }
-      }
       break
     }
   }
 
-  return { headerYear, headerDate, showTimeRow, headerTime }
+  return { headerYear, headerDate }
+}
+
+function resolveEditorDateTime(value: DateValue | null) {
+  if (value === null) return null
+  if (value instanceof Temporal.PlainDateTime) return value
+  return toSelectionValue(value, true) as Temporal.PlainDateTime
 }
 
 export function CalendarHeader({ className, children }: CalendarHeaderProps) {
-  const { locale, includeTime, selectionSnapshot } = useCalendarContext()
-  const { headerYear, headerDate, showTimeRow, headerTime } = useMemo(
-    () => labelsFromSnapshot(locale, includeTime, selectionSnapshot),
-    [locale, includeTime, selectionSnapshot],
+  const { locale, mode, includeTime, minuteStep, selectionSnapshot, selection } = useCalendarContext()
+  const { headerYear, headerDate } = useMemo(
+    () => labelsFromSnapshot(locale, selectionSnapshot),
+    [locale, selectionSnapshot],
   )
+  const showTimeRow = includeTime === true
 
   const classes = ['calendar__header', className].filter(Boolean).join(' ')
-  if (children) return <div className={classes}>{children}</div>
 
+  const singleTimeValue = selectionSnapshot.mode === 'single' ? resolveEditorDateTime(selectionSnapshot.value) : null
+  const multipleLatestTime = useMemo(() => {
+    if (selectionSnapshot.mode !== 'multiple') return null
+    const sorted = [...selectionSnapshot.values].sort((a, b) =>
+      Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
+    )
+    const latest = sorted[sorted.length - 1] ?? null
+    return resolveEditorDateTime(latest)
+  }, [selectionSnapshot])
+  const rangeStartTime =
+    selectionSnapshot.mode === 'range' ? resolveEditorDateTime(selectionSnapshot.value.start) : null
+  const rangeEndTime = selectionSnapshot.mode === 'range' ? resolveEditorDateTime(selectionSnapshot.value.end) : null
+
+  if (children) return <div className={classes}>{children}</div>
   return (
     <div className={classes}>
       <div className="calendar__headerYear">{headerYear ?? ''}</div>
       <div className="calendar__headerDate">{headerDate}</div>
-      {showTimeRow ? <div className="calendar__headerTime">{headerTime ?? 'Time selection coming soon'}</div> : null}
+      {showTimeRow ? (
+        <div className="calendar__headerTime">
+          {mode === 'range' ? (
+            <div className="calendar__timeEditorRow">
+              <CalendarTimeInput
+                label="Start"
+                value={rangeStartTime}
+                minuteStep={minuteStep}
+                onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
+              />
+              <CalendarTimeInput
+                label="End"
+                value={rangeEndTime}
+                minuteStep={minuteStep}
+                onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
+              />
+            </div>
+          ) : (
+            <CalendarTimeInput
+              value={mode === 'single' ? singleTimeValue : multipleLatestTime}
+              minuteStep={minuteStep}
+              onTimeChange={(hour, minute) => selection.setSelectedTime?.(hour, minute)}
+            />
+          )}
+          <div className="calendar__timeHint">Tip: 값을 클릭해 편집, 센서 스크롤로 빠르게 조절</div>
+        </div>
+      ) : null}
     </div>
   )
 }
