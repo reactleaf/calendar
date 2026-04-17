@@ -1,8 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import { toPlainDate, toSelectionValue } from '../core/calendarDate'
 import type { DateValue } from '../core/api.types'
+import { toPlainDate, toSelectionValue } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { CalendarTimeInput } from './Calendar.TimeInput'
 import type { CalendarSelectionSnapshot } from './Calendar.types'
@@ -14,6 +14,22 @@ interface CalendarHeaderProps {
 
 function formatDay(day: Temporal.PlainDate, locale: string) {
   return day.toLocaleString(locale, { month: 'short', day: 'numeric' })
+}
+
+function formatRangeColumnDate(day: Temporal.PlainDate | null, locale: string) {
+  if (!day) return '—'
+  return day.toLocaleString(locale, { month: 'long', day: 'numeric' })
+}
+
+function rangeHeaderGrid(snapshot: Extract<CalendarSelectionSnapshot, { mode: 'range' }>, locale: string) {
+  const startDay = snapshot.value.start ? toPlainDate(snapshot.value.start) : null
+  const endDay = snapshot.value.end ? toPlainDate(snapshot.value.end) : null
+  return {
+    fromYear: startDay ? String(startDay.year) : '—',
+    toYear: endDay ? String(endDay.year) : '—',
+    fromDate: formatRangeColumnDate(startDay, locale),
+    toDate: formatRangeColumnDate(endDay, locale),
+  }
 }
 
 function labelsFromSnapshot(
@@ -71,7 +87,16 @@ function resolveEditorDateTime(value: DateValue | null) {
 }
 
 export function CalendarHeader({ className, children }: CalendarHeaderProps) {
-  const { locale, mode, includeTime, minuteStep, selectionSnapshot, selection } = useCalendarContext()
+  const {
+    locale,
+    mode,
+    includeTime,
+    minuteStep,
+    selectionSnapshot,
+    selection,
+    rangeHeaderValue,
+    rangeHeaderPreviewActive,
+  } = useCalendarContext()
   const { headerYear, headerDate } = useMemo(
     () => labelsFromSnapshot(locale, selectionSnapshot),
     [locale, selectionSnapshot],
@@ -89,39 +114,63 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     const latest = sorted[sorted.length - 1] ?? null
     return resolveEditorDateTime(latest)
   }, [selectionSnapshot])
-  const rangeStartTime =
-    selectionSnapshot.mode === 'range' ? resolveEditorDateTime(selectionSnapshot.value.start) : null
-  const rangeEndTime = selectionSnapshot.mode === 'range' ? resolveEditorDateTime(selectionSnapshot.value.end) : null
+
+  const rangeHeaderSource =
+    mode === 'range' && selectionSnapshot.mode === 'range'
+      ? (rangeHeaderValue ?? selectionSnapshot.value)
+      : null
+  const rangeStartTime = rangeHeaderSource ? resolveEditorDateTime(rangeHeaderSource.start) : null
+  const rangeEndTime = rangeHeaderSource ? resolveEditorDateTime(rangeHeaderSource.end) : null
+
+  const rangeGrid = useMemo(() => {
+    if (mode !== 'range' || selectionSnapshot.mode !== 'range' || !rangeHeaderSource) return null
+    return rangeHeaderGrid({ mode: 'range', value: rangeHeaderSource }, locale)
+  }, [locale, mode, rangeHeaderSource, selectionSnapshot.mode])
 
   if (children) return <div className={classes}>{children}</div>
+
+  if (mode === 'range' && selectionSnapshot.mode === 'range' && rangeGrid) {
+    return (
+      <div className={classes}>
+        <div className="calendar__headerRange">
+          <div className="calendar__headerRangeEdge">from {rangeGrid.fromYear}</div>
+          <div className="calendar__headerRangeEdge">to {rangeGrid.toYear}</div>
+          <div className="calendar__headerRangeDate">{rangeGrid.fromDate}</div>
+          <div className="calendar__headerRangeDate">{rangeGrid.toDate}</div>
+          {showTimeRow ? (
+            <>
+              <CalendarTimeInput
+                ariaLabelPrefix="from"
+                value={rangeStartTime}
+                minuteStep={minuteStep}
+                interactionLocked={rangeHeaderPreviewActive === true}
+                onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
+              />
+              <CalendarTimeInput
+                ariaLabelPrefix="to"
+                value={rangeEndTime}
+                minuteStep={minuteStep}
+                interactionLocked={rangeHeaderPreviewActive === true}
+                onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
+              />
+            </>
+          ) : null}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={classes}>
       <div className="calendar__headerYear">{headerYear ?? ''}</div>
       <div className="calendar__headerDate">{headerDate}</div>
       {showTimeRow ? (
         <div className="calendar__headerTime">
-          {mode === 'range' ? (
-            <div className="calendar__timeEditorRow">
-              <CalendarTimeInput
-                label="Start"
-                value={rangeStartTime}
-                minuteStep={minuteStep}
-                onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
-              />
-              <CalendarTimeInput
-                label="End"
-                value={rangeEndTime}
-                minuteStep={minuteStep}
-                onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
-              />
-            </div>
-          ) : (
-            <CalendarTimeInput
-              value={mode === 'single' ? singleTimeValue : multipleLatestTime}
-              minuteStep={minuteStep}
-              onTimeChange={(hour, minute) => selection.setSelectedTime?.(hour, minute)}
-            />
-          )}
+          <CalendarTimeInput
+            value={mode === 'single' ? singleTimeValue : multipleLatestTime}
+            minuteStep={minuteStep}
+            onTimeChange={(hour, minute) => selection.setSelectedTime?.(hour, minute)}
+          />
           <div className="calendar__timeHint">Tip: 값을 클릭해 편집, 센서 스크롤로 빠르게 조절</div>
         </div>
       ) : null}

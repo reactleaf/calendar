@@ -137,6 +137,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     locale,
     includeTime,
     minuteStep,
+    rangeHeaderValue: rawSelection.preview ?? rawSelection.value,
+    rangeHeaderPreviewActive: rawSelection.preview != null,
     selectionSnapshot: { mode: 'range', value: rawSelection.value },
     weekdays,
     keyboardNavigation,

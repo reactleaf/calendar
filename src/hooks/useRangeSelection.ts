@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRangeValue, DateValue } from '../core/api.types'
-import { sameCalendarDay, toPlainDate, toSelectionValue, withTime, type PlainDay } from '../core/calendarDate'
+import { calendarDayStamp, toPlainDate, toSelectionValue, withTime, type PlainDay } from '../core/calendarDate'
 import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
 import { isDayInInclusiveRange } from '../core/rangeHighlight'
 import {
@@ -128,12 +128,14 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
   }, [controlledCommittedKey, isControlled])
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  /** 확정 범위가 있는데 새 범위를 고르는 중(앵커)일 때는 확정 하이라이트를 숨기고 preview만 표시 */
   const isSelected = useCallback(
     (date: DateValue) => {
+      if (pointer.kind === 'anchored') return false
       if (committed.start === null || committed.end === null) return false
       return isDayInInclusiveRange(date, committed.start, committed.end)
     },
-    [committed.end, committed.start],
+    [committed.end, committed.start, pointer.kind],
   )
 
   const isInPreviewRange = useCallback(
@@ -145,13 +147,23 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
   )
 
   const isRangeStart = useCallback(
-    (date: DateValue) => committed.start !== null && sameCalendarDay(date, committed.start),
-    [committed.start],
+    (date: DateValue) => {
+      if (pointer.kind === 'anchored' && preview?.start != null && preview?.end != null) {
+        return calendarDayStamp(date) === calendarDayStamp(preview.start)
+      }
+      return committed.start !== null && calendarDayStamp(date) === calendarDayStamp(committed.start)
+    },
+    [committed.start, pointer.kind, preview],
   )
 
   const isRangeEnd = useCallback(
-    (date: DateValue) => committed.end !== null && sameCalendarDay(date, committed.end),
-    [committed.end],
+    (date: DateValue) => {
+      if (pointer.kind === 'anchored' && preview?.start != null && preview?.end != null) {
+        return calendarDayStamp(date) === calendarDayStamp(preview.end)
+      }
+      return committed.end !== null && calendarDayStamp(date) === calendarDayStamp(committed.end)
+    },
+    [committed.end, pointer.kind, preview],
   )
 
   const selectDate = useCallback(

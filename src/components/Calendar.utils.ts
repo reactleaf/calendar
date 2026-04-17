@@ -19,6 +19,13 @@ export function dayStamp(date: Temporal.PlainDate): number {
   return date.year * 10000 + date.month * 100 + date.day
 }
 
+export function plainDateFromDayStamp(stamp: number): Temporal.PlainDate {
+  const year = Math.floor(stamp / 10000)
+  const month = Math.floor((stamp % 10000) / 100)
+  const day = stamp % 100
+  return Temporal.PlainDate.from({ year, month, day })
+}
+
 export function weekdayLabels(locale: string): string[] {
   const sunday = Temporal.PlainDate.from({ year: 2026, month: 1, day: 4 })
   return Array.from({ length: 7 }, (_, i) =>

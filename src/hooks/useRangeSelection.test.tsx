@@ -52,6 +52,27 @@ describe('useRangeSelection', () => {
     expect(last?.end).toEqual(b)
   })
 
+  it('확정 범위가 있을 때 새 앵커를 잡으면 확정 하이라이트를 숨기고 preview만 반영한다', () => {
+    const initial: CalendarRangeValue = {
+      start: Temporal.PlainDate.from('2024-01-01'),
+      end: Temporal.PlainDate.from('2024-01-05'),
+    }
+    const { result } = renderHook(() => useRangeSelection({ defaultValue: initial, allowRangePreview: true }))
+
+    const midOld = Temporal.PlainDate.from('2024-01-03')
+    expect(result.current.isSelected(midOld)).toBe(true)
+
+    const anchor = Temporal.PlainDate.from('2024-06-10')
+    act(() => {
+      result.current.selectDate(anchor)
+    })
+
+    expect(result.current.isSelected(midOld)).toBe(false)
+    expect(result.current.isInPreviewRange(anchor)).toBe(true)
+    expect(result.current.isRangeStart(anchor)).toBe(true)
+    expect(result.current.isRangeEnd(anchor)).toBe(true)
+  })
+
   it('제어 모드에서 value가 바뀌면 진행 중 포인터가 초기화된다', () => {
     const v1: CalendarRangeValue = {
       start: Temporal.PlainDate.from('2024-01-01'),

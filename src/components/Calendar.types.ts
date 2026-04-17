@@ -25,6 +25,10 @@ export interface CalendarRuntime {
   locale: string
   includeTime?: boolean
   minuteStep?: number
+  /** range: 헤더 표시용 `preview ?? 확정 value` (싱글/멀티에서는 미사용) */
+  rangeHeaderValue?: CalendarRangeValue
+  /** range: `preview`가 있을 때 헤더가 프리뷰를 반영 중 — 시간 편집은 확정에만 묶이므로 잠금 */
+  rangeHeaderPreviewActive?: boolean
   selectionSnapshot: CalendarSelectionSnapshot
   weekdays: string[]
   keyboardNavigation: boolean

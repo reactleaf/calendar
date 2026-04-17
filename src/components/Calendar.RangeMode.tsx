@@ -1,6 +1,6 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent, UIEvent } from 'react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { startTransition, useCallback, useMemo, useRef } from 'react'
 import { toPlainDate } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { dayStamp } from './Calendar.utils'
@@ -29,12 +29,10 @@ export function CalendarRangeMode() {
   const setFocusedDateRef = useRef(setFocusedDate)
   const handleScrollRef = useRef(handleScroll)
   const handleKeyDownRef = useRef(handleKeyDown)
-  useEffect(() => {
-    selectionRef.current = selection
-    setFocusedDateRef.current = setFocusedDate
-    handleScrollRef.current = handleScroll
-    handleKeyDownRef.current = handleKeyDown
-  }, [handleKeyDown, handleScroll, selection, setFocusedDate])
+  selectionRef.current = selection
+  setFocusedDateRef.current = setFocusedDate
+  handleScrollRef.current = handleScroll
+  handleKeyDownRef.current = handleKeyDown
 
   const selectedDateKey = useMemo(() => {
     if (selectionSnapshot.mode !== 'range') return ''
@@ -45,9 +43,13 @@ export function CalendarRangeMode() {
 
   const onDateClick = useCallback(
     (date: Temporal.PlainDate) => {
-      setFocusedDateRef.current(date)
-      selectionRef.current.selectDate(date, 'click')
-      scrollRef.current?.focus({ preventScroll: true })
+      startTransition(() => {
+        setFocusedDateRef.current(date)
+        selectionRef.current.selectDate(date, 'click')
+      })
+      queueMicrotask(() => {
+        scrollRef.current?.focus({ preventScroll: true })
+      })
     },
     [scrollRef],
   )

@@ -1,8 +1,9 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import { memo } from 'react'
-import type { KeyboardEvent, RefObject, UIEvent } from 'react'
+import { memo, useCallback, useRef } from 'react'
+import type { KeyboardEvent, MouseEvent, RefObject, UIEvent } from 'react'
 import type { CalendarMode } from '../core/api.types'
-import { dayStamp, monthAtOffset, monthKey, monthLabel, monthRows, monthShortLabel } from './Calendar.utils'
+import { CalendarDayCell } from './Calendar.DayCell'
+import { dayStamp, monthAtOffset, monthKey, monthLabel, monthRows, monthShortLabel, plainDateFromDayStamp } from './Calendar.utils'
 
 interface CalendarModeBodyProps {
   mode: CalendarMode
@@ -59,6 +60,45 @@ function CalendarModeBodyImpl({
 }: CalendarModeBodyProps) {
   void selectionRenderKey
   void previewIdentity
+
+  /** range: 셀마다 mouseEnter 대신 monthRows에서 위임 — 호버 경로 얇게 */
+  const lastHoverStampRef = useRef<number | null>(null)
+
+  const handleDayMouseDown = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+  }, [])
+
+  const handleDayClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      const raw = event.currentTarget.dataset.dayStamp
+      if (raw === undefined) return
+      const stamp = Number(raw)
+      if (!Number.isFinite(stamp)) return
+      onDateClick(plainDateFromDayStamp(stamp))
+    },
+    [onDateClick],
+  )
+
+  const handleMonthRowsMouseOver = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (mode !== 'range') return
+      const btn = (event.target as HTMLElement).closest('button[data-day-stamp]')
+      if (!(btn instanceof HTMLButtonElement)) return
+      const raw = btn.dataset.dayStamp
+      if (raw === undefined) return
+      const stamp = Number(raw)
+      if (!Number.isFinite(stamp)) return
+      if (lastHoverStampRef.current === stamp) return
+      lastHoverStampRef.current = stamp
+      onDateHover(plainDateFromDayStamp(stamp))
+    },
+    [mode, onDateHover],
+  )
+
+  const handleScrollMouseLeave = useCallback(() => {
+    lastHoverStampRef.current = null
+  }, [])
+
   const virtualItems = monthVirtualizer.getVirtualItems()
   const totalSize = monthVirtualizer.getTotalSize()
 
@@ -69,6 +109,7 @@ function CalendarModeBodyImpl({
       tabIndex={keyboardNavigation ? 0 : -1}
       onScroll={onScroll}
       onKeyDown={onKeyDown}
+      onMouseLeave={mode === 'range' ? handleScrollMouseLeave : undefined}
       aria-label="무한 스크롤 달력"
     >
       <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
@@ -98,7 +139,10 @@ function CalendarModeBodyImpl({
                 else monthRefs.current.set(key, node)
               }}
             >
-            <div className="calendar__monthRows">
+            <div
+              className="calendar__monthRows"
+              onMouseOver={mode === 'range' ? handleMonthRowsMouseOver : undefined}
+            >
               {rows.map((row, rowIndex) => {
                 const isPartial = row.length !== 7
                 const rowClass = [
@@ -123,43 +167,28 @@ function CalendarModeBodyImpl({
                       const isRangeStartDate = mode === 'range' ? isRangeStart(date) : false
                       const isRangeEndDate = mode === 'range' ? isRangeEnd(date) : false
                       const isInPreview = mode === 'range' ? isInPreviewRange(date) : false
-                      const dayClass = [
-                        'calendar__day',
-                        dateKey === focusedDateStamp ? 'calendar__day--focused' : '',
-                        isSelected ? 'calendar__day--selected' : '',
-                        isToday ? 'calendar__day--today' : '',
-                        mode === 'range' && isSelected && !isRangeStartDate && !isRangeEndDate ? 'calendar__day--inRange' : '',
-                        mode === 'range' && isInPreview && !isSelected ? 'calendar__day--inPreviewRange' : '',
-                        mode === 'range' && isRangeStartDate ? 'calendar__day--rangeStart' : '',
-                        mode === 'range' && isRangeEndDate ? 'calendar__day--rangeEnd' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')
 
                       return (
-                        <li key={dateKey} className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`}>
-                          <button
-                            type="button"
-                            className={dayClass}
-                            disabled={isDateDisabled(date)}
-                            tabIndex={-1}
-                            aria-pressed={isSelected}
-                            {...(isToday ? { 'aria-current': 'date' as const } : {})}
-                            onMouseDown={(event) => {
-                              event.preventDefault()
-                            }}
-                            onMouseEnter={() => {
-                              if (mode === 'range') onDateHover(date)
-                            }}
-                            onClick={() => {
-                              onDateClick(date)
-                            }}
-                          >
-                            {isFirstOfMonth ? <span className="calendar__dayMonth">{monthShort}</span> : null}
-                            <span className="calendar__dayNumber">{date.day}</span>
-                            {showYear ? <span className="calendar__dayYear">{date.year}</span> : null}
-                          </button>
-                        </li>
+                        <CalendarDayCell
+                          key={dateKey}
+                          mode={mode}
+                          dayStamp={dateKey}
+                          monthShort={monthShort}
+                          focusedDateStamp={focusedDateStamp}
+                          isSelected={isSelected}
+                          isDisabled={isDateDisabled(date)}
+                          isToday={isToday}
+                          isRangeStartDate={isRangeStartDate}
+                          isRangeEndDate={isRangeEndDate}
+                          isInPreview={isInPreview}
+                          isFirstOfMonth={isFirstOfMonth}
+                          showYear={showYear}
+                          year={date.year}
+                          dayOfMonth={date.day}
+                          cellIndex={cellIndex}
+                          onDayMouseDown={handleDayMouseDown}
+                          onDayClick={handleDayClick}
+                        />
                       )
                     })}
                   </ul>

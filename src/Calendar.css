@@ -1,5 +1,5 @@
 .calendar {
-  --calendar-row-height: 3.2rem;
+  --calendar-row-height: 3.25rem;
   --calendar-cell-width: calc(100% / 7);
   position: relative;
   box-sizing: border-box;
@@ -48,9 +48,10 @@
 }
 
 .calendar__headerDate {
-  min-height: 1.5rem;
-  font-size: 1.1rem;
+  min-height: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  line-height: 1.25;
   color: var(--calendar-color-fg, var(--text-h, #111));
 }
 
@@ -60,15 +61,38 @@
   color: var(--calendar-color-muted, var(--text, #6b6375));
 }
 
-.calendar__timeEditorRow {
+.calendar__headerRange {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
+  column-gap: 0.75rem;
+  row-gap: 0.12rem;
+  align-items: start;
+}
+
+.calendar__headerRange > *:nth-child(odd) {
+  border-right: 1px solid var(--border, #e5e4e7);
+  padding-right: 0.75rem;
+}
+
+.calendar__headerRangeEdge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--calendar-color-muted, var(--text, #6b6375));
+}
+
+.calendar__headerRangeDate {
+  min-height: 1.45rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--calendar-color-fg, var(--text-h, #111));
 }
 
 .calendar__timeEditor {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.2rem;
 }
 
@@ -82,15 +106,15 @@
 .calendar__timeFields {
   display: inline-flex;
   align-items: center;
-  gap: 0.28rem;
+  gap: 0.06rem;
 }
 
 .calendar__timePart {
   position: relative;
   display: inline-flex;
   flex-direction: column;
-  width: 2.7rem;
-  height: 1.7rem;
+  width: 1.8rem;
+  height: 1.55rem;
   overflow-y: auto;
   -webkit-overflow-scrolling: auto;
   overscroll-behavior-y: none;
@@ -110,44 +134,77 @@
   min-height: 100%;
   display: flex;
   align-items: stretch;
+  background: transparent;
+}
+
+.calendar__timeEditor:hover .calendar__timePartControl,
+.calendar__timeEditor:focus-within .calendar__timePartControl {
   background: #fff;
 }
 
 .calendar__timeDisplay {
-  width: 2.7rem;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 6px;
-  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
   color: var(--calendar-color-fg, var(--text-h, #111));
   font: inherit;
-  padding: 0.12rem 0.3rem;
+  padding: 0.04rem 0.08rem;
   text-align: center;
   cursor: text;
 }
 
+.calendar__timeEditor:hover .calendar__timeDisplay:not(:disabled),
+.calendar__timeEditor:focus-within .calendar__timeDisplay:not(:disabled) {
+  border-color: var(--border, #e5e4e7);
+  background: #fff;
+}
+
 .calendar__timeDisplay:disabled {
-  opacity: 0.6;
-  background: #f8f7f9;
+  border-color: transparent;
+  background: transparent;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .calendar__timeInput {
-  width: 2.7rem;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 6px;
-  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
   color: var(--calendar-color-fg, var(--text-h, #111));
   font: inherit;
-  padding: 0.12rem 0.3rem;
+  padding: 0.04rem 0.08rem;
   text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.calendar__timeEditor:hover .calendar__timeInput:not(:disabled),
+.calendar__timeEditor:focus-within .calendar__timeInput:not(:disabled) {
+  border-color: var(--border, #e5e4e7);
+  background: #fff;
+}
+
+.calendar__timeInput::-webkit-outer-spin-button,
+.calendar__timeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .calendar__timeInput:disabled {
-  opacity: 0.6;
-  background: #f8f7f9;
+  border-color: transparent;
+  background: transparent;
+  opacity: 0.45;
 }
 
 .calendar__timeColon {
+  flex: 0 0 auto;
+  padding: 0 0.02rem;
+  font-size: 0.95em;
+  line-height: 1;
   color: var(--calendar-color-muted, var(--text, #6b6375));
 }
 
@@ -163,6 +220,10 @@
   margin-top: 0.28rem;
   font-size: 0.66rem;
   color: var(--calendar-color-muted, var(--text, #6b6375));
+}
+
+.calendar__timeHint--rangeFull {
+  margin-top: 0.4rem;
 }
 
 .calendar__weekday {
@@ -225,9 +286,11 @@
 }
 
 .calendar__month--hasPrevious .calendar__monthRow.is-partial-first .calendar__dayItem.is-first {
-  box-shadow:
-    0 -1px 0 var(--border, #e9e9e9),
-    inset 1px 0 0 var(--border, #e9e9e9);
+  box-shadow: 0 -1px 0 var(--border, #e9e9e9);
+}
+
+.calendar__month--hasPrevious .calendar__monthRow.is-partial-first .calendar__dayItem.is-first .calendar__day {
+  border-left: 1px solid var(--border, #e9e9e9);
 }
 
 .calendar__monthRow.is-partial-last .calendar__dayItem {
@@ -246,6 +309,7 @@
   justify-content: center;
   width: 100%;
   height: var(--calendar-row-height);
+  box-sizing: border-box;
   border: none;
   border-radius: 0;
   background: transparent;

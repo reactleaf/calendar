@@ -4,9 +4,13 @@ import { normalizeMinuteStep } from '../core/calendarDate'
 
 interface CalendarTimeInputProps {
   label?: string
+  /** 보이는 `label`과 별도로 aria 전용 접두어 (예: range 열 구분) */
+  ariaLabelPrefix?: string
   value: Temporal.PlainDateTime | null
   minuteStep?: number
   onTimeChange: (hour: number, minute: number) => void
+  /** 값이 있어도 편집·스크롤 반응 비활성화 (예: range 프리뷰 중) */
+  interactionLocked?: boolean
 }
 
 const SCROLL_PIXELS_PER_LOOP = 300
@@ -27,11 +31,19 @@ function normalizeWheelDeltaPx(event: WheelEvent) {
   return deltaPx
 }
 
-export function CalendarTimeInput({ label, value, minuteStep, onTimeChange }: CalendarTimeInputProps) {
+export function CalendarTimeInput({
+  label,
+  ariaLabelPrefix,
+  value,
+  minuteStep,
+  onTimeChange,
+  interactionLocked = false,
+}: CalendarTimeInputProps) {
   const step = normalizeMinuteStep(minuteStep)
+  const a11yPrefix = ariaLabelPrefix ?? label
   const hour = value?.hour ?? null
   const minute = value?.minute ?? null
-  const disabled = value === null
+  const disabled = value === null || interactionLocked
   const [editingPart, setEditingPart] = useState<TimePart | null>(null)
   // TEMP(local optimistic state): setSelectedTime 반영 지연 중에도 입력 반응성을 유지한다.
   const [draftTime, setDraftTime] = useState<{ hour: number; minute: number } | null>(
@@ -104,7 +116,7 @@ export function CalendarTimeInput({ label, value, minuteStep, onTimeChange }: Ca
 
     const stepsPerLoop = part === 'hour' ? 24 : 60 / step
     const accumRef = part === 'hour' ? hourScrollAccumRef : minuteScrollAccumRef
-    accumRef.current += (-deltaPx * stepsPerLoop) / SCROLL_PIXELS_PER_LOOP
+    accumRef.current += (deltaPx * stepsPerLoop) / SCROLL_PIXELS_PER_LOOP
     const steps = accumRef.current >= 0 ? Math.floor(accumRef.current) : Math.ceil(accumRef.current)
     if (steps === 0) return
     accumRef.current -= steps
@@ -239,7 +251,7 @@ export function CalendarTimeInput({ label, value, minuteStep, onTimeChange }: Ca
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === 'Escape') setEditingPart(null)
           }}
-          aria-label={label ? `${label} ${part}` : part}
+          aria-label={a11yPrefix ? `${a11yPrefix} ${part}` : part}
           autoFocus
         />
       )
@@ -255,7 +267,7 @@ export function CalendarTimeInput({ label, value, minuteStep, onTimeChange }: Ca
           setEditingPart(part)
         }}
         onClick={() => setEditingPart(part)}
-        aria-label={label ? `${label} ${part} value` : `${part} value`}
+        aria-label={a11yPrefix ? `${a11yPrefix} ${part} value` : `${part} value`}
       >
         {currentValue === null ? '--' : String(currentValue).padStart(2, '0')}
       </button>

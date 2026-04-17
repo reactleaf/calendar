@@ -1,6 +1,6 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent, UIEvent } from 'react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { toPlainDate } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { dayStamp } from './Calendar.utils'
@@ -29,12 +29,10 @@ export function CalendarSingleMode() {
   const setFocusedDateRef = useRef(setFocusedDate)
   const handleScrollRef = useRef(handleScroll)
   const handleKeyDownRef = useRef(handleKeyDown)
-  useEffect(() => {
-    selectionRef.current = selection
-    setFocusedDateRef.current = setFocusedDate
-    handleScrollRef.current = handleScroll
-    handleKeyDownRef.current = handleKeyDown
-  }, [handleKeyDown, handleScroll, selection, setFocusedDate])
+  selectionRef.current = selection
+  setFocusedDateRef.current = setFocusedDate
+  handleScrollRef.current = handleScroll
+  handleKeyDownRef.current = handleKeyDown
 
   const selectedDateKey = useMemo(() => {
     if (selectionSnapshot.mode !== 'single' || selectionSnapshot.value === null) return ''

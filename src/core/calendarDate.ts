@@ -7,6 +7,12 @@ export function toPlainDate(value: PlainDay): Temporal.PlainDate {
   return value.toPlainDate()
 }
 
+/** 달력 날짜 비교·범위 판별용 정수 키 (`YYYYMMDD` 형태) */
+export function calendarDayStamp(value: PlainDay): number {
+  const d = toPlainDate(value)
+  return d.year * 10000 + d.month * 100 + d.day
+}
+
 export function compareCalendarDays(a: PlainDay, b: PlainDay): Temporal.ComparisonResult {
   return Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b))
 }
