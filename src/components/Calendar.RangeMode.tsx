@@ -5,6 +5,8 @@ import { toPlainDate } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { dayStamp } from './Calendar.utils'
 import { CalendarModeBody } from './Calendar.ModeBody'
+import { CalendarMonthPicker } from './Calendar.MonthPicker'
+import { CalendarTimeSelectView } from './Calendar.TimeSelectView'
 
 export function CalendarRangeMode() {
   const runtime = useCalendarContext()
@@ -23,6 +25,7 @@ export function CalendarRangeMode() {
     setFocusedDate,
     handleScroll,
     handleKeyDown,
+    displayMode,
   } = runtime
 
   const selectionRef = useRef(selection)
@@ -64,6 +67,9 @@ export function CalendarRangeMode() {
     (date: Temporal.PlainDate) => selectionRef.current.isInPreviewRange?.(date) ?? false,
     [],
   )
+
+  if (displayMode === 'months') return <CalendarMonthPicker />
+  if (displayMode === 'time') return <CalendarTimeSelectView />
 
   return (
     <CalendarModeBody

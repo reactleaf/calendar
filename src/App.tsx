@@ -5,14 +5,16 @@ import { Calendar } from './Calendar'
 import type { CalendarRangeValue, DateValue } from './core/api.types'
 
 function App() {
-  const [singleSelected, setSingleSelected] = useState<DateValue | null>(Temporal.PlainDate.from('2026-04-14'))
+  const [singleSelected, setSingleSelected] = useState<DateValue | null>(
+    Temporal.PlainDateTime.from('2026-04-14T09:00'),
+  )
   const [multipleSelected, setMultipleSelected] = useState<DateValue[]>([
-    Temporal.PlainDate.from('2026-04-12'),
-    Temporal.PlainDate.from('2026-04-18'),
+    Temporal.PlainDateTime.from('2026-04-12T10:30'),
+    Temporal.PlainDateTime.from('2026-04-18T14:00'),
   ])
   const [rangeSelected, setRangeSelected] = useState<CalendarRangeValue>({
-    start: Temporal.PlainDate.from('2026-04-08'),
-    end: Temporal.PlainDate.from('2026-04-13'),
+    start: Temporal.PlainDateTime.from('2026-04-08T00:00'),
+    end: Temporal.PlainDateTime.from('2026-04-20T13:33'),
   })
 
   return (
@@ -25,6 +27,7 @@ function App() {
         <Calendar
           className="mx-auto"
           mode="single"
+          includeTime
           value={singleSelected}
           onSelect={setSingleSelected}
           minDate={Temporal.PlainDate.from('2025-01-01')}
@@ -40,6 +43,7 @@ function App() {
         <Calendar
           className="mx-auto"
           mode="multiple"
+          includeTime
           value={multipleSelected}
           onSelect={setMultipleSelected}
           minDate={Temporal.PlainDate.from('2025-01-01')}

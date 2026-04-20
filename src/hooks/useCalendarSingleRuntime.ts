@@ -5,6 +5,7 @@ import type { CalendarSingleProps } from '../core/api.types'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useSingleSelection } from './useSingleSelection'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 
@@ -57,6 +58,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     maxMonth,
     monthCount,
     monthVirtualizer,
+    currentMonth,
     isScrolling,
     monthRefs,
     scrollRef,
@@ -68,6 +70,12 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     minMonth: minDay.toPlainYearMonth(),
     maxMonth: maxDay.toPlainYearMonth(),
     onMonthChange,
+  })
+
+  const { displayMode, setDisplayMode, scrollToMonth, timeEditTarget, openTimeView } = useCalendarSecondaryView({
+    minMonth,
+    monthCount,
+    monthVirtualizer,
   })
 
   const setFocusedDate = useCallback(
@@ -134,6 +142,12 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     scrollRef,
     focusedDate,
     today,
+    currentMonth,
+    displayMode,
+    setDisplayMode,
+    scrollToMonth,
+    timeEditTarget,
+    openTimeView,
     selection,
     setFocusedDate,
     handleScroll,

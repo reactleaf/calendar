@@ -1,0 +1,151 @@
+/* ==========================================================================
+ * Month Picker (보조 뷰: displayMode === 'months')
+ *
+ * 달력 본문 자리(scroll 영역)를 그대로 차지하는 인-플레이스 뷰.
+ * 헤더/weekdays 는 유지된 채 이 뷰가 day grid 를 대체한다.
+ *
+ * 레이아웃: [작은 연도 라벨] | [월 6개 × 2줄 그리드]
+ * 선택된 월 표시는 day cell 과 동일한 ::before 원형 pip 패턴을 재사용한다.
+ * ========================================================================== */
+
+/**
+ * 달력 본문 + weekdays 자리를 함께 차지한다.
+ * days view 와 달리 weekdays 를 렌더하지 않으므로, 그 빈 자리만큼 본문을 확장해
+ * 외곽 카드 경계가 변하지 않도록 한다.
+ * 내부 스크롤 영역이 남는 세로 공간을 모두 채우도록 flex column 으로 구성.
+ */
+.calendar__monthPicker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: var(--calendar-secondary-body-height);
+  background: var(--calendar-color-bg, #fff);
+}
+
+.calendar__monthPickerScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  outline: none;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+}
+
+.calendar__monthPickerRow {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+}
+
+/* 연도 라벨: 작고 muted. 현재 연도만 accent 색으로 강조 (크기는 동일). */
+.calendar__monthPickerYear {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--calendar-color-muted, #9ca3af);
+  text-align: right;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar__monthPickerRow.is-current .calendar__monthPickerYear {
+  color: var(--calendar-color-accent, #aa3bff);
+  font-weight: 700;
+}
+
+/* 월 그리드: 6열 × 2행 (12개월). */
+.calendar__monthPickerMonths {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 2.5rem;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calendar__monthPickerMonths > li {
+  display: flex;
+  align-items: stretch;
+}
+
+.calendar__monthPickerMonth {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--calendar-color-fg, #333);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  text-transform: capitalize;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* 라벨: 원형 pip(::before) 위에 올라타도록 positioned + z-index. */
+.calendar__monthPickerMonthLabel {
+  position: relative;
+  z-index: 1;
+}
+
+/* hover: day cell 과 동일한 radial-gradient 원형 tint. */
+.calendar__monthPickerMonth:hover:not(:disabled, .is-active) {
+  background: radial-gradient(
+    circle 1.125rem at center,
+    var(--accent-bg, rgba(170, 59, 255, 0.08)) 99%,
+    transparent 100%
+  );
+}
+
+/* focus-visible: day cell --focused 와 동일한 accent 원형 stroke. */
+.calendar__monthPickerMonth:focus-visible:not(.is-active)::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 2px var(--calendar-color-accent, #aa3bff);
+  pointer-events: none;
+}
+
+/* 선택된 월: single mode selectionLayer--single 과 동일한 원형 pip. */
+.calendar__monthPickerMonth.is-active {
+  color: #fff;
+  font-weight: 700;
+}
+
+.calendar__monthPickerMonth.is-active::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--calendar-color-accent, #aa3bff);
+  pointer-events: none;
+}
+
+.calendar__monthPickerMonth.is-disabled,
+.calendar__monthPickerMonth:disabled {
+  color: var(--calendar-color-disabled, rgba(0, 0, 0, 0.26));
+  cursor: not-allowed;
+  background: transparent;
+}

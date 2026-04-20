@@ -1,4 +1,13 @@
 .calendar__timeEditor {
+  /**
+   * Hover / active / editing 팔레트 — 컨텍스트(헤더 accent 배경 vs 일반 배경)에 따라
+   * 재정의되는 토큰. 기본값은 "밝은 배경 위 dark text" 컨텍스트 기준, 헤더에서는
+   * `calendar.header.css` 가 반투명 white 오버레이로 override 한다.
+   */
+  --calendar-time-hover-bg: color-mix(in srgb, var(--calendar-color-fg, #111) 8%, transparent);
+  --calendar-time-active-bg: color-mix(in srgb, var(--calendar-color-fg, #111) 14%, transparent);
+  --calendar-time-focus-ring: color-mix(in srgb, var(--calendar-color-accent, #4488e8) 55%, transparent);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,48 +33,57 @@
   flex-direction: column;
   width: 1.8rem;
   height: 1.55rem;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: auto;
-  overscroll-behavior-y: none;
-  scrollbar-width: none;
-}
-
-.calendar__timePart::-webkit-scrollbar {
-  display: none;
 }
 
 .calendar__timePartControl {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   flex: 0 0 auto;
   width: 100%;
   min-height: 100%;
   display: flex;
   align-items: stretch;
   background: transparent;
+  border-radius: 6px;
+  transition: background 120ms ease, box-shadow 120ms ease;
 }
 
-.calendar__timeEditor:hover .calendar__timePartControl,
-.calendar__timeEditor:focus-within .calendar__timePartControl {
-  background: #fff;
+/**
+ * hover / active / editing 은 **part 단위**로만 반응해야 사용자의 타깃팅 의도가 드러난다.
+ * (과거엔 `.calendar__timeEditor:hover` 로 둘 다 반응해서 어느 칸을 누르는지 불분명했다.)
+ */
+.calendar__timePart:hover .calendar__timePartControl {
+  background: var(--calendar-time-hover-bg);
+}
+
+/* mousedown 피드백 — hover 보다 한 단계 진한 배경. */
+.calendar__timePart:active .calendar__timePartControl {
+  background: var(--calendar-time-active-bg);
+}
+
+/**
+ * editing (입력 상태) — 해당 part 의 `<input>` 이 focus 되어 있을 때.
+ * `:focus-within` 이 part 범위 내에서만 평가되므로 반대편 part 는 영향받지 않는다.
+ */
+.calendar__timePart:focus-within .calendar__timePartControl {
+  background: var(--calendar-time-active-bg);
+  box-shadow: 0 0 0 2px var(--calendar-time-focus-ring);
 }
 
 .calendar__timeDisplay,
 .calendar__timeInput {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 5px;
   background: transparent;
   color: var(--calendar-color-fg, #111);
   font: inherit;
   padding: 0.04rem 0.08rem;
   text-align: center;
+  outline: none;
 }
 
 .calendar__timeDisplay {
-  cursor: text;
+  cursor: pointer;
 }
 
 .calendar__timeInput {
@@ -79,14 +97,6 @@
   margin: 0;
 }
 
-.calendar__timeEditor:hover .calendar__timeDisplay:not(:disabled),
-.calendar__timeEditor:focus-within .calendar__timeDisplay:not(:disabled),
-.calendar__timeEditor:hover .calendar__timeInput:not(:disabled),
-.calendar__timeEditor:focus-within .calendar__timeInput:not(:disabled) {
-  border-color: var(--border, #e5e4e7);
-  background: #fff;
-}
-
 .calendar__timeDisplay:disabled,
 .calendar__timeInput:disabled {
   opacity: 0.45;
@@ -94,6 +104,13 @@
 
 .calendar__timeDisplay:disabled {
   cursor: not-allowed;
+}
+
+/* disabled part 는 hover/active 피드백 자체를 주지 않는다 (affordance 혼선 방지). */
+.calendar__timePart:has(.calendar__timeDisplay:disabled) .calendar__timePartControl,
+.calendar__timePart:has(.calendar__timeInput:disabled) .calendar__timePartControl {
+  background: transparent;
+  box-shadow: none;
 }
 
 .calendar__timeColon {
@@ -104,16 +121,3 @@
   color: var(--calendar-color-muted, #6b6375);
 }
 
-.calendar__timeScrollSensorTrack {
-  flex-shrink: 0;
-  height: 2200px;
-  width: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.calendar__timeHint {
-  margin-top: 0.28rem;
-  font-size: 0.66rem;
-  color: var(--calendar-color-muted, #6b6375);
-}

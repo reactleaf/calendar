@@ -1,8 +1,14 @@
 .calendar__weekdays {
   position: relative;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  padding: 0.55rem 0;
+  /**
+   * 토큰으로 고정해 내부 polish(폰트 렌더링 편차 등)에 영향을 받지 않게 한다.
+   * 보조 뷰(month/time)는 이 값을 참조해 "weekdays 빈 자리" 만큼 자신의 본문을 확장한다.
+   */
+  height: var(--calendar-weekdays-height);
+  align-items: center;
   margin: 0;
   background: color-mix(in srgb, var(--calendar-color-accent, #4488e8) 72%, #000 28%);
   color: rgba(255, 255, 255, 0.96);
@@ -80,8 +86,7 @@
 
 /* 헤더 내부 time editor: accent 배경 위에서의 톤 */
 .calendar__header .calendar__timeEditorLabel,
-.calendar__header .calendar__timeColon,
-.calendar__header .calendar__timeHint {
+.calendar__header .calendar__timeColon {
   color: rgba(255, 255, 255, 0.88);
 }
 
@@ -89,3 +94,62 @@
 .calendar__header .calendar__timeInput {
   color: #fff;
 }
+
+/**
+ * 헤더(accent 배경) 위 time editor 팔레트 override.
+ * 공통 기본값(dark fg 기반 반투명)을 쓰면 "흰 배경 + 흰 글씨" 가 돼 숫자가 안 보이므로,
+ * 배경 위에 **반투명 white 오버레이** 를 얹어 대비는 유지하고 배경만 한 톤 밝아지게 한다.
+ */
+.calendar__header .calendar__timeEditor {
+  --calendar-time-hover-bg: rgba(255, 255, 255, 0.18);
+  --calendar-time-active-bg: rgba(255, 255, 255, 0.28);
+  --calendar-time-focus-ring: rgba(255, 255, 255, 0.65);
+}
+
+/*
+ * 헤더 라벨 버튼(연도·날짜 공용 reset).
+ *  - 연도 라벨  = `.calendar__headerYearButton` → 월 피커 열기 단방향
+ *  - 날짜 라벨  = `.calendar__headerDateButton` → 일 그리드 열기 단방향
+ * 두 버튼 모두 시각적으로는 기존 텍스트와 동일하되 호버/포커스에서만 인터랙션 힌트를 준다.
+ *
+ * 주의: `font` shorthand 을 쓰면 font-size / font-weight / line-height 까지 리셋돼
+ * 같은 요소에 병행된 `.calendar__headerDate` / `.calendar__headerYear` 등의 치수 지정이
+ * 덮여버린다 (동일 specificity + 이 reset 규칙이 뒤에 선언된 경우). 필요한 속성만 개별 inherit.
+ */
+.calendar__headerYearButton,
+.calendar__headerDateButton {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  transition: opacity 120ms ease;
+}
+
+.calendar__headerYearButton:hover,
+.calendar__headerDateButton:hover {
+  opacity: 0.75;
+}
+
+.calendar__headerYearButton:focus-visible,
+.calendar__headerDateButton:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/*
+ * 활성 시각 표식은 연도 버튼(= 월 피커 열림) 에만 적용.
+ * 날짜 버튼은 days 뷰가 기본값이라 대부분의 시간에 "활성" 이라서 밑줄을 상시 달면
+ * 라벨 노이즈가 되므로 표시하지 않는다 (a11y 를 위해 aria-pressed 는 유지).
+ */
+.calendar__headerYearButton[aria-expanded='true'] {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+

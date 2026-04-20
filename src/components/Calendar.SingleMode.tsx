@@ -5,6 +5,8 @@ import { toPlainDate } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { dayStamp } from './Calendar.utils'
 import { CalendarModeBody } from './Calendar.ModeBody'
+import { CalendarMonthPicker } from './Calendar.MonthPicker'
+import { CalendarTimeSelectView } from './Calendar.TimeSelectView'
 
 export function CalendarSingleMode() {
   const runtime = useCalendarContext()
@@ -23,6 +25,7 @@ export function CalendarSingleMode() {
     setFocusedDate,
     handleScroll,
     handleKeyDown,
+    displayMode,
   } = runtime
 
   const selectionRef = useRef(selection)
@@ -53,6 +56,9 @@ export function CalendarSingleMode() {
   const isDateSelected = useCallback((date: Temporal.PlainDate) => selectionRef.current.isSelected(date), [])
   const isDateDisabled = useCallback((date: Temporal.PlainDate) => selectionRef.current.isDisabled(date), [])
   const alwaysFalse = useCallback(() => false, [])
+
+  if (displayMode === 'months') return <CalendarMonthPicker />
+  if (displayMode === 'time') return <CalendarTimeSelectView />
 
   return (
     <CalendarModeBody

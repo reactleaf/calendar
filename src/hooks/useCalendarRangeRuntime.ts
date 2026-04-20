@@ -5,6 +5,7 @@ import type { CalendarRangeProps } from '../core/api.types'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useRangeSelection } from './useRangeSelection'
 
@@ -71,6 +72,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     maxMonth,
     monthCount,
     monthVirtualizer,
+    currentMonth,
     isScrolling,
     monthRefs,
     scrollRef,
@@ -82,6 +84,12 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     minMonth: minDay.toPlainYearMonth(),
     maxMonth: maxDay.toPlainYearMonth(),
     onMonthChange,
+  })
+
+  const { displayMode, setDisplayMode, scrollToMonth, timeEditTarget, openTimeView } = useCalendarSecondaryView({
+    minMonth,
+    monthCount,
+    monthVirtualizer,
   })
 
   const setFocusedDate = useCallback(
@@ -151,6 +159,12 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     scrollRef,
     focusedDate,
     today,
+    currentMonth,
+    displayMode,
+    setDisplayMode,
+    scrollToMonth,
+    timeEditTarget,
+    openTimeView,
     selection,
     setFocusedDate,
     handleScroll,

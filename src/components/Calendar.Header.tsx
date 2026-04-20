@@ -91,12 +91,31 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     locale,
     mode,
     includeTime,
-    minuteStep,
     selectionSnapshot,
     selection,
     rangeHeaderValue,
     rangeHeaderPreviewActive,
+    currentMonth,
+    displayMode,
+    setDisplayMode,
   } = useCalendarContext()
+  /**
+   * 헤더 라벨은 뷰 간 단방향 네비게이션이다.
+   *  - 연도 라벨  → 'months' (월 피커 열기 전용; 재클릭 no-op)
+   *  - 날짜 라벨  → 'days'   (일 그리드 열기 전용; 향후 'time' 뷰에서 복귀 경로)
+   *
+   * 이미 해당 모드면 no-op 으로 중복 setState 를 피한다.
+   */
+  const openMonthPicker = () => {
+    if (displayMode === 'months') return
+    setDisplayMode('months')
+  }
+  const openDaysView = () => {
+    if (displayMode === 'days') return
+    setDisplayMode('days')
+  }
+  const monthPickerOpen = displayMode === 'months'
+  const daysViewOpen = displayMode === 'days'
   const { headerYear, headerDate } = useMemo(
     () => labelsFromSnapshot(locale, selectionSnapshot),
     [locale, selectionSnapshot],
@@ -133,23 +152,55 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     return (
       <div className={classes}>
         <div className="calendar__headerRange">
-          <div className="calendar__headerRangeEdge">from {rangeGrid.fromYear}</div>
-          <div className="calendar__headerRangeEdge">to {rangeGrid.toYear}</div>
-          <div className="calendar__headerRangeDate">{rangeGrid.fromDate}</div>
-          <div className="calendar__headerRangeDate">{rangeGrid.toDate}</div>
+          <button
+            type="button"
+            className="calendar__headerRangeEdge calendar__headerYearButton"
+            onClick={openMonthPicker}
+            aria-expanded={monthPickerOpen}
+            aria-label="월 선택 보기"
+          >
+            from {rangeGrid.fromYear}
+          </button>
+          <button
+            type="button"
+            className="calendar__headerRangeEdge calendar__headerYearButton"
+            onClick={openMonthPicker}
+            aria-expanded={monthPickerOpen}
+            aria-label="월 선택 보기"
+          >
+            to {rangeGrid.toYear}
+          </button>
+          <button
+            type="button"
+            className="calendar__headerRangeDate calendar__headerDateButton"
+            onClick={openDaysView}
+            aria-pressed={daysViewOpen}
+            aria-label="날짜 선택 보기"
+          >
+            {rangeGrid.fromDate}
+          </button>
+          <button
+            type="button"
+            className="calendar__headerRangeDate calendar__headerDateButton"
+            onClick={openDaysView}
+            aria-pressed={daysViewOpen}
+            aria-label="날짜 선택 보기"
+          >
+            {rangeGrid.toDate}
+          </button>
           {showTimeRow ? (
             <>
               <CalendarTimeInput
                 ariaLabelPrefix="from"
                 value={rangeStartTime}
-                minuteStep={minuteStep}
+                timeEditTarget="rangeStart"
                 interactionLocked={rangeHeaderPreviewActive === true}
                 onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
               />
               <CalendarTimeInput
                 ariaLabelPrefix="to"
                 value={rangeEndTime}
-                minuteStep={minuteStep}
+                timeEditTarget="rangeEnd"
                 interactionLocked={rangeHeaderPreviewActive === true}
                 onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
               />
@@ -160,18 +211,34 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     )
   }
 
+  const displayYear = headerYear ?? String(currentMonth.year)
   return (
     <div className={classes}>
-      <div className="calendar__headerYear">{headerYear ?? ''}</div>
-      <div className="calendar__headerDate">{headerDate}</div>
+      <button
+        type="button"
+        className="calendar__headerYear calendar__headerYearButton"
+        onClick={openMonthPicker}
+        aria-expanded={monthPickerOpen}
+        aria-label="월 선택 보기"
+      >
+        {displayYear}
+      </button>
+      <button
+        type="button"
+        className="calendar__headerDate calendar__headerDateButton"
+        onClick={openDaysView}
+        aria-pressed={daysViewOpen}
+        aria-label="날짜 선택 보기"
+      >
+        {headerDate}
+      </button>
       {showTimeRow ? (
         <div className="calendar__headerTime">
           <CalendarTimeInput
             value={mode === 'single' ? singleTimeValue : multipleLatestTime}
-            minuteStep={minuteStep}
+            timeEditTarget="primary"
             onTimeChange={(hour, minute) => selection.setSelectedTime?.(hour, minute)}
           />
-          <div className="calendar__timeHint">Tip: 값을 클릭해 편집, 센서 스크롤로 빠르게 조절</div>
         </div>
       ) : null}
     </div>

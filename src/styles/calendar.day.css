@@ -1,6 +1,6 @@
 .calendar__scroll {
   position: relative;
-  height: 27.5rem;
+  height: var(--calendar-body-height);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   outline: none;

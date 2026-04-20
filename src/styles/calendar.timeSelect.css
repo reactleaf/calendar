@@ -1,0 +1,235 @@
+/* ==========================================================================
+ * Time Select View (보조 뷰: displayMode === 'time')
+ *
+ * 달력 본문 자리에 들어가는 인-플레이스 뷰. 헤더는 유지되고 day grid 만 대체.
+ *
+ * 레이아웃
+ *   [툴바: "5분 단위로 보기" 체크박스 — 분 피커 뷰 필터]
+ *   (single/multi) [H]  [M]
+ *   (range)        [시작 섹션: H M]  [종료 섹션: H M]
+ *
+ * 각 피커는 세로 스크롤 리스트. 중앙 슬롯이 "선택" 위치이고 거기에 accent 원형 pip 가 고정.
+ * 시각 언어는 day cell / month picker 와 일관.
+ * ========================================================================== */
+
+/**
+ * 달력 본문 + weekdays 자리를 함께 차지한다 (days view 와 달리 weekdays 가 숨겨지므로).
+ * 툴바는 위에 두고, 섹션은 남는 세로 공간을 채우며 내용물을 수직 중앙에 정렬한다.
+ */
+.calendar__timeSelect {
+  position: relative;
+  box-sizing: border-box;
+  height: var(--calendar-secondary-body-height);
+  background: var(--calendar-color-bg, #fff);
+  padding: 0.5rem 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  outline: none;
+}
+
+.calendar__timeSelectToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__timeSelectGranularity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.calendar__timeSelectGranularity input[type='checkbox'] {
+  accent-color: var(--calendar-color-accent, #aa3bff);
+  width: 0.9rem;
+  height: 0.9rem;
+  cursor: pointer;
+}
+
+/* ---- 섹션 ---------------------------------------------------------------- */
+
+.calendar__timeSelectSections {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 0.75rem;
+  justify-items: center;
+  /* 섹션이 남는 세로 공간 전체를 차지하도록 stretch (default 와 동일하지만 의도를 명시). */
+  align-items: stretch;
+}
+
+/* range: 시작 / 종료 두 섹션을 좌우로 나란히 */
+.calendar__timeSelectSections.is-range {
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.calendar__timeSelectSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.calendar__timeSelectSectionTitle {
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__timeSelectSectionEmpty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__timeSelectPickers {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.calendar__timeSelectEmpty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: var(--calendar-color-muted, #6b6375);
+  font-size: 0.8125rem;
+}
+
+/* ---- 스크롤 피커(단일 축: hour 또는 minute) ------------------------------- */
+
+.calendar__timeScrollPicker {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.calendar__timeScrollPickerLabel {
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__timeScrollPickerFrame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 3rem;
+  /**
+   * height 는 부모 flex 체인으로부터 결정 — 남는 세로 공간 전체.
+   * fade 는 위/아래 1.25rem 고정 두께로, frame 높이와 무관하게 동일한 경계감을 유지한다.
+   */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+}
+
+.calendar__timeScrollPickerScroll {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  /**
+   * scroll-snap 은 의도적으로 **사용하지 않는다**.
+   * - 이 피커에서 스크롤은 "탐색" 이고 commit 은 "클릭" 이므로, 각 아이템에 스냅이 걸리면
+   *   휠/제스처가 매 단계마다 멈춰 "터덕터덕" 튀는 느낌이 난다.
+   * - 자유 스크롤 + 관성 → 휘리릭 흐르는 느낌, 클릭 시에만 smooth 정렬.
+   */
+  scrollbar-width: none;
+}
+
+.calendar__timeScrollPickerScroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* 아이템 컨테이너(버튼) — 높이 = ITEM_HEIGHT_REM. 실제 시각 pip 는 내부 span 이 담당. */
+.calendar__timeScrollItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 2rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--calendar-color-fg, #333);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  outline: none;
+  opacity: 0.55;
+  transition: color 120ms ease, opacity 120ms ease;
+}
+
+/*
+ * 시각 pip — active 시 accent 원형으로 전환.
+ *   - day cell / month picker 의 "원형 선택 표시" 와 동일 언어.
+ *   - active 표시가 item 자체에 붙어 있어 스크롤 시 pip 도 함께 이동 →
+ *     "이 파란 원이 내 선택 값" 이라는 멘탈 모델을 해치지 않는다.
+ */
+.calendar__timeScrollItemPip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.calendar__timeScrollItem.is-active {
+  opacity: 1;
+}
+
+.calendar__timeScrollItem.is-active .calendar__timeScrollItemPip {
+  background: var(--calendar-color-accent, #aa3bff);
+  color: #fff;
+  font-weight: 700;
+}
+
+/*
+ * hover — 아직 선택되지 않은 아이템을 눌렀을 때 어떻게 될지 예고하기 위한 약한 고리.
+ * 연한 accent 링으로 "클릭하면 선택된다" 를 전달 (배경을 채우지 않아 active 와 구분).
+ */
+.calendar__timeScrollItem:hover:not(.is-active) {
+  opacity: 0.95;
+}
+
+.calendar__timeScrollItem:hover:not(.is-active) .calendar__timeScrollItemPip {
+  background: color-mix(in srgb, var(--calendar-color-accent, #aa3bff) 10%, transparent);
+  color: var(--calendar-color-accent, #aa3bff);
+}
+
+.calendar__timeScrollItem:focus-visible .calendar__timeScrollItemPip {
+  box-shadow: 0 0 0 2px var(--calendar-color-accent, #aa3bff);
+}

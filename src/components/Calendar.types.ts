@@ -8,6 +8,24 @@ export type CalendarSelectionSnapshot =
   | { mode: 'multiple'; values: DateValue[] }
   | { mode: 'range'; value: CalendarRangeValue }
 
+/**
+ * 보조 뷰(secondary view) 식별자.
+ * - `'days'`  : 기본 무한 스크롤 월 그리드
+ * - `'months'`: 연/월 네비게이터 (오버레이)
+ * - `'time'`  : 시간(시·분) 선택 전용 뷰
+ */
+export type CalendarDisplayMode = 'days' | 'months' | 'time'
+
+/**
+ * `'time'` 뷰가 편집 중인 시간 슬롯 식별자.
+ * - `'primary'`    : single / multiple 의 단일 시간
+ * - `'rangeStart'` : range 의 시작 시간
+ * - `'rangeEnd'`   : range 의 종료 시간
+ *
+ * `openTimeView` 호출 시점에 함께 저장되며, `displayMode`가 `'time'` 이 아닐 때는 항상 `null`.
+ */
+export type CalendarTimeEditTarget = 'primary' | 'rangeStart' | 'rangeEnd'
+
 export interface CalendarSelectionRuntime {
   isSelected: (date: Temporal.PlainDate) => boolean
   isDisabled: (date: Temporal.PlainDate) => boolean
@@ -41,6 +59,17 @@ export interface CalendarRuntime {
   scrollRef: RefObject<HTMLDivElement | null>
   focusedDate: Temporal.PlainDate
   today: Temporal.PlainDate
+  /** 현재 뷰포트 중앙에 있는 월 — 헤더/월 피커 하이라이트의 소스 */
+  currentMonth: Temporal.PlainYearMonth
+  /** 보조 뷰 전환 상태 (days/months/time) */
+  displayMode: CalendarDisplayMode
+  setDisplayMode: (mode: CalendarDisplayMode) => void
+  /** 주어진 월로 본문 스크롤 (월 피커에서 사용) */
+  scrollToMonth: (target: Temporal.PlainYearMonth) => void
+  /** 현재 `'time'` 뷰가 편집 중인 대상. `displayMode !== 'time'` 이면 `null` */
+  timeEditTarget: CalendarTimeEditTarget | null
+  /** TimeInput 의 hour/minute 셀 클릭 등으로 `'time'` 뷰를 여는 경로 */
+  openTimeView: (target: CalendarTimeEditTarget) => void
   selection: CalendarSelectionRuntime
   setFocusedDate: (next: Temporal.PlainDate) => void
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
