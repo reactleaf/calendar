@@ -18,6 +18,14 @@ export interface CalendarDayCellProps {
   year: number
   dayOfMonth: number
   cellIndex: number
+  /** `Intl.RelativeTimeFormat(...).format(0,'day')` — 선택 셀 상단에 월 대신 표시 */
+  todayLabelShort: string
+  /**
+   * grid 당 stable prefix (ModeBody 의 `useId()`). 각 셀 `<button>` 은
+   * `${idPrefix}-day-${dayStamp}` 형태의 id 를 가지며, ModeBody 의
+   * `aria-activedescendant` 타겟이 된다.
+   */
+  idPrefix: string
   onDayMouseDown: (event: MouseEvent<HTMLButtonElement>) => void
   onDayClick: (event: MouseEvent<HTMLButtonElement>) => void
   /** range 프리뷰는 ModeBody에서 monthRows `mouseover` 위임으로 처리 — 미전달 시 리스너 없음 */
@@ -46,6 +54,22 @@ function buildDayClass(
   ]
     .filter(Boolean)
     .join(' ')
+}
+
+function getSelectionShape(
+  mode: CalendarMode,
+  isSelected: boolean,
+  isInPreview: boolean,
+  isRangeStartDate: boolean,
+  isRangeEndDate: boolean,
+): 'single' | 'start' | 'end' | 'between' | null {
+  const layerActive = isSelected || (mode === 'range' && isInPreview)
+  if (!layerActive) return null
+  if (mode !== 'range') return 'single'
+  if (isRangeStartDate && isRangeEndDate) return 'single'
+  if (isRangeStartDate) return 'start'
+  if (isRangeEndDate) return 'end'
+  return 'between'
 }
 
 function buildSelectionLayerClass(
@@ -92,6 +116,8 @@ export const CalendarDayCell = memo(function CalendarDayCell({
   year,
   dayOfMonth,
   cellIndex,
+  todayLabelShort,
+  idPrefix,
   onDayMouseDown,
   onDayClick,
   onDayMouseEnter,
@@ -111,14 +137,20 @@ export const CalendarDayCell = memo(function CalendarDayCell({
     ? buildSelectionLayerClass(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)
     : null
 
+  const selectionShape = getSelectionShape(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)
+  const showSelectionStack =
+    selectionLayerActive && selectionShape !== null && selectionShape !== 'between'
+  const showBetweenDayOnly = selectionLayerActive && selectionShape === 'between'
+
   return (
-    <li className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`}>
+    <li className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`} role="gridcell">
       <button
         type="button"
+        id={`${idPrefix}-day-${dayStamp}`}
         className={dayClass}
         disabled={isDisabled}
         tabIndex={-1}
-        aria-pressed={isSelected}
+        aria-selected={isSelected}
         data-day-stamp={String(dayStamp)}
         {...(isToday ? { 'aria-current': 'date' as const } : {})}
         onMouseDown={onDayMouseDown}
@@ -126,9 +158,20 @@ export const CalendarDayCell = memo(function CalendarDayCell({
         onClick={onDayClick}
       >
         {selectionLayerClass ? <span className={selectionLayerClass} aria-hidden="true" /> : null}
-        {isFirstOfMonth ? <span className="calendar__dayMonth">{monthShort}</span> : null}
-        <span className="calendar__dayNumber">{dayOfMonth}</span>
-        {showYear ? <span className="calendar__dayYear">{year}</span> : null}
+        {showBetweenDayOnly ? (
+          <span className="calendar__daySelectionBetweenOnly">{dayOfMonth}</span>
+        ) : showSelectionStack ? (
+          <span className="calendar__daySelectionContent">
+            <span className="calendar__daySelectionMonth">{isToday ? todayLabelShort : monthShort}</span>
+            <span className="calendar__daySelectionDay">{dayOfMonth}</span>
+          </span>
+        ) : (
+          <>
+            {isFirstOfMonth ? <span className="calendar__dayMonth">{monthShort}</span> : null}
+            <span className="calendar__dayNumber">{dayOfMonth}</span>
+            {showYear ? <span className="calendar__dayYear">{year}</span> : null}
+          </>
+        )}
       </button>
     </li>
   )

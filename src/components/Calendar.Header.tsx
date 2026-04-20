@@ -122,7 +122,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   )
   const showTimeRow = includeTime === true
 
-  const classes = ['calendar__header', className].filter(Boolean).join(' ')
+  const classes = ['calendar__header', showTimeRow ? 'calendar__header--hasTime' : '', className].filter(Boolean).join(' ')
 
   /**
    * 헤더 요소는 각자 연결된 뷰가 있다 (연도→months, 날짜→days, time editor→time).
@@ -169,48 +169,28 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     return (
       <div className={classes} {...headerDataAttrs}>
         <div className="calendar__headerRange">
-          <button
-            type="button"
-            className="calendar__headerRangeEdge calendar__headerYearButton"
-            onClick={openMonthPicker}
-            aria-expanded={monthPickerOpen}
-            aria-label="월 선택 보기"
-            data-view="months"
-          >
-            from {rangeGrid.fromYear}
-          </button>
-          <button
-            type="button"
-            className="calendar__headerRangeEdge calendar__headerYearButton"
-            onClick={openMonthPicker}
-            aria-expanded={monthPickerOpen}
-            aria-label="월 선택 보기"
-            data-view="months"
-          >
-            to {rangeGrid.toYear}
-          </button>
-          <button
-            type="button"
-            className="calendar__headerRangeDate calendar__headerDateButton"
-            onClick={openDaysView}
-            aria-pressed={daysViewOpen}
-            aria-label="날짜 선택 보기"
-            data-view="days"
-          >
-            {rangeGrid.fromDate}
-          </button>
-          <button
-            type="button"
-            className="calendar__headerRangeDate calendar__headerDateButton"
-            onClick={openDaysView}
-            aria-pressed={daysViewOpen}
-            aria-label="날짜 선택 보기"
-            data-view="days"
-          >
-            {rangeGrid.toDate}
-          </button>
-          {showTimeRow ? (
-            <>
+          <div className="calendar__headerRangeColumn">
+            <button
+              type="button"
+              className="calendar__headerRangeEdge calendar__headerYearButton"
+              onClick={openMonthPicker}
+              aria-expanded={monthPickerOpen}
+              aria-label="월 선택 보기"
+              data-view="months"
+            >
+              from {rangeGrid.fromYear}
+            </button>
+            <button
+              type="button"
+              className="calendar__headerRangeDate calendar__headerDateButton"
+              onClick={openDaysView}
+              aria-pressed={daysViewOpen}
+              aria-label="날짜 선택 보기"
+              data-view="days"
+            >
+              {rangeGrid.fromDate}
+            </button>
+            {showTimeRow ? (
               <CalendarTimeInput
                 ariaLabelPrefix="from"
                 value={rangeStartTime}
@@ -218,6 +198,30 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
                 interactionLocked={rangeHeaderPreviewActive === true}
                 onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
               />
+            ) : null}
+          </div>
+          <div className="calendar__headerRangeColumn">
+            <button
+              type="button"
+              className="calendar__headerRangeEdge calendar__headerYearButton"
+              onClick={openMonthPicker}
+              aria-expanded={monthPickerOpen}
+              aria-label="월 선택 보기"
+              data-view="months"
+            >
+              to {rangeGrid.toYear}
+            </button>
+            <button
+              type="button"
+              className="calendar__headerRangeDate calendar__headerDateButton"
+              onClick={openDaysView}
+              aria-pressed={daysViewOpen}
+              aria-label="날짜 선택 보기"
+              data-view="days"
+            >
+              {rangeGrid.toDate}
+            </button>
+            {showTimeRow ? (
               <CalendarTimeInput
                 ariaLabelPrefix="to"
                 value={rangeEndTime}
@@ -225,8 +229,8 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
                 interactionLocked={rangeHeaderPreviewActive === true}
                 onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
               />
-            </>
-          ) : null}
+            ) : null}
+          </div>
         </div>
       </div>
     )

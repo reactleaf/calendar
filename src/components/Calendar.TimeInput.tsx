@@ -40,7 +40,7 @@ export function CalendarTimeInput({
   interactionLocked = false,
   timeEditTarget,
 }: CalendarTimeInputProps) {
-  const { openTimeView } = useCalendarContext()
+  const { openTimeView, displayMode } = useCalendarContext()
   const a11yPrefix = ariaLabelPrefix ?? label
   const hour = value?.hour ?? null
   const minute = value?.minute ?? null
@@ -135,8 +135,14 @@ export function CalendarTimeInput({
     )
   }
 
+  const hidePointer = displayMode === 'time' || editingPart !== null
+
   return (
-    <div className="calendar__timeEditor" data-view="time" data-time-target={timeEditTarget}>
+    <div
+      className={['calendar__timeEditor', hidePointer ? 'calendar__timeEditor--hidePointer' : ''].filter(Boolean).join(' ')}
+      data-view="time"
+      data-time-target={timeEditTarget}
+    >
       {label ? <span className="calendar__timeEditorLabel">{label}</span> : null}
       <div className="calendar__timeFields">
         <div className="calendar__timePart">

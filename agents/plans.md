@@ -69,9 +69,9 @@
 
 ### Phase 5. Accessibility & Interaction Hardening 🚧
 
-1. 🚧 WAI-ARIA calendar grid 패턴 반영 — `role="button"` / `aria-pressed` 기반, grid/row 역할 보강 필요
-2. 🚧 focus 관리 / roving tabindex — keyboard로 focusedDate는 움직이지만, tab 진입/이탈 시 focus 이동 규칙 재점검 필요
-3. ⏳ 스크린리더 라벨링 점검 (월/년 전환, 선택 상태 변경 안내)
+1. ✅ WAI-ARIA calendar grid 패턴 (하이브리드) — `Calendar.ModeBody` 의 scroll container 에 `role="grid"` + `aria-activedescendant`, 주별 `<ul>` 에 `role="row"` + 월·주차 `aria-label`, `<li>` 에 `role="gridcell"`, `<button>` 에 stable `id` + `aria-selected`(← 기존 `aria-pressed` 교체). roving tabindex 는 의도적으로 채택하지 않음 — 가상화(`@tanstack/react-virtual`) 와 포커스 보유 셀 언마운트 충돌을 피하기 위함. 레퍼런스 `react-infinite-calendar` 의 "virtual highlight" 패턴을 ARIA grid 위에 올려 스크린리더가 가상 커서 이동을 인지하도록 한다. (`Calendar.a11y.test.tsx` 로 회귀 보호)
+2. 🚧 보조 뷰 접근성 — `Calendar.MonthPicker` (12월 그리드) 와 `Calendar.TimeScrollPicker` (시/분 loop scroll) 의 ARIA 역할·키보드 탐색 정리. 후자는 현재 "스크롤=탐색, 클릭=커밋" 모델이라 키보드 등가 경로(화살표 이동 + Enter 커밋 등) 가 부재
+3. ⏳ 스크린리더 라벨링 점검 (월/년 전환, 선택 상태 변경 안내, time 뷰 진입/이탈)
 4. ⏳ pointer + keyboard + touch 상호작용 동등성 회귀 테스트
 
 ### Phase 6. Docs & Developer Experience ⏳
@@ -90,9 +90,9 @@
 
 ## Immediate Next Tasks
 
-1. Phase 5-1/5-2 착수: calendar grid ARIA 역할/roving tabindex 정리 (`Calendar.ModeBody` / `Calendar.DayCell`). 보조 뷰(`MonthPicker` / `TimeSelectView`) 도 listbox/grid 역할·키보드 탐색 검토
-2. Phase 5 검증용 키보드·포인터 상호작용 통합 테스트 추가 (time view 의 클릭/키보드 동등성 포함)
-3. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 관련 계약 반영 및 상호 참조 정리
+1. Phase 5-2: 보조 뷰(`MonthPicker` / `TimeScrollPicker`) 에 ARIA 역할(listbox/option) + 키보드 등가 동작 추가. 특히 TimeScrollPicker 는 화살표/Home/End/Enter 경로 설계가 필요 (현재는 포인터 전용)
+2. Phase 5-3/5-4: 스크린리더 라이브 안내 (월 변경, 선택, time 뷰 진입/이탈) + 포인터·키보드·터치 동등성 통합 테스트
+3. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 계약 + 새 ARIA 계약(`role="grid"` / `aria-activedescendant` / `aria-selected`) 반영
 4. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
 5. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
 
@@ -109,5 +109,5 @@
 - ✅ min/max/disabled/disabledDates/disabledDays 규칙 정상
 - ✅ `includeTime` 전 모드 지원, 시/분 직접 입력 + time 보조 뷰(스크롤 피커) 의 두 경로가 일관
 - ✅ 뷰 간(days / month / time) 전환 시 카드 외곽 높이 고정 유지
-- 🚧 접근성 기본 규칙 충족 (ARIA 역할/roving tabindex 점검 필요 — Phase 5, 보조 뷰 포함)
+- 🚧 접근성 기본 규칙 충족 (grid 본문 ARIA 완료, 보조 뷰 MonthPicker/TimeScrollPicker 및 라이브 안내는 남음 — Phase 5-2 이후)
 - 🚧 문서 예제와 테스트가 동기화됨 (api/hooks 문서와 실 코드는 일치, 예제 사이트/Storybook 미도입)

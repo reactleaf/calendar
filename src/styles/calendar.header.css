@@ -33,13 +33,64 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
+/**
+ * 시각 행(`CalendarTimeInput`)이 있을 때 — 인풋·파트 박스 높이로 하단이 비어 보이는 느낌을 줄이기 위해
+ * 하단 패딩·행 간격·time 행 min-height 를 살짝 줄인다.
+ */
+.calendar__header--hasTime {
+  gap: 0.04rem;
+  padding: 0.75rem 0.9rem 0.42rem;
+}
+
+.calendar__header--hasTime .calendar__headerTime {
+  min-height: 0;
+  margin-top: -0.02rem;
+}
+
+/**
+ * Single/Multiple 은 `.calendar__headerTime` 이 `font-size: 0.75rem` 을 주지만,
+ * Range 는 그리드에 `CalendarTimeInput` 만 두어 상속 체인이 달라졌다 (루트 16px 등).
+ * 헤더 안 time editor 는 모드와 무관하게 동일한 타이포·칸 크기를 쓴다.
+ */
+.calendar__header--hasTime .calendar__timeEditor {
+  gap: 0.1rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+.calendar__header--hasTime .calendar__timePart {
+  width: 1.8rem;
+  height: 1.42rem;
+  box-sizing: border-box;
+}
+
+/* range: 열 안에서 time editor 는 덩어리만큼만 차지·가운데 정렬 */
+.calendar__headerRange .calendar__timeEditor {
+  align-self: center;
+  width: max-content;
+  max-width: 100%;
+}
+
+.calendar__header--hasTime .calendar__timeDisplay,
+.calendar__header--hasTime .calendar__timeInput {
+  padding: 0;
+  line-height: 1.15;
+}
+
+/** `'time'` 보조 뷰일 때 헤더 TimeInput 전체 bold (시·분·콜론이 동일 굵기로 맞음) */
+.calendar__header[data-active-view='time'] .calendar__timeEditor {
+  font-weight: 700;
+}
+
 .calendar__headerYear {
   min-height: 1rem;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.92);
+  margin-bottom: 0.2rem;
 }
 
 .calendar__headerDate {
@@ -56,24 +107,42 @@
   color: rgba(255, 255, 255, 0.88);
 }
 
+/**
+ * Range 헤더: start / end 두 열 (grid 아님 — 행마다 끊기는 세로 구분선을 쓰지 않음).
+ */
 .calendar__headerRange {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 0.75rem;
-  row-gap: 0.12rem;
-  align-items: start;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.calendar__headerRange > *:nth-child(odd) {
-  border-right: 1px solid rgba(255, 255, 255, 0.35);
-  padding-right: 0.75rem;
+.calendar__headerRangeColumn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.12rem;
+}
+
+.calendar__headerRangeColumn > .calendar__headerYearButton,
+.calendar__headerRangeColumn > .calendar__headerDateButton {
+  text-align: center;
+}
+
+.calendar__header--hasTime .calendar__headerRangeColumn {
+  gap: 0.05rem;
 }
 
 .calendar__headerRangeEdge {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.2rem;
 }
 
 .calendar__headerRangeDate {

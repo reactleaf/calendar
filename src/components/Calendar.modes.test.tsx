@@ -88,7 +88,7 @@ describe('Calendar preset mode integration', () => {
     const { container } = render(
       <Calendar
         mode="single"
-        defaultValue={Temporal.PlainDate.from('2020-01-01')}
+        defaultValue={Temporal.PlainDate.from('2020-01-15')}
         minDate={Temporal.PlainDate.from('2020-01-01')}
         maxDate={Temporal.PlainDate.from('2020-12-31')}
       />,
@@ -96,13 +96,13 @@ describe('Calendar preset mode integration', () => {
 
     await waitForVisibleDayCells(container)
 
-    const dayWithMonth = Array.from(container.querySelectorAll('button.calendar__day')).find((node) =>
-      node.querySelector('.calendar__dayMonth'),
-    )
-    if (!(dayWithMonth instanceof HTMLElement)) throw new Error('월 라벨이 있는 1일 셀을 찾지 못했습니다.')
-
-    const dayYear = dayWithMonth.querySelector('.calendar__dayYear')
-    expect(dayYear?.textContent).toBe('2020')
+    await waitFor(() => {
+      const withYear = Array.from(container.querySelectorAll('button.calendar__day')).find(
+        (b) => b.querySelector('.calendar__dayYear')?.textContent === '2020',
+      )
+      expect(withYear).toBeTruthy()
+      expect(withYear?.querySelector('.calendar__dayMonth')).toBeTruthy()
+    })
   })
 
   it('multiple 모드에서 클릭/키보드 토글 선택 및 월 변경 콜백이 동작한다', async () => {

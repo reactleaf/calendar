@@ -125,3 +125,12 @@ export function monthShortLabel(month: Temporal.PlainYearMonth, locale: string):
     month: 'short',
   })
 }
+
+/** `react-infinite-calendar` 의 `todayLabel.short` 에 해당 — 선택 셀 상단에 월 대신 표시 */
+export function todayWordLabel(locale: string): string {
+  try {
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day')
+  } catch {
+    return 'Today'
+  }
+}

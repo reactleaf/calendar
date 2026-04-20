@@ -1,9 +1,18 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import { memo, useCallback, useRef } from 'react'
+import { memo, useCallback, useId, useRef } from 'react'
 import type { KeyboardEvent, MouseEvent, RefObject, UIEvent } from 'react'
 import type { CalendarMode } from '../core/api.types'
 import { CalendarDayCell } from './Calendar.DayCell'
-import { dayStamp, monthAtOffset, monthKey, monthLabel, monthRows, monthShortLabel, plainDateFromDayStamp } from './Calendar.utils'
+import {
+  dayStamp,
+  monthAtOffset,
+  monthKey,
+  monthLabel,
+  monthRows,
+  monthShortLabel,
+  plainDateFromDayStamp,
+  todayWordLabel,
+} from './Calendar.utils'
 
 interface CalendarModeBodyProps {
   mode: CalendarMode
@@ -101,12 +110,29 @@ function CalendarModeBodyImpl({
 
   const virtualItems = monthVirtualizer.getVirtualItems()
   const totalSize = monthVirtualizer.getTotalSize()
+  const todayLabelShort = todayWordLabel(locale)
+
+  /**
+   * grid 내 "가상 커서" 라우팅용 stable prefix.
+   *
+   * 실제 DOM focus 는 scroll container 한 곳에만 머무르고, `focusedDate` 에 해당하는
+   * `<button>` id 를 `aria-activedescendant` 로 가리켜 스크린리더가 그 버튼의 속성
+   * (`aria-selected`, `aria-current`, disabled 등) 을 읽도록 한다.
+   * react-infinite-calendar 의 `highlightedDate` 패턴을 WAI-ARIA grid 에 맞게 재현.
+   *
+   * virtualization 때문에 focused 셀이 viewport 밖으로 스크롤되면 해당 id 의 DOM 이
+   * 잠시 사라질 수 있는데, AT 는 그 찰나 활성 descendant 가 없는 것으로 처리하므로 문제없음.
+   */
+  const idPrefix = useId()
+  const activeDescendantId = focusedDateStamp ? `${idPrefix}-day-${focusedDateStamp}` : undefined
 
   return (
     <div
       ref={scrollRef}
       className={`calendar__scroll${isScrolling ? ' is-scrolling' : ''}`}
+      role="grid"
       tabIndex={keyboardNavigation ? 0 : -1}
+      aria-activedescendant={activeDescendantId}
       onScroll={onScroll}
       onKeyDown={onKeyDown}
       onMouseLeave={mode === 'range' ? handleScrollMouseLeave : undefined}
@@ -157,7 +183,12 @@ function CalendarModeBodyImpl({
                   .join(' ')
 
                 return (
-                  <ul key={`${key}-row-${rowIndex}`} className={rowClass}>
+                  <ul
+                    key={`${key}-row-${rowIndex}`}
+                    className={rowClass}
+                    role="row"
+                    aria-label={`${monthShort} ${rowIndex + 1}주차`}
+                  >
                     {row.map((date, cellIndex) => {
                       const dateKey = dayStamp(date)
                       const isSelected = isDateSelected(date)
@@ -186,6 +217,8 @@ function CalendarModeBodyImpl({
                           year={date.year}
                           dayOfMonth={date.day}
                           cellIndex={cellIndex}
+                          todayLabelShort={todayLabelShort}
+                          idPrefix={idPrefix}
                           onDayMouseDown={handleDayMouseDown}
                           onDayClick={handleDayClick}
                         />

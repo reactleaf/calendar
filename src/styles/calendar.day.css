@@ -114,6 +114,45 @@
   z-index: 1;
 }
 
+/* 레퍼런스 `Day.renderSelection` — 원형 위에 월(또는 오늘) + 일자 */
+.calendar__daySelectionContent {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  pointer-events: none;
+  line-height: 1.05;
+}
+
+.calendar__daySelectionMonth {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: capitalize;
+  opacity: 0.95;
+}
+
+.calendar__daySelectionDay {
+  margin-top: 2px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* range 중간 띠 — 레퍼런스 `.betweenRange` 처럼 월 숨기고 일자만 */
+.calendar__daySelectionBetweenOnly {
+  position: relative;
+  z-index: 3;
+  font-size: 1rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
 /* hover: pip 크기의 원형 tint (radial-gradient 로 cell 배경을 원형으로 클리핑) */
 .calendar__day:hover:not(:disabled, .calendar__day--selected, .calendar__day--inRange, .calendar__day--rangeStart, .calendar__day--rangeEnd) {
   background: radial-gradient(
@@ -151,12 +190,12 @@
   font-weight: 700;
 }
 
-.calendar__day--today:not(.calendar__day--selected) .calendar__dayNumber {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+/* 오늘 (선택/범위 끝 제외) — 글자색이 링 `currentColor` 와 맞도록 */
+.calendar__day--today:not(.calendar__day--selected, .calendar__day--rangeStart, .calendar__day--rangeEnd) {
+  color: var(--calendar-color-fg, #3d3d3d);
 }
 
-/* 오늘 링(선택 안 된 셀). preview/inRange 커넥터(::before)와 충돌하지 않도록 ::after 사용 */
+/* 오늘 링 — 레퍼런스 `.today:before`: inset 1px 원형 (밑줄 없음) */
 .calendar__day--today:not(.calendar__day--selected, .calendar__day--rangeStart, .calendar__day--rangeEnd)::after {
   content: '';
   position: absolute;
@@ -169,6 +208,10 @@
   margin-top: calc(-0.5 * var(--calendar-range-pip));
   border-radius: 50%;
   box-sizing: border-box;
-  box-shadow: inset 0 0 0 1px #d4a012;
+  box-shadow: inset 0 0 0 1px currentColor;
   pointer-events: none;
+}
+
+.calendar__day--today:not(.calendar__day--selected, .calendar__day--rangeStart, .calendar__day--rangeEnd):disabled::after {
+  box-shadow: inset 0 0 0 1px #bbb;
 }

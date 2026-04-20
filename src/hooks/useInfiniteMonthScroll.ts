@@ -1,7 +1,7 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import type { Rect, Virtualizer } from '@tanstack/react-virtual'
 import { observeElementRect as observeElementRectImpl, useVirtualizer } from '@tanstack/react-virtual'
-import type { RefObject, UIEvent } from 'react'
+import type { MutableRefObject, RefObject, UIEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CALENDAR_ROW_HEIGHT_PX,
@@ -21,6 +21,11 @@ interface UseInfiniteMonthScrollArgs {
   minMonth: Temporal.PlainYearMonth
   maxMonth: Temporal.PlainYearMonth
   onMonthChange?: (monthStart: Temporal.PlainYearMonth) => void
+  /**
+   * `Date.now()` 가 이 값 미만이면 `handleScroll` 에서 `isScrolling`/오버레이 타이머를 건너뛴다.
+   * 보조 뷰 → `days` 복귀 시 레이아웃 스크롤 깜빡임 방지용 (`useSuppressMonthOverlayOnReturnToDays`).
+   */
+  overlaySuppressUntilRef?: MutableRefObject<number>
 }
 
 function patchTestScrollViewport(scrollElement: Element | null) {
@@ -56,7 +61,7 @@ export interface InfiniteMonthScrollRuntime {
 }
 
 export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): InfiniteMonthScrollRuntime {
-  const { locale, initialMonth, minMonth, maxMonth, onMonthChange } = args
+  const { locale, initialMonth, minMonth, maxMonth, onMonthChange, overlaySuppressUntilRef } = args
 
   const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
   const estimatedMonthHeights = useMemo(
@@ -81,7 +86,15 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
   }, [estimatedMonthOffsets, initialMonthIndex, monthCount])
 
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
-  const [isScrolling, setIsScrolling] = useState(true)
+  /**
+   * 월 라벨 오버레이(`.calendar__scroll.is-scrolling` → `calendar.overlay.css`) 트리거.
+   * - 초기값 **`false`** — 첫 페인트에서 오버레이가 켜지지 않는다.
+   * - 과거에는 `true` 로 두고 마운트 시 `setTimeout(..., 800)` 으로 끄는 보정이 있었으나, `false` 시작으로
+   *   대체해 해당 `useEffect` 는 제거했다.
+   * - 사용자 스크롤 시 `handleScroll` 이 `true` 로 올리고 180ms 후 `false`. 보조 뷰 → `days` 복귀 직후에는
+   *   `overlaySuppressUntilRef` 로 이 타이머만 건너뛴다(`useSuppressMonthOverlayOnReturnToDays` 참고).
+   */
+  const [isScrolling, setIsScrolling] = useState(false)
 
   const monthRefs = useRef<Map<string, HTMLElement>>(new Map())
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -101,13 +114,6 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
 
   const virtualizerRef = useRef(monthVirtualizer)
   virtualizerRef.current = monthVirtualizer
-
-  useEffect(() => {
-    scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 800)
-    return () => {
-      if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
-    }
-  }, [])
 
   useEffect(() => {
     onMonthChange?.(currentMonth)
@@ -179,9 +185,13 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     (event: UIEvent<HTMLDivElement>) => {
       const el = event.currentTarget
       const { scrollTop, clientHeight } = el
-      setIsScrolling(true)
-      if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
-      scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 180)
+      const suppressUntil = overlaySuppressUntilRef?.current ?? 0
+      if (Date.now() >= suppressUntil) {
+        setIsScrolling(true)
+        if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
+        scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 180)
+      }
+      /* 억제 중에도 뷰포트 중앙 월은 항상 갱신 */
 
       const v = virtualizerRef.current
       const centerOffset = scrollTop + clientHeight / 2
@@ -191,7 +201,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
         setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(next, prev) !== 0 ? next : prev))
       }
     },
-    [minMonth],
+    [minMonth, overlaySuppressUntilRef],
   )
 
   return {

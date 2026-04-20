@@ -8,6 +8,7 @@ import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useRangeSelection } from './useRangeSelection'
+import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
 
 /* eslint-disable react-hooks/preserve-manual-memoization -- Temporal 값 의존 useCallback 패턴 유지 */
 
@@ -65,6 +66,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
   const [focusedDate, setFocusedDateState] = useState<Temporal.PlainDate>(initialDate)
   const initializedScrollRef = useRef(false)
   const focusDateRequestRef = useRef<Temporal.PlainDate | null>(null)
+  /** 보조 뷰 → 일 그리드 복귀 시 월 오버레이 깜빡임 방지 — `useSuppressMonthOverlayOnReturnToDays` + `useInfiniteMonthScroll` */
+  const overlaySuppressUntilRef = useRef(0)
 
   const {
     weekdays,
@@ -84,6 +87,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     minMonth: minDay.toPlainYearMonth(),
     maxMonth: maxDay.toPlainYearMonth(),
     onMonthChange,
+    overlaySuppressUntilRef,
   })
 
   const { displayMode, setDisplayMode, scrollToMonth, timeEditTarget, openTimeView } = useCalendarSecondaryView({
@@ -91,6 +95,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     monthCount,
     monthVirtualizer,
   })
+
+  useSuppressMonthOverlayOnReturnToDays(displayMode, overlaySuppressUntilRef)
 
   const setFocusedDate = useCallback(
     (next: Temporal.PlainDate) => {
