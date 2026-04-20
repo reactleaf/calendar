@@ -128,12 +128,7 @@
   cursor: pointer;
   text-transform: inherit;
   letter-spacing: inherit;
-  transition: opacity 120ms ease;
-}
-
-.calendar__headerYearButton:hover,
-.calendar__headerDateButton:hover {
-  opacity: 0.75;
+  transition: opacity 160ms ease;
 }
 
 .calendar__headerYearButton:focus-visible,
@@ -142,6 +137,39 @@
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/**
+ * 헤더 요소와 활성 뷰의 연관성 표현.
+ *  - 연도 버튼  = `data-view="months"`
+ *  - 날짜 버튼  = `data-view="days"`
+ *  - TimeInput = `data-view="time"` (+ range 의 경우 `data-time-target`)
+ *
+ * 활성 뷰(`data-active-view`)와 다른 요소는 opacity 0.6 으로 낮춰
+ * "지금 어느 영역을 조작 중인지" 를 한눈에 드러낸다. hover 로 인한 추가 피드백은
+ * 이 효과와 간섭하므로 제거 — affordance 는 cursor: pointer + focus-visible outline
+ * 으로 충분히 전달된다.
+ */
+.calendar__header [data-view] {
+  transition: opacity 160ms ease;
+}
+
+.calendar__header[data-active-view='days'] [data-view]:not([data-view='days']),
+.calendar__header[data-active-view='months'] [data-view]:not([data-view='months']),
+.calendar__header[data-active-view='time'] [data-view]:not([data-view='time']) {
+  opacity: 0.6;
+}
+
+/**
+ * Range 의 time 뷰에서는 **양쪽 time editor 모두 active** 로 취급한다.
+ *  - from/to 두 피커는 "시간 영역" 이라는 하나의 묶음이고,
+ *  - 구체적으로 어느 쪽을 편집 중인지는 TimeInput 내부의 part focus ring +
+ *    scroll picker 의 active pip 으로 이미 드러난다. 헤더에서 반대편을 dim 하면
+ *    동일 정보를 이중으로 표현해 오히려 시각 노이즈가 된다.
+ *
+ * 향후 "편집 중인 쪽만 강조" 하고 싶으면 `data-active-time-target` 을 다시 헤더에 내려
+ * `data-time-target` 과 비교하는 선택자를 복구하면 된다 (TimeInput 루트의
+ * `data-time-target` 은 유지 중).
+ */
 
 /*
  * 활성 시각 표식은 연도 버튼(= 월 피커 열림) 에만 적용.

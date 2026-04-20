@@ -124,6 +124,18 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
 
   const classes = ['calendar__header', className].filter(Boolean).join(' ')
 
+  /**
+   * 헤더 요소는 각자 연결된 뷰가 있다 (연도→months, 날짜→days, time editor→time).
+   * 루트에 현재 active view 를 data attr 로 내려주면 자식 요소 쪽은 `data-view` 만
+   * 표시하고, CSS 에서 불일치 요소를 dim 처리한다 → "지금 뭘 조작 중인가" 가 한눈에 보임.
+   *
+   * 참고: range 의 time 뷰에서는 from/to 양쪽 time editor 를 모두 active 로 둔다.
+   * (편집 대상 구분은 TimeInput 내부 focus ring + scroll picker active pip 로 충분)
+   */
+  const headerDataAttrs = {
+    'data-active-view': displayMode,
+  }
+
   const singleTimeValue = selectionSnapshot.mode === 'single' ? resolveEditorDateTime(selectionSnapshot.value) : null
   const multipleLatestTime = useMemo(() => {
     if (selectionSnapshot.mode !== 'multiple') return null
@@ -146,11 +158,16 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     return rangeHeaderGrid({ mode: 'range', value: rangeHeaderSource }, locale)
   }, [locale, mode, rangeHeaderSource, selectionSnapshot.mode])
 
-  if (children) return <div className={classes}>{children}</div>
+  if (children)
+    return (
+      <div className={classes} {...headerDataAttrs}>
+        {children}
+      </div>
+    )
 
   if (mode === 'range' && selectionSnapshot.mode === 'range' && rangeGrid) {
     return (
-      <div className={classes}>
+      <div className={classes} {...headerDataAttrs}>
         <div className="calendar__headerRange">
           <button
             type="button"
@@ -158,6 +175,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
             onClick={openMonthPicker}
             aria-expanded={monthPickerOpen}
             aria-label="월 선택 보기"
+            data-view="months"
           >
             from {rangeGrid.fromYear}
           </button>
@@ -167,6 +185,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
             onClick={openMonthPicker}
             aria-expanded={monthPickerOpen}
             aria-label="월 선택 보기"
+            data-view="months"
           >
             to {rangeGrid.toYear}
           </button>
@@ -176,6 +195,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
             onClick={openDaysView}
             aria-pressed={daysViewOpen}
             aria-label="날짜 선택 보기"
+            data-view="days"
           >
             {rangeGrid.fromDate}
           </button>
@@ -185,6 +205,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
             onClick={openDaysView}
             aria-pressed={daysViewOpen}
             aria-label="날짜 선택 보기"
+            data-view="days"
           >
             {rangeGrid.toDate}
           </button>
@@ -213,13 +234,14 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
 
   const displayYear = headerYear ?? String(currentMonth.year)
   return (
-    <div className={classes}>
+    <div className={classes} {...headerDataAttrs}>
       <button
         type="button"
         className="calendar__headerYear calendar__headerYearButton"
         onClick={openMonthPicker}
         aria-expanded={monthPickerOpen}
         aria-label="월 선택 보기"
+        data-view="months"
       >
         {displayYear}
       </button>
@@ -229,6 +251,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
         onClick={openDaysView}
         aria-pressed={daysViewOpen}
         aria-label="날짜 선택 보기"
+        data-view="days"
       >
         {headerDate}
       </button>

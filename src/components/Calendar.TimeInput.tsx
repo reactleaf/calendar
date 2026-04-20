@@ -136,7 +136,7 @@ export function CalendarTimeInput({
   }
 
   return (
-    <div className="calendar__timeEditor">
+    <div className="calendar__timeEditor" data-view="time" data-time-target={timeEditTarget}>
       {label ? <span className="calendar__timeEditorLabel">{label}</span> : null}
       <div className="calendar__timeFields">
         <div className="calendar__timePart">

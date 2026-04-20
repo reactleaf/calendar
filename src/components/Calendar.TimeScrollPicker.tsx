@@ -148,8 +148,17 @@ export function CalendarTimeScrollPicker({
   }, [])
 
   /**
-   * 무한 루프 경계 처리 — 스크롤 위치가 상단/하단 buffer 에 들어오면 한 사이클(±N) 만큼 silent jump.
-   * commit 은 절대 여기서 하지 않는다 (스크롤 = 탐색).
+   * 무한 루프 경계 처리 — viewport 의 상/하단이 반복 buffer 의 절반을 넘어 들어가면
+   * 한 사이클(±N) 만큼 silent jump. commit 은 절대 여기서 하지 않는다 (스크롤 = 탐색).
+   *
+   * **왜 viewport-aware 한 경계가 필요한가**
+   *   frame 을 `flex: 1` 로 확장한 이후 `visibleRows` 가 동적으로 커졌고, 특히
+   *   N 이 작은 축(hour=24)에서 예전의 `currentIdx` 기반 상수 경계(`2.5N`)는
+   *   `maxScrollTop = 3N - visibleRows` 보다 커져 **하단 jump 가 영원히 트리거되지 않는** 문제가 있었다.
+   *   또한 경계를 정직하게 "중앙 사이클 테두리(`N / 2N`)"로만 두면, `visibleRows > N - visibleRows`
+   *   인 축에서 jump 후 바로 반대 경계를 침범해 ping-pong 이 생긴다.
+   *   → "상단 복제본 절반 / 하단 복제본 절반 진입" 을 기준으로 두면 jump 결과가 항상
+   *     중앙의 안전 구역에 착지해 재트리거가 발생하지 않는다.
    */
   const handleScroll = useCallback(() => {
     if (programmaticRef.current) return
@@ -157,16 +166,17 @@ export function CalendarTimeScrollPicker({
     if (!root) return
     const itemPx = itemHeightPxRef.current || measureItemHeight()
     if (!itemPx) return
-    const currentIdx = root.scrollTop / itemPx
-    const minBound = N * 0.5
-    const maxBound = REPEAT * N - N * 0.5
-    if (currentIdx < minBound) {
+    const top = root.scrollTop
+    const viewBottom = top + root.clientHeight
+    const upperThreshold = 0.5 * N * itemPx
+    const lowerThreshold = (REPEAT - 0.5) * N * itemPx
+    if (top < upperThreshold) {
       programmaticRef.current = true
       root.scrollTop += N * itemPx
       requestAnimationFrame(() => {
         programmaticRef.current = false
       })
-    } else if (currentIdx > maxBound) {
+    } else if (viewBottom > lowerThreshold) {
       programmaticRef.current = true
       root.scrollTop -= N * itemPx
       requestAnimationFrame(() => {
