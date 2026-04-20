@@ -3,118 +3,90 @@
 ## Goal
 
 - 기존 `react-infinite-calendar`의 동작 가치를 유지하되, 구현/공개 API는 현대 React 패턴(variant + headless hook + compound 확장)으로 재설계한다.
-- 신규 루트는 `next/` 독립 저장소를 기준으로 진행한다.
+  - 이 레퍼런스 프로젝트는 ../ 에 위치해있다.
+- 현재 프로젝트는 레퍼런스 프로젝트 하위에 위치해있다.
 
 ## Decision Baseline
 
 - 선택 모드 공개 API는 `mode` 기반 variant로 통일한다: `single | multiple | range`.
-- 핵심 상태 로직은 headless hook으로 분리한다: `useCalendarState`, `useSingleSelection`, `useMultipleSelection`, `useRangeSelection`, `useCalendarKeyboard`.
-- UI 확장 지점은 compound 컴포넌트로 제공한다: `Calendar.Root`, `Calendar.Header`, `Calendar.Grid`, `Calendar.Day`, `Calendar.Years`.
+- 핵심 상태 로직은 headless hook으로 분리한다: `useCalendarState`, `useSingleSelection`, `useMultipleSelection`, `useRangeSelection`, `useCalendarKeyboard` (+ 모드별 런타임 hook `useCalendarSingleRuntime` / `useCalendarMultipleRuntime` / `useCalendarRangeRuntime`).
+- UI 확장 지점은 compound 컴포넌트로 제공한다: `Calendar.Root`, `Calendar.Header`, `Calendar.Weekdays`, `Calendar.SingleMode` / `Calendar.MultipleMode` / `Calendar.RangeMode` (+ 편의 facade `Calendar`).
 - 구 API(HOC)는 제공하지 않는다.
 
 ## Work Breakdown (Ordered)
 
-### Phase 0. Project Foundations
+범례: ✅ 완료 · 🚧 진행 중 · ⏳ 미착수
 
-1. 모노리포/단일패키지 구조 결정 (현재는 단일 패키지 가정)
-2. 코드 구조 초안 생성
-   - `src/core` (도메인 로직)
-   - `src/hooks` (headless)
+### Phase 0. Project Foundations ✅
+
+1. ✅ 모노리포/단일패키지 구조 결정 (단일 패키지로 진행)
+2. ✅ 코드 구조 생성
+   - `src/core` (도메인 로직 + selection state machines)
+   - `src/hooks` (headless + 모드별 runtime)
    - `src/components` (UI/compound)
-   - `src/styles` (theme tokens + base css)
-3. 개발 표준 설정
-   - lint/format 규칙 통일
-   - strict TypeScript 옵션 검토
-4. CI 최소 파이프라인 구성
-   - install, typecheck, lint, test, build
+   - `src/styles` (tokens + 도메인별 분할 CSS)
+3. ✅ 개발 표준 설정 (eslint, prettier, strict TS, Vitest)
+4. ⏳ CI 파이프라인 구성 (install/typecheck/lint/test/build 자동화) — 로컬 스크립트만 존재
 
-### Phase 1. API & Domain Spec First
+### Phase 1. API & Domain Spec First ✅
 
-1. 공개 API RFC 문서 작성 (`docs/api.md`)
-   - `Calendar` props
-   - `mode`별 `value/onSelect` 타입
-   - 접근성/키보드 동작 계약
-2. 날짜 도메인 정책 확정
-   - timezone/UTC 기준
-   - 값 normalize 규칙(일 단위, startOfDay 등)
-3. 이벤트 모델 정의
-   - `onSelect` / `onRangePreview` 계약
-   - range preview(hover) 모델
-4. 레거시 맵 작성
-   - 이전 props → 신규 props 대응표
-   - 미지원 항목 명시
+1. ✅ 공개 API 문서 (`docs/api.md`)
+2. ✅ 날짜 도메인 정책 확정 — `@js-temporal/polyfill` 기반 `PlainDate` / `PlainDateTime`, `includeTime` 옵션
+3. ✅ 이벤트 모델 — `onSelect` / `onRangePreview` 계약, hover preview 모델
+4. ⏳ 레거시 맵 작성 (이전 `react-infinite-calendar` props → 신규 props 대응표) — 착수 전
 
-### Phase 2. Core Engine (UI 없이)
+### Phase 2. Core Engine (UI 없이) ✅
 
-1. month/week/day 계산 유틸 구현
-2. disabled/min/max 판정 유틸 구현
-3. selection state machine 구현
-   - single
-   - multiple (toggle interpolation 포함)
-   - range (start/hover/end)
-4. 단위 테스트 작성
-   - 경계값/윤년/월 경계/역순 range 선택
+1. ✅ month/week/day 계산 (`src/core/calendarDate.ts`, `src/core/monthGrid.ts`)
+2. ✅ disabled/min/max 판정 (`src/core/constraints.ts`)
+3. ✅ selection state machine (`src/core/selection/{single,multiple,rangePointer}.ts`)
+4. ✅ 단위 테스트 (`calendarDate.test.ts`, `monthGrid.test.ts`, `constraints.test.ts`, `selection/*.test.ts`)
 
-### Phase 3. Headless Hooks
+### Phase 3. Headless Hooks ✅
 
-1. `useCalendarState` 구현
-   - visible month, focused date, scroll anchor
-2. `useSingleSelection` 구현
-3. `useMultipleSelection` 구현
-4. `useRangeSelection` 구현
-5. `useCalendarKeyboard` 구현
-   - 화살표/엔터/Home/End/PageUp/PageDown 규칙
-6. hook 테스트 작성
+1. ✅ `useCalendarState` — visible month, focused date, scroll anchor
+2. ✅ `useSingleSelection` (+ `allowDeselect`, `setSelectedTime` for time mode)
+3. ✅ `useMultipleSelection` (+ `setLatestSelectedTime`, `maxSelections=ignore-new` 정책)
+4. ✅ `useRangeSelection` (+ `preview` / `onRangePreview`, `setRangeTime(edge)`)
+5. ✅ `useCalendarKeyboard` — 화살표 + `Enter`/`Space` 최소 집합 (`Home`/`End`/`PageUp`/`PageDown` 미지원으로 확정)
+6. ✅ 모드별 runtime hook — `useCalendarSingleRuntime` / `useCalendarMultipleRuntime` / `useCalendarRangeRuntime` (compound가 소비)
+7. ✅ hook 테스트 (`useSingleSelection.test.tsx`, `useMultipleSelection.test.tsx`, `useRangeSelection.test.tsx`)
 
-### Phase 4. UI Layer (Compound)
+### Phase 4. UI Layer (Compound) ✅
 
-1. 기본 compound 뼈대 구현
-   - `Calendar.Root`
-   - `Calendar.Header`
-   - `Calendar.Grid`
-   - `Calendar.Day`
-   - `Calendar.Years`
-2. mode variant 연결
-   - 내부적으로 해당 hook 조합
-3. 스타일 토큰/테마 시스템 구현
-   - CSS variables 기반
-4. 가상 스크롤 도입
-   - 월 단위 virtualizer
-   - overscan 옵션
+1. ✅ compound 뼈대 — `Calendar.Root` / `Calendar.Header` / `Calendar.Weekdays` / `Calendar.{Single,Multiple,Range}Mode` + facade `Calendar`
+2. ✅ mode variant ↔ runtime hook 결합 (`Calendar.Root` 가 `runtime` 을 context 로 주입, `.calendar--mode-<mode>` 클래스 부여)
+3. ✅ 스타일 토큰/CSS 분할 — `src/styles/calendar.{base,header,time,day,range,overlay}.css`, `src/Calendar.css` 는 barrel 역할. selection / focused / hover / today 모두 `--calendar-range-pip` 반경의 원형 표현으로 통일
+4. ✅ 월 단위 가상 스크롤 — `useInfiniteMonthScroll` + `@tanstack/react-virtual`, overscan 지원
 
-### Phase 5. Accessibility & Interaction Hardening
+### Phase 5. Accessibility & Interaction Hardening 🚧
 
-1. WAI-ARIA calendar grid 패턴 반영
-2. focus 관리/roving tabindex 정교화
-3. 스크린리더 라벨링 점검
-4. pointer + keyboard + touch 상호작용 동등성 보장
+1. 🚧 WAI-ARIA calendar grid 패턴 반영 — `role="button"` / `aria-pressed` 기반, grid/row 역할 보강 필요
+2. 🚧 focus 관리 / roving tabindex — keyboard로 focusedDate는 움직이지만, tab 진입/이탈 시 focus 이동 규칙 재점검 필요
+3. ⏳ 스크린리더 라벨링 점검 (월/년 전환, 선택 상태 변경 안내)
+4. ⏳ pointer + keyboard + touch 상호작용 동등성 회귀 테스트
 
-### Phase 6. Docs & Developer Experience
+### Phase 6. Docs & Developer Experience ⏳
 
-1. Storybook(또는 문서 사이트) 세팅
-2. mode별 예제 추가
-   - single
-   - multiple
-   - range
-   - custom day/header
-3. 마이그레이션 가이드 작성
-4. 성능 가이드 작성
-   - 큰 기간 범위에서의 권장 설정
+1. ⏳ Storybook(또는 문서 사이트) 세팅 — 현재는 `src/App.tsx` 내 mode playground 만 존재
+2. ⏳ mode별 예제 추가 (single / multiple / range / custom day/header)
+3. ⏳ 마이그레이션 가이드 작성
+4. ⏳ 성능 가이드 (큰 기간 범위 / overscan 튜닝 / 메모이제이션)
 
-### Phase 7. Release Preparation
+### Phase 7. Release Preparation ⏳
 
-1. 번들 산출물 정책 확정 (ESM 우선)
-2. 타입 배포 검증
-3. semver/changeset 전략 결정
-4. `v0` 프리릴리즈 및 피드백 수집
+1. ⏳ 번들 산출물 정책 (ESM 우선, `package.json` `exports` 맵)
+2. ⏳ 타입 배포 검증 (`.d.ts` 분리 빌드)
+3. ⏳ semver/changeset 전략
+4. ⏳ `v0` 프리릴리즈
 
-## Immediate Next Tasks (This Week)
+## Immediate Next Tasks
 
-1. `docs/api.md` 초안 작성
-2. 타입 모델 작성 (`CalendarValue`, `CalendarMode`, `RangeValue`)
-3. core date utils + 테스트부터 착수
-4. `useRangeSelection` 프로토타입 구현
-5. minimal `Calendar.Root + Grid + Day` 렌더 MVP 완성
+1. Phase 5-1/5-2 착수: calendar grid ARIA 역할/roving tabindex 정리 (`Calendar.ModeBody` / `Calendar.DayCell`)
+2. Phase 5 검증용 키보드·포인터 상호작용 통합 테스트 추가
+3. `docs/api.md` 와 `docs/hooks.md` 의 `time` 관련 setter·`allowDeselect` 기재 내용 상호 참조 정리
+4. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
+5. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
 
 ## Risks & Mitigations
 
@@ -124,8 +96,8 @@
 
 ## Definition of Done (MVP)
 
-- `mode="single|multiple|range"`가 모두 동작
-- 키보드 내비게이션/선택 동작 정상
-- min/max/disabled 규칙 정상
-- 접근성 기본 규칙 충족
-- 문서 예제와 테스트가 동기화됨
+- ✅ `mode="single|multiple|range"`가 모두 동작
+- ✅ 키보드 내비게이션/선택 동작 정상 (화살표 + `Enter`/`Space`)
+- ✅ min/max/disabled/disabledDates/disabledDays 규칙 정상
+- 🚧 접근성 기본 규칙 충족 (ARIA 역할/roving tabindex 점검 필요 — Phase 5)
+- 🚧 문서 예제와 테스트가 동기화됨 (api/hooks 문서와 실 코드는 일치, 예제 사이트/Storybook 미도입)

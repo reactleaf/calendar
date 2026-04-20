@@ -64,11 +64,12 @@ interface UseSingleSelectionOptions {
   disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: DateValue[]
-  disabledDays?: number[]
+  disabledDates?: readonly DateValue[]
+  disabledDays?: readonly number[]
   includeTime?: boolean
   minuteStep?: number
   onSelect?: (next: DateValue | null) => void
+  allowDeselect?: boolean
 }
 
 interface UseSingleSelectionResult {
@@ -76,6 +77,7 @@ interface UseSingleSelectionResult {
   isSelected: (date: DateValue) => boolean
   isDisabled: (date: DateValue) => boolean
   selectDate: (date: DateValue, source?: 'click' | 'keyboard') => void
+  setSelectedTime: (hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -86,6 +88,8 @@ declare function useSingleSelection(options: UseSingleSelectionOptions): UseSing
 
 - disabled/min/max에 걸리는 날짜는 선택 무시.
 - controlled(`value`)일 때 내부 상태를 source of truth로 사용하지 않는다.
+- `allowDeselect`가 `true`면 이미 선택된 날짜를 다시 누르면 `null`로 해제된다(기본값 `false`).
+- `includeTime`이 `true`일 때 `setSelectedTime(hour, minute)`으로 선택된 날짜의 시·분만 갱신할 수 있다.
 
 ## 3) useMultipleSelection
 
@@ -98,8 +102,8 @@ interface UseMultipleSelectionOptions {
   disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: DateValue[]
-  disabledDays?: number[]
+  disabledDates?: readonly DateValue[]
+  disabledDays?: readonly number[]
   includeTime?: boolean
   minuteStep?: number
   maxSelections?: number
@@ -111,6 +115,7 @@ interface UseMultipleSelectionResult {
   isSelected: (date: DateValue) => boolean
   isDisabled: (date: DateValue) => boolean
   toggleDate: (date: DateValue, source?: 'click' | 'keyboard') => void
+  setLatestSelectedTime: (hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -121,6 +126,7 @@ declare function useMultipleSelection(options: UseMultipleSelectionOptions): Use
 
 - 동일 날짜를 다시 선택하면 토글 제거.
 - `maxSelections` 초과 정책은 Draft 0에서 `ignore-new`(신규 입력 무시)로 고정.
+- `includeTime`이 `true`일 때 `setLatestSelectedTime(hour, minute)`으로 **가장 최근에 토글된** 날짜의 시·분만 갱신한다.
 
 ## 4) useRangeSelection
 
@@ -133,8 +139,8 @@ interface UseRangeSelectionOptions {
   disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: DateValue[]
-  disabledDays?: number[]
+  disabledDates?: readonly DateValue[]
+  disabledDays?: readonly number[]
   includeTime?: boolean
   minuteStep?: number
   allowRangePreview?: boolean
@@ -152,6 +158,7 @@ interface UseRangeSelectionResult {
   isDisabled: (date: DateValue) => boolean
   selectDate: (date: DateValue, source?: 'click' | 'keyboard') => void
   previewDate: (date: DateValue, source?: 'hover' | 'keyboard') => void
+  setRangeTime: (edge: 'start' | 'end', hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -163,6 +170,7 @@ declare function useRangeSelection(options: UseRangeSelectionOptions): UseRangeS
 - `onSelect`는 **범위가 완료된 시점**(start/end 확정)에만 호출한다.
 - 진행 중 상태(시작점만, 프리뷰 중)는 `onRangePreview`로만 알린다. 프리뷰 종료 시 `onRangePreview(null)`을 호출할 수 있다.
 - 확정 시 `start > end`면 자동 정렬한다.
+- `includeTime`이 `true`일 때 `setRangeTime('start' | 'end', hour, minute)`으로 range 양 끝 각각의 시·분만 갱신할 수 있다.
 
 ## 5) useCalendarKeyboard
 
@@ -187,13 +195,13 @@ interface UseCalendarKeyboardResult {
 declare function useCalendarKeyboard(options: UseCalendarKeyboardOptions): UseCalendarKeyboardResult
 ```
 
-기본 키 매핑:
+기본 키 매핑(그리드 최소 집합):
 
 - ArrowLeft/Right: -1/+1 day
 - ArrowUp/Down: -7/+7 days
 - Enter/Space: focused date 선택 확정
-- Home/End: 주 시작/끝으로 이동 (후속 상세화)
-- PageUp/PageDown: 월 단위 이동 (후속 상세화)
+
+`Home` / `End` / `PageUp` / `PageDown`은 **지원 범위에 넣지 않는다**(플랜·제품 결정).
 
 추가 시간 규칙:
 
