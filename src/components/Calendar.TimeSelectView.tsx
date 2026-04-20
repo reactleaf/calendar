@@ -79,7 +79,11 @@ function computeSections(
     const sorted = [...selectionSnapshot.values].sort((a, b) =>
       Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
     )
-    dt = resolveEditorDateTime(sorted[sorted.length - 1] ?? null)
+    const primary =
+      selectionSnapshot.primaryPlainDate !== null
+        ? selectionSnapshot.values.find((v) => toPlainDate(v).equals(selectionSnapshot.primaryPlainDate))
+        : null
+    dt = resolveEditorDateTime(primary ?? sorted[sorted.length - 1] ?? null)
   }
   return [
     {

@@ -17,12 +17,19 @@ export interface UseMultipleSelectionOptions {
   onSelect?: (next: DateValue[]) => void
 }
 
+export interface ToggleMultipleDateResult {
+  changed: boolean
+  /** `changed === false` 이면 `null` */
+  added: boolean | null
+  nextValues: DateValue[]
+}
+
 export interface UseMultipleSelectionResult {
   value: DateValue[]
   isSelected: (date: DateValue) => boolean
   isDisabled: (date: DateValue) => boolean
-  toggleDate: (date: DateValue, source?: 'click' | 'keyboard') => void
-  setLatestSelectedTime: (hour: number, minute: number) => void
+  toggleDate: (date: DateValue, source?: 'click' | 'keyboard') => ToggleMultipleDateResult
+  setTimeForPlainDate: (plain: Temporal.PlainDate, hour: number, minute: number) => void
   clear: () => void
 }
 
@@ -61,38 +68,33 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
   )
 
   const toggleDate = useCallback(
-    (date: DateValue, source?: 'click' | 'keyboard') => {
+    (date: DateValue, source?: 'click' | 'keyboard'): ToggleMultipleDateResult => {
       void source
-      if (isDisabled(date)) return
+      if (isDisabled(date)) return { changed: false, added: null, nextValues: value }
       const pickedPlain = toPlainDate(toSelectionValue(date, includeTime))
       const currentPlain = value.map((v) => toPlainDate(toSelectionValue(v, includeTime)))
+      const wasSelected = currentPlain.some((d) => d.equals(pickedPlain))
       const toggled = toggleMultipleSelection(currentPlain, pickedPlain, maxSelections)
-      if (!toggled.changed) return
+      if (!toggled.changed) return { changed: false, added: null, nextValues: value }
       const next = toggled.next.map((d) => toSelectionValue(d, includeTime))
       commit(next)
+      return { changed: true, added: !wasSelected, nextValues: next }
     },
     [commit, includeTime, isDisabled, maxSelections, value],
   )
 
   const clear = useCallback(() => commit([]), [commit])
 
-  const setLatestSelectedTime = useCallback(
-    (hour: number, minute: number) => {
+  const setTimeForPlainDate = useCallback(
+    (plain: Temporal.PlainDate, hour: number, minute: number) => {
       if (!includeTime || value.length === 0) return
-
-      let targetIndex = 0
-      for (let i = 1; i < value.length; i += 1) {
-        const current = value[i]
-        const target = value[targetIndex]
-        if (!current || !target) continue
-        if (Temporal.PlainDate.compare(toPlainDate(current), toPlainDate(target)) > 0) targetIndex = i
-      }
-
-      const next = value.map((v, i) => (i === targetIndex ? withTime(v, hour, minute, minuteStep) : v))
+      const idx = value.findIndex((v) => toPlainDate(v).equals(plain))
+      if (idx === -1) return
+      const next = value.map((v, i) => (i === idx ? withTime(v, hour, minute, minuteStep) : v))
       commit(next)
     },
     [commit, includeTime, minuteStep, value],
   )
 
-  return { value, isSelected, isDisabled, toggleDate, setLatestSelectedTime, clear }
+  return { value, isSelected, isDisabled, toggleDate, setTimeForPlainDate, clear }
 }

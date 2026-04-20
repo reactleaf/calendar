@@ -13,6 +13,8 @@ export interface CalendarDayCellProps {
   isRangeStartDate: boolean
   isRangeEndDate: boolean
   isInPreview: boolean
+  /** multiple: 헤더·시간 편집 중인 대표 일 — 그리드에서 추가 강조 */
+  isMultiplePrimaryEdit?: boolean
   isFirstOfMonth: boolean
   showYear: boolean
   year: number
@@ -41,12 +43,14 @@ function buildDayClass(
   isRangeStartDate: boolean,
   isRangeEndDate: boolean,
   isInPreview: boolean,
+  isMultiplePrimaryEdit: boolean,
 ): string {
   return [
     'calendar__day',
     dayStamp === focusedDateStamp ? 'calendar__day--focused' : '',
     isSelected ? 'calendar__day--selected' : '',
     isToday ? 'calendar__day--today' : '',
+    isMultiplePrimaryEdit ? 'calendar__day--multiplePrimary' : '',
     mode === 'range' && isSelected && !isRangeStartDate && !isRangeEndDate ? 'calendar__day--inRange' : '',
     mode === 'range' && isInPreview && !isSelected ? 'calendar__day--inPreviewRange' : '',
     mode === 'range' && isRangeStartDate ? 'calendar__day--rangeStart' : '',
@@ -78,6 +82,7 @@ function buildSelectionLayerClass(
   isInPreview: boolean,
   isRangeStartDate: boolean,
   isRangeEndDate: boolean,
+  isMultiplePrimaryEdit: boolean,
 ): string {
   const isPreviewOnly = isInPreview && !isSelected
   const shape =
@@ -95,6 +100,7 @@ function buildSelectionLayerClass(
     'calendar__selectionLayer',
     isPreviewOnly ? 'calendar__selectionLayer--preview' : 'calendar__selectionLayer--selected',
     `calendar__selectionLayer--${shape}`,
+    isMultiplePrimaryEdit ? 'calendar__selectionLayer--multiplePrimary' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -111,6 +117,7 @@ export const CalendarDayCell = memo(function CalendarDayCell({
   isRangeStartDate,
   isRangeEndDate,
   isInPreview,
+  isMultiplePrimaryEdit = false,
   isFirstOfMonth,
   showYear,
   year,
@@ -132,9 +139,17 @@ export const CalendarDayCell = memo(function CalendarDayCell({
     isRangeStartDate,
     isRangeEndDate,
     isInPreview,
+    isMultiplePrimaryEdit,
   )
   const selectionLayerClass = selectionLayerActive
-    ? buildSelectionLayerClass(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)
+    ? buildSelectionLayerClass(
+        mode,
+        isSelected,
+        isInPreview,
+        isRangeStartDate,
+        isRangeEndDate,
+        isMultiplePrimaryEdit,
+      )
     : null
 
   const selectionShape = getSelectionShape(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)

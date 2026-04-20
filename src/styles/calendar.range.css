@@ -83,6 +83,15 @@
   display: none;
 }
 
+/*
+ * multiple 대표 일: range 끝점(`.calendar__selectionLayer--end::before`)과 동일 —
+ * 흰 원 + 액센트 인셋 스트로크 1.5px
+ */
+.calendar__selectionLayer--single.calendar__selectionLayer--multiplePrimary {
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--range-stroke);
+}
+
 /* range 텍스트 톤: 자식 span 이 .calendar__day 의 color 를 상속 */
 
 /* 막대(중간)·단일 확정 pill — 채운 원/막대 위 흰 글자 */
@@ -111,6 +120,16 @@
 /* 시작/끝 캡(흰 원) — 확정 범위 */
 .calendar__day--rangeStart.calendar__day--selected:not(.calendar__day--rangeEnd),
 .calendar__day--rangeEnd.calendar__day--selected:not(.calendar__day--rangeStart) {
+  color: var(--calendar-color-accent, #4488e8);
+  font-weight: 700;
+}
+
+/* multiple 대표 일: 끝점 캡과 동일하게 액센트 글자색 */
+.calendar--mode-multiple .calendar__day--multiplePrimary.calendar__day--selected:not(
+    .calendar__day--inRange,
+    .calendar__day--rangeStart,
+    .calendar__day--rangeEnd
+  ) {
   color: var(--calendar-color-accent, #4488e8);
   font-weight: 700;
 }

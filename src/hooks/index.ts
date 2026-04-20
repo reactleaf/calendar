@@ -9,7 +9,11 @@ export { useCalendarMultipleRuntime } from './useCalendarMultipleRuntime'
 export { useCalendarRangeRuntime } from './useCalendarRangeRuntime'
 
 export { useMultipleSelection } from './useMultipleSelection'
-export type { UseMultipleSelectionOptions, UseMultipleSelectionResult } from './useMultipleSelection'
+export type {
+  ToggleMultipleDateResult,
+  UseMultipleSelectionOptions,
+  UseMultipleSelectionResult,
+} from './useMultipleSelection'
 
 export { useRangeSelection } from './useRangeSelection'
 export type { UseRangeSelectionOptions, UseRangeSelectionResult } from './useRangeSelection'

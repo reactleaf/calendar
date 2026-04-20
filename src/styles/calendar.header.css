@@ -137,6 +137,12 @@
 
 /* header: 모든 모드 공통 accent 배경 (react-infinite-calendar 레퍼런스) */
 .calendar__header {
+  position: relative;
+  /**
+   * `.calendar__weekdays` 가 z-index: 10 이라, 헤더에 쌓임 맥락이 없으면
+   * multiple 목록 드롭다운(헤더 하단으로 넘침)이 요일 행 아래로 깔릴 수 있다.
+   */
+  z-index: 11;
   display: flex;
   flex-direction: column;
   gap: 0.08rem;
@@ -360,4 +366,104 @@
 .calendar__headerYearButton[aria-expanded='true'] {
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* multiple: 대표 날짜 가운데 정렬, +N 칩은 행 기준 absolute(인라인 끝) */
+.calendar__headerDateRow {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  min-width: 0;
+  min-height: 1.45rem;
+}
+
+.calendar__headerDateRow .calendar__headerDateButton.calendar__headerDate {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.calendar__headerMultipleMore {
+  box-sizing: border-box;
+  min-height: 1.45rem;
+  padding: 0.1rem 0.42rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-align: center;
+}
+
+.calendar__headerMultipleMore:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 칩 + 드롭다운 공통 기준점 — 행의 인라인 끝에 붙여 트리거 바로 아래에 패널이 열리게 한다 */
+.calendar__headerMultipleAnchor {
+  position: absolute;
+  z-index: 2;
+  inset-inline-end: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.calendar__headerMultiplePopover {
+  position: absolute;
+  /** 앵커(칩) 기준 — 인라인 끝을 칩과 맞추고 위로 펼쳐짐 */
+  z-index: 3;
+  inset-inline-end: 0;
+  inset-inline-start: auto;
+  inset-block-start: calc(100% + 0.28rem);
+  box-sizing: border-box;
+  width: max-content;
+  min-width: max(11.25rem, 100%);
+  max-width: 18rem;
+  max-height: 11rem;
+  overflow-y: auto;
+  padding: 0.2rem 0;
+  border-radius: 8px;
+  background: var(--calendar-color-bg, #fff);
+  color: var(--calendar-color-fg, #111);
+  border: 1px solid var(--border, #e5e4e7);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+}
+
+.calendar__headerMultipleList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.calendar__headerMultipleListItem {
+  margin: 0;
+}
+
+.calendar__headerMultipleListButton {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.42rem 0.65rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.calendar__headerMultipleListButton:hover {
+  background: var(--calendar-day-hover-tint, color-mix(in srgb, #7dd3fc 22%, transparent));
+}
+
+.calendar__headerMultipleListButton:focus-visible {
+  outline: 2px solid var(--calendar-color-accent, #4488e8);
+  outline-offset: -2px;
 }

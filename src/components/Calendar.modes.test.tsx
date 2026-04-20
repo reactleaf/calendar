@@ -163,6 +163,34 @@ describe('Calendar preset mode integration', () => {
     })
   })
 
+  it('multiple 모드에서 2개 이상 선택 시 +N 칩으로 전체 목록 패널을 연다', async () => {
+    const { container } = render(
+      <Calendar
+        mode="multiple"
+        value={[
+          Temporal.PlainDate.from('2026-04-10'),
+          Temporal.PlainDate.from('2026-04-12'),
+          Temporal.PlainDate.from('2026-04-18'),
+        ]}
+        minDate={Temporal.PlainDate.from('2026-04-01')}
+        maxDate={Temporal.PlainDate.from('2026-04-30')}
+      />,
+    )
+
+    await waitForVisibleDayCells(container)
+
+    const chip = container.querySelector('.calendar__headerMultipleMore')
+    expect(chip).toBeInstanceOf(HTMLButtonElement)
+    expect(chip?.textContent?.trim()).toBe('+2')
+
+    fireEvent.click(chip as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(container.querySelector('.calendar__headerMultiplePopover')).toBeTruthy()
+    })
+    expect(container.querySelectorAll('.calendar__headerMultipleListButton').length).toBe(3)
+  })
+
   it('multiple 모드에서 클릭/키보드 토글 선택 및 월 변경 콜백이 동작한다', async () => {
     const onSelect = vi.fn()
     const onMonthChange = vi.fn()

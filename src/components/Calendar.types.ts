@@ -6,7 +6,7 @@ import type { WeekStartsOn } from '../core/monthGrid'
 
 export type CalendarSelectionSnapshot =
   | { mode: 'single'; value: DateValue | null }
-  | { mode: 'multiple'; values: DateValue[] }
+  | { mode: 'multiple'; values: DateValue[]; primaryPlainDate: Temporal.PlainDate | null }
   | { mode: 'range'; value: CalendarRangeValue }
 
 /**
@@ -84,4 +84,6 @@ export interface CalendarRuntime {
   getDateViewportPlacement: (date: Temporal.PlainDate) => DateViewportPlacement
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
   handleKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
+  /** multiple: 헤더·시간 편집 대상이 되는 대표 일자 (선택 목록에 있는 날만 허용) */
+  setMultiplePrimaryPlainDate?: (date: Temporal.PlainDate) => void
 }

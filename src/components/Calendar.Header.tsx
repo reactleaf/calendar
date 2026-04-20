@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode } from 'react'
-import { useMemo } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { CalendarMessages, DateValue } from '../core/api.types'
 import { toPlainDate, toSelectionValue } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
@@ -19,6 +19,20 @@ function formatDay(day: Temporal.PlainDate, locale: string) {
 function formatRangeColumnDate(day: Temporal.PlainDate | null, locale: string) {
   if (!day) return '—'
   return day.toLocaleString(locale, { month: 'long', day: 'numeric' })
+}
+
+function formatCountMessage(template: string, count: number) {
+  return template.replaceAll('{count}', String(count))
+}
+
+function formatMultipleListLabel(value: DateValue, locale: string, includeTime: boolean) {
+  const day = toPlainDate(value)
+  const base = formatDay(day, locale)
+  if (includeTime && value instanceof Temporal.PlainDateTime) {
+    const t = value.toLocaleString(locale, { hour: 'numeric', minute: '2-digit' })
+    return `${base} · ${t}`
+  }
+  return base
 }
 
 function rangeHeaderGrid(snapshot: Extract<CalendarSelectionSnapshot, { mode: 'range' }>, locale: string) {
@@ -50,7 +64,11 @@ function labelsFromSnapshot(
     }
     case 'multiple': {
       const sorted = [...snapshot.values].sort((a, b) => Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)))
-      const selectedValue = sorted[sorted.length - 1] ?? null
+      const primaryValue =
+        snapshot.primaryPlainDate !== null
+          ? snapshot.values.find((v) => toPlainDate(v).equals(snapshot.primaryPlainDate))
+          : null
+      const selectedValue = primaryValue ?? sorted[sorted.length - 1] ?? null
       const selectedDay = selectedValue ? toPlainDate(selectedValue) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
       headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.selectDate
@@ -100,7 +118,15 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     currentMonth,
     displayMode,
     setDisplayMode,
+    setFocusedDate,
+    keepDateVisible,
+    setMultiplePrimaryPlainDate,
   } = useCalendarContext()
+  const [multipleListOpen, setMultipleListOpen] = useState(false)
+  const multipleListChipRef = useRef<HTMLButtonElement>(null)
+  const multipleListPopoverRef = useRef<HTMLDivElement>(null)
+  const multipleListPanelId = useId()
+
   /**
    * 헤더 라벨은 뷰 간 단방향 네비게이션이다.
    *  - 연도 라벨  → 'months' (월 피커 열기 전용; 재클릭 no-op)
@@ -109,13 +135,45 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
    * 이미 해당 모드면 no-op 으로 중복 setState 를 피한다.
    */
   const openMonthPicker = () => {
+    setMultipleListOpen(false)
     if (displayMode === 'months') return
     setDisplayMode('months')
   }
   const openDaysView = () => {
+    setMultipleListOpen(false)
     if (displayMode === 'days') return
     setDisplayMode('days')
   }
+
+  useEffect(() => {
+    if (selectionSnapshot.mode !== 'multiple' || selectionSnapshot.values.length < 2) {
+      setMultipleListOpen(false)
+    }
+  }, [selectionSnapshot])
+
+  useEffect(() => {
+    if (!multipleListOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setMultipleListOpen(false)
+        multipleListChipRef.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [multipleListOpen])
+
+  useEffect(() => {
+    if (!multipleListOpen) return
+    const onPointerDown = (e: MouseEvent) => {
+      const node = e.target as Node
+      if (multipleListPopoverRef.current?.contains(node) || multipleListChipRef.current?.contains(node)) return
+      setMultipleListOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [multipleListOpen])
   const monthPickerOpen = displayMode === 'months'
   const daysViewOpen = displayMode === 'days'
   const { headerYear, headerDate } = useMemo(
@@ -146,8 +204,19 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     const sorted = [...selectionSnapshot.values].sort((a, b) =>
       Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
     )
-    const latest = sorted[sorted.length - 1] ?? null
-    return resolveEditorDateTime(latest)
+    const primary =
+      selectionSnapshot.primaryPlainDate !== null
+        ? selectionSnapshot.values.find((v) => toPlainDate(v).equals(selectionSnapshot.primaryPlainDate))
+        : null
+    const value = primary ?? sorted[sorted.length - 1] ?? null
+    return resolveEditorDateTime(value)
+  }, [selectionSnapshot])
+
+  const multipleSortedValues = useMemo(() => {
+    if (selectionSnapshot.mode !== 'multiple') return []
+    return [...selectionSnapshot.values].sort((a, b) =>
+      Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
+    )
   }, [selectionSnapshot])
 
   const rangeHeaderSource =
@@ -241,6 +310,11 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   }
 
   const displayYear = headerYear ?? String(currentMonth.year)
+  const showMultipleMoreChip =
+    mode === 'multiple' && selectionSnapshot.mode === 'multiple' && selectionSnapshot.values.length > 1
+  const multipleExtraCount =
+    selectionSnapshot.mode === 'multiple' ? Math.max(0, selectionSnapshot.values.length - 1) : 0
+
   return (
     <div className={classes} {...headerDataAttrs}>
       <button
@@ -253,16 +327,75 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
       >
         {displayYear}
       </button>
-      <button
-        type="button"
-        className="calendar__headerDate calendar__headerDateButton"
-        onClick={openDaysView}
-        aria-pressed={daysViewOpen}
-        aria-label={messages.ariaOpenDayGrid}
-        data-view="days"
-      >
-        {headerDate}
-      </button>
+      {showMultipleMoreChip ? (
+        <div className="calendar__headerDateRow">
+          <button
+            type="button"
+            className="calendar__headerDate calendar__headerDateButton"
+            onClick={openDaysView}
+            aria-pressed={daysViewOpen}
+            aria-label={messages.ariaOpenDayGrid}
+            data-view="days"
+          >
+            {headerDate}
+          </button>
+          <div className="calendar__headerMultipleAnchor">
+            <button
+              ref={multipleListChipRef}
+              type="button"
+              className="calendar__headerMultipleMore calendar__headerDateButton"
+              data-view="days"
+              aria-expanded={multipleListOpen}
+              aria-controls={multipleListPanelId}
+              aria-label={formatCountMessage(messages.ariaOpenMultipleSelectedList, multipleExtraCount)}
+              onClick={() => setMultipleListOpen((open) => !open)}
+            >
+              {formatCountMessage(messages.multipleMoreCount, multipleExtraCount)}
+            </button>
+            {multipleListOpen ? (
+              <div
+                ref={multipleListPopoverRef}
+                id={multipleListPanelId}
+                className="calendar__headerMultiplePopover"
+                role="region"
+                aria-label={messages.ariaMultipleSelectedDatesPanel}
+              >
+                <ul className="calendar__headerMultipleList">
+                  {multipleSortedValues.map((v) => (
+                    <li key={v.toString()} className="calendar__headerMultipleListItem">
+                      <button
+                        type="button"
+                        className="calendar__headerMultipleListButton"
+                        onClick={() => {
+                          setMultipleListOpen(false)
+                          const day = toPlainDate(v)
+                          setMultiplePrimaryPlainDate?.(day)
+                          setFocusedDate(day)
+                          keepDateVisible(day)
+                          if (displayMode !== 'days') setDisplayMode('days')
+                        }}
+                      >
+                        {formatMultipleListLabel(v, locale, showTimeRow)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="calendar__headerDate calendar__headerDateButton"
+          onClick={openDaysView}
+          aria-pressed={daysViewOpen}
+          aria-label={messages.ariaOpenDayGrid}
+          data-view="days"
+        >
+          {headerDate}
+        </button>
+      )}
       {showTimeRow ? (
         <div className="calendar__headerTime">
           <CalendarTimeInput

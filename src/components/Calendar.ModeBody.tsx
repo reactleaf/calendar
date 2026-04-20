@@ -44,6 +44,8 @@ interface CalendarModeBodyProps {
   onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
   selectionRenderKey: string
   previewIdentity?: unknown
+  /** multiple: 헤더·시간 편집 대상인 대표 일 (`dayStamp`). 그 외 모드에서는 생략 */
+  multiplePrimaryDateStamp?: number | null
 }
 
 function CalendarModeBodyImpl({
@@ -71,6 +73,7 @@ function CalendarModeBodyImpl({
   onKeyDown,
   selectionRenderKey,
   previewIdentity,
+  multiplePrimaryDateStamp,
 }: CalendarModeBodyProps) {
   void selectionRenderKey
   void previewIdentity
@@ -204,6 +207,11 @@ function CalendarModeBodyImpl({
                         const isRangeEndDate = mode === 'range' ? isRangeEnd(date) : false
                         const isInPreview = mode === 'range' ? isInPreviewRange(date) : false
 
+                        const isMultiplePrimaryEdit =
+                          mode === 'multiple' &&
+                          typeof multiplePrimaryDateStamp === 'number' &&
+                          dateKey === multiplePrimaryDateStamp
+
                         return (
                           <CalendarDayCell
                             key={dateKey}
@@ -217,6 +225,7 @@ function CalendarModeBodyImpl({
                             isRangeStartDate={isRangeStartDate}
                             isRangeEndDate={isRangeEndDate}
                             isInPreview={isInPreview}
+                            isMultiplePrimaryEdit={isMultiplePrimaryEdit}
                             isFirstOfMonth={isFirstOfMonth}
                             showYear={showYear}
                             year={date.year}
@@ -275,7 +284,8 @@ function equalModeBodyProps(prev: CalendarModeBodyProps, next: CalendarModeBodyP
     prev.onScroll === next.onScroll &&
     prev.onKeyDown === next.onKeyDown &&
     prev.selectionRenderKey === next.selectionRenderKey &&
-    prev.previewIdentity === next.previewIdentity
+    prev.previewIdentity === next.previewIdentity &&
+    prev.multiplePrimaryDateStamp === next.multiplePrimaryDateStamp
   )
 }
 

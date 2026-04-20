@@ -9,8 +9,11 @@ function App() {
     Temporal.PlainDateTime.from('2026-04-14T09:00'),
   )
   const [multipleSelected, setMultipleSelected] = useState<DateValue[]>([
+    Temporal.PlainDateTime.from('2026-04-10T09:00'),
     Temporal.PlainDateTime.from('2026-04-12T10:30'),
+    Temporal.PlainDateTime.from('2026-04-14T11:00'),
     Temporal.PlainDateTime.from('2026-04-18T14:00'),
+    Temporal.PlainDateTime.from('2026-04-20T16:00'),
   ])
   const [rangeSelected, setRangeSelected] = useState<CalendarRangeValue>({
     start: Temporal.PlainDateTime.from('2026-04-08T00:00'),

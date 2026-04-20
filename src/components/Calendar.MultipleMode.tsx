@@ -45,6 +45,11 @@ export function CalendarMultipleMode() {
       .join('|')
   }, [selectionSnapshot])
 
+  const multiplePrimaryDateStamp = useMemo(() => {
+    if (selectionSnapshot.mode !== 'multiple') return null
+    return selectionSnapshot.primaryPlainDate !== null ? dayStamp(selectionSnapshot.primaryPlainDate) : null
+  }, [selectionSnapshot])
+
   const onDateClick = useCallback(
     (date: Temporal.PlainDate) => {
       setFocusedDate(date)
@@ -88,6 +93,7 @@ export function CalendarMultipleMode() {
       onScroll={onScroll}
       onKeyDown={onKeyDown}
       selectionRenderKey={selectedDateKey}
+      multiplePrimaryDateStamp={multiplePrimaryDateStamp}
     />
   )
 }

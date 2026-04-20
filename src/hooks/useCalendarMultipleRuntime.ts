@@ -1,17 +1,27 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CalendarMultipleProps } from '../core/api.types'
+import type { CalendarMultipleProps, DateValue } from '../core/api.types'
 import { defaultNavigatorLocale, resolveCalendarMessages } from '../core/calendarLocale'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
-import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import { clampDate, dayStamp, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useMultipleSelection } from './useMultipleSelection'
 import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
 
 /* eslint-disable react-hooks/preserve-manual-memoization -- Temporal 값 의존 useCallback 패턴 유지 */
+
+function maxPlainAmong(values: readonly DateValue[]): Temporal.PlainDate | null {
+  if (values.length === 0) return null
+  let max = toPlainDate(values[0]!)
+  for (let i = 1; i < values.length; i += 1) {
+    const p = toPlainDate(values[i]!)
+    if (Temporal.PlainDate.compare(p, max) > 0) max = p
+  }
+  return max
+}
 
 export function useCalendarMultipleRuntime(props: CalendarMultipleProps): CalendarRuntime {
   const {
@@ -46,12 +56,33 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     onSelect,
     maxSelections,
   })
-  const selection = {
-    isSelected: rawSelection.isSelected,
-    isDisabled: rawSelection.isDisabled,
-    selectDate: rawSelection.toggleDate,
-    setSelectedTime: rawSelection.setLatestSelectedTime,
-  }
+  const { isSelected, isDisabled, toggleDate, setTimeForPlainDate, value: selectedValues } = rawSelection
+
+  const [primaryPlainDate, setPrimaryPlainDate] = useState<Temporal.PlainDate | null>(() =>
+    maxPlainAmong(rawSelection.value),
+  )
+
+  const selectionPlainKey = useMemo(
+    () => rawSelection.value.map((v) => dayStamp(toPlainDate(v))).sort().join('|'),
+    [rawSelection.value],
+  )
+
+  useLayoutEffect(() => {
+    if (rawSelection.value.length === 0) {
+      setPrimaryPlainDate(null)
+      return
+    }
+    setPrimaryPlainDate((prev) => {
+      if (prev !== null && rawSelection.value.some((v) => toPlainDate(v).equals(prev))) return prev
+      return maxPlainAmong(rawSelection.value)
+    })
+  }, [selectionPlainKey, rawSelection.value])
+
+  const setMultiplePrimaryPlainDate = useCallback((date: Temporal.PlainDate) => {
+    if (!selectedValues.some((v) => toPlainDate(v).equals(date))) return
+    setPrimaryPlainDate(date)
+  }, [selectedValues])
+
   const today = Temporal.Now.plainDateISO()
   const selectedPlain = rawSelection.value[0] ? toPlainDate(rawSelection.value[0]) : null
   const minDay = minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE
@@ -105,6 +136,55 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     [maxDay, minDay, onFocusedDateChange],
   )
 
+  /**
+   * multiple: 마우스·키보드 동일 규칙. `focusedDate`는 클릭 시 아직 이전 값(ModeBody 가 먼저 setFocusedDate).
+   * - 가상 커서가 그 날이고 이미 선택됨 → 선택 해제
+   * - 선택 안 됨 → 추가
+   * - 선택됐지만 가상 커서가 다른 날(주로 마우스) → 선택 유지, 대표일만 이동
+   * Enter/Space 는 `selectDate(focusedDate)` 이므로 항상 wasFocused.
+   */
+  const selectDate = useCallback(
+    (date: Temporal.PlainDate, source?: 'click' | 'keyboard') => {
+      if (isDisabled(date)) return
+
+      const sel = isSelected(date)
+      const wasFocused = focusedDate.equals(date)
+
+      if (wasFocused && sel) {
+        const result = toggleDate(date, source)
+        if (!result.changed) return
+        setPrimaryPlainDate((prev) => {
+          if (prev !== null && prev.equals(date)) return maxPlainAmong(result.nextValues)
+          return prev
+        })
+        return
+      }
+
+      if (!sel) {
+        const result = toggleDate(date, source)
+        if (!result.changed) return
+        if (result.added) setPrimaryPlainDate(date)
+        return
+      }
+
+      setPrimaryPlainDate(date)
+    },
+    [focusedDate, isDisabled, isSelected, toggleDate],
+  )
+
+  const selection = useMemo(
+    () => ({
+      isSelected,
+      isDisabled,
+      selectDate,
+      setSelectedTime:
+        includeTime && primaryPlainDate !== null
+          ? (hour: number, minute: number) => setTimeForPlainDate(primaryPlainDate, hour, minute)
+          : undefined,
+    }),
+    [includeTime, primaryPlainDate, isDisabled, isSelected, selectDate, setTimeForPlainDate],
+  )
+
   const moveFocusedByDays = useCallback(
     (days: number) => {
       const next = clampDate(focusedDate.add({ days }), minDay, maxDay)
@@ -150,7 +230,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     messages,
     includeTime,
     minuteStep,
-    selectionSnapshot: { mode: 'multiple', values: rawSelection.value },
+    selectionSnapshot: { mode: 'multiple', values: rawSelection.value, primaryPlainDate },
     weekdays,
     keyboardNavigation,
     isScrolling,
@@ -174,5 +254,6 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     getDateViewportPlacement,
     handleScroll,
     handleKeyDown,
+    setMultiplePrimaryPlainDate,
   }
 }

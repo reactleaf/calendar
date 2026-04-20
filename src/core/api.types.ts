@@ -23,6 +23,15 @@ export interface CalendarMessages {
   ariaOpenMonthPicker: string
   ariaOpenDayGrid: string
   ariaCalendarGrid: string
+  /**
+   * multiple: 대표 날짜 옆 칩에 표시. `{count}` → **그 외** 선택 수(전체 − 1).
+   * 예: 전체 5일이면 `'+{count}'` → `+4`
+   */
+  multipleMoreCount: string
+  /** multiple: 추가 선택 목록 토글 버튼 `aria-label`. `{count}` → 그 외 선택 수 */
+  ariaOpenMultipleSelectedList: string
+  /** multiple: 열린 선택 목록 영역(`role="region"`)의 접근 가능 이름 */
+  ariaMultipleSelectedDatesPanel: string
 }
 
 export interface CalendarBaseProps {

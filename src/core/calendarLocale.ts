@@ -12,6 +12,9 @@ export const DEFAULT_CALENDAR_MESSAGES: CalendarMessages = {
   ariaOpenMonthPicker: 'Open month picker',
   ariaOpenDayGrid: 'Show day calendar',
   ariaCalendarGrid: 'Infinite scroll calendar',
+  multipleMoreCount: '+{count}',
+  ariaOpenMultipleSelectedList: 'Show {count} more selected dates',
+  ariaMultipleSelectedDatesPanel: 'Selected dates',
 }
 
 export function resolveCalendarMessages(partial?: Partial<CalendarMessages>): CalendarMessages {
