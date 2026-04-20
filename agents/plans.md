@@ -39,7 +39,7 @@
 ### Phase 2. Core Engine (UI 없이) ✅
 
 1. ✅ month/week/day 계산 (`src/core/calendarDate.ts`, `src/core/monthGrid.ts`)
-2. ✅ disabled/min/max 판정 (`src/core/constraints.ts`)
+2. ✅ min/max + `isDateDisabled` 판정 (`src/core/constraints.ts`)
 3. ✅ selection state machine (`src/core/selection/{single,multiple,rangePointer}.ts`)
 4. ✅ 단위 테스트 (`calendarDate.test.ts`, `monthGrid.test.ts`, `constraints.test.ts`, `selection/*.test.ts`)
 
@@ -106,7 +106,7 @@
 
 - ✅ `mode="single|multiple|range"`가 모두 동작
 - ✅ 키보드 내비게이션/선택 동작 정상 (화살표 + `Enter`/`Space`)
-- ✅ min/max/disabled/disabledDates/disabledDays 규칙 정상
+- ✅ min/max + `isDateDisabled` 규칙 정상
 - ✅ `includeTime` 전 모드 지원, 시/분 직접 입력 + time 보조 뷰(스크롤 피커) 의 두 경로가 일관
 - ✅ 뷰 간(days / month / time) 전환 시 카드 외곽 높이 고정 유지
 - 🚧 접근성 기본 규칙 충족 (grid 본문 ARIA 완료, 보조 뷰 MonthPicker/TimeScrollPicker 및 라이브 안내는 남음 — Phase 5-2 이후)

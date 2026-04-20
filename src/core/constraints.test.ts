@@ -11,20 +11,25 @@ describe('constraints', () => {
     expect(isDateDisabled(Temporal.PlainDate.from('2024-06-21'), { maxDate: max })).toBe(true)
   })
 
-  it('disables by weekday (0 Sunday)', () => {
-    const sat = Temporal.PlainDate.from('2024-06-15')
-    expect(sat.dayOfWeek).toBe(6)
-    expect(isDateDisabled(sat, { disabledDays: [6] })).toBe(true)
-    expect(isDateDisabled(sat, { disabledDays: [0] })).toBe(false)
-  })
-
-  it('disables by disabledDates list', () => {
+  it('disables by isDateDisabled predicate', () => {
     const d = Temporal.PlainDate.from('2024-06-12')
     expect(
       isDateDisabled(d, {
-        disabledDates: [Temporal.PlainDateTime.from('2024-06-12T08:00:00')],
+        isDateDisabled: (x) => x.day === 12 && x.month === 6 && x.year === 2024,
       }),
     ).toBe(true)
+    expect(
+      isDateDisabled(Temporal.PlainDate.from('2024-06-13'), {
+        isDateDisabled: (x) => x.day === 12 && x.month === 6,
+      }),
+    ).toBe(false)
+  })
+
+  it('weekday 규칙은 소비자가 isDateDisabled에 구현한다', () => {
+    const sat = Temporal.PlainDate.from('2024-06-15')
+    expect(sat.dayOfWeek).toBe(6)
+    expect(isDateDisabled(sat, { isDateDisabled: (date) => date.dayOfWeek === 6 })).toBe(true)
+    expect(isDateDisabled(sat, { isDateDisabled: (date) => date.dayOfWeek === 0 })).toBe(false)
   })
 
   it('clampDateValue preserves wall time for PlainDateTime', () => {

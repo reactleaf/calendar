@@ -1,54 +1,43 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { DateValue } from './api.types'
-import { compareCalendarDays, sameCalendarDay, toPlainDate, type PlainDay } from './calendarDate'
+import { compareCalendarDays, toPlainDate, type PlainDay } from './calendarDate'
 
 export interface DisableConstraints {
-  disabled?: boolean
   minDate?: PlainDay
   maxDate?: PlainDay
-  disabledDates?: readonly PlainDay[]
-  disabledDays?: readonly number[]
+  /** `minDate`/`maxDate` 범위 밖이 아닐 때 추가로 막을 날. */
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
 }
 
 interface DisableConstraintsOptions {
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
 }
 
 export function disableConstraintsFromOptions(input: DisableConstraintsOptions): DisableConstraints {
   return {
-    disabled: input.disabled,
     minDate: input.minDate ? toPlainDate(input.minDate) : undefined,
     maxDate: input.maxDate ? toPlainDate(input.maxDate) : undefined,
-    disabledDates: input.disabledDates ? input.disabledDates.map((d) => toPlainDate(d)) : undefined,
-    disabledDays: input.disabledDays,
+    isDateDisabled: input.isDateDisabled,
   }
 }
 
-function jsDayOfWeek(date: Temporal.PlainDate): number {
-  return date.dayOfWeek === 7 ? 0 : date.dayOfWeek
-}
-
+/**
+ * 날짜가 선택/포커스 이동 등에서 막혀야 하는지 판정한다.
+ * `minDate`/`maxDate`는 캘린더의 스크롤 가능 월 범위에도 쓰이며, 여기서는 달력 일 단위로 범위 밖이면 비활성으로 본다.
+ */
 export function isDateDisabled(date: PlainDay, constraints: DisableConstraints): boolean {
   const plain = toPlainDate(date)
-  const { disabled, minDate, maxDate, disabledDates, disabledDays } = constraints
 
-  if (disabled) return true
-  if (minDate !== undefined && compareCalendarDays(date, minDate) < 0) return true
-  if (maxDate !== undefined && compareCalendarDays(date, maxDate) > 0) return true
-
-  if (disabledDays !== undefined && disabledDays.length > 0) {
-    const dow = jsDayOfWeek(plain)
-    if (disabledDays.includes(dow)) return true
+  if (constraints.minDate !== undefined && compareCalendarDays(plain, constraints.minDate) < 0) {
+    return true
   }
-
-  if (disabledDates !== undefined && disabledDates.length > 0) {
-    for (const d of disabledDates) {
-      if (sameCalendarDay(d, date)) return true
-    }
+  if (constraints.maxDate !== undefined && compareCalendarDays(plain, constraints.maxDate) > 0) {
+    return true
+  }
+  if (constraints.isDateDisabled?.(plain)) {
+    return true
   }
 
   return false

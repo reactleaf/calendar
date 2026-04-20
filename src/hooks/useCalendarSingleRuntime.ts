@@ -14,11 +14,9 @@ import { useSingleSelection } from './useSingleSelection'
 
 export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRuntime {
   const {
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
+    isDateDisabled,
     keyboardNavigation = true,
     includeTime,
     minuteStep,
@@ -33,11 +31,9 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
   const selection = useSingleSelection({
     value,
     defaultValue,
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
+    isDateDisabled,
     includeTime,
     minuteStep,
     onSelect,

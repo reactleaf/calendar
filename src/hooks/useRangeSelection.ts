@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRangeValue, DateValue } from '../core/api.types'
 import { calendarDayStamp, toPlainDate, toSelectionValue, withTime, type PlainDay } from '../core/calendarDate'
-import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
+import { disableConstraintsFromOptions, isDateDisabled as isDateBlockedByConstraints } from '../core/constraints'
 import { isDayInInclusiveRange } from '../core/rangeHighlight'
 import {
   rangePointerDown,
@@ -13,11 +13,8 @@ import {
 export interface UseRangeSelectionOptions {
   value?: CalendarRangeValue
   defaultValue?: CalendarRangeValue
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
   includeTime?: boolean
   minuteStep?: number
   allowRangePreview?: boolean
@@ -58,11 +55,8 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
   const {
     value: valueProp,
     defaultValue,
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
     includeTime,
     minuteStep,
     allowRangePreview,
@@ -82,12 +76,9 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     ? `${valueProp?.start?.toString() ?? ''}|${valueProp?.end?.toString() ?? ''}`
     : ''
 
-  const constraints = useMemo(
-    () => disableConstraintsFromOptions({ disabled, minDate, maxDate, disabledDates, disabledDays }),
-    [disabled, disabledDates, disabledDays, maxDate, minDate],
-  )
+  const constraints = useMemo(() => disableConstraintsFromOptions({ minDate, maxDate }), [maxDate, minDate])
 
-  const isDisabled = useCallback((d: DateValue) => isDateDisabled(d, constraints), [constraints])
+  const isDisabled = useCallback((d: DateValue) => isDateBlockedByConstraints(d, constraints), [constraints])
 
   const previewPlain = useMemo(() => {
     if (pointer.kind !== 'anchored') return null

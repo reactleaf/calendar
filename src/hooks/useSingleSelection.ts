@@ -1,17 +1,16 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { useCallback, useMemo, useState } from 'react'
 import type { DateValue } from '../core/api.types'
 import { selectionEquals, toSelectionValue, withTime } from '../core/calendarDate'
-import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
+import { disableConstraintsFromOptions, isDateDisabled as isDateBlockedByConstraints } from '../core/constraints'
 import { nextSingleSelection } from '../core/selection/single'
 
 export interface UseSingleSelectionOptions {
   value?: DateValue | null
   defaultValue?: DateValue | null
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
   minuteStep?: number
   onSelect?: (next: DateValue | null) => void
@@ -31,11 +30,9 @@ export function useSingleSelection(options: UseSingleSelectionOptions): UseSingl
   const {
     value: valueProp,
     defaultValue = null,
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
+    isDateDisabled,
     includeTime,
     minuteStep,
     onSelect,
@@ -47,11 +44,11 @@ export function useSingleSelection(options: UseSingleSelectionOptions): UseSingl
   const value = isControlled ? valueProp : inner
 
   const constraints = useMemo(
-    () => disableConstraintsFromOptions({ disabled, minDate, maxDate, disabledDates, disabledDays }),
-    [disabled, disabledDates, disabledDays, maxDate, minDate],
+    () => disableConstraintsFromOptions({ minDate, maxDate, isDateDisabled }),
+    [isDateDisabled, maxDate, minDate],
   )
 
-  const isDisabled = useCallback((d: DateValue) => isDateDisabled(d, constraints), [constraints])
+  const isDisabled = useCallback((d: DateValue) => isDateBlockedByConstraints(d, constraints), [constraints])
 
   const isSelected = useCallback((d: DateValue) => value !== null && selectionEquals(value, d), [value])
 

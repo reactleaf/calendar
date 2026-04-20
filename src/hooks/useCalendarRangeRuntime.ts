@@ -14,11 +14,8 @@ import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlay
 
 export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRuntime {
   const {
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
     keyboardNavigation = true,
     includeTime,
     minuteStep,
@@ -35,11 +32,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
   const rawSelection = useRangeSelection({
     value,
     defaultValue,
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
     includeTime,
     minuteStep,
     onSelect,

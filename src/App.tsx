@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import './App.css'
 import { Calendar } from './Calendar'
 import type { CalendarRangeValue, DateValue } from './core/api.types'
@@ -17,10 +17,22 @@ function App() {
     end: Temporal.PlainDateTime.from('2026-04-20T13:33'),
   })
 
+  const demoBlockedDayStrings = useMemo(
+    () => new Set(['2026-04-15', '2026-04-22', '2026-05-01']),
+    [],
+  )
+  const demoIsDateDisabled = useCallback(
+    (date: Temporal.PlainDate) => demoBlockedDayStrings.has(date.toString()),
+    [demoBlockedDayStrings],
+  )
+
   return (
     <main className="app-calendar-demo">
       <h1 className="app-calendar-demo__title">Calendar mode playground</h1>
-      <p className="app-calendar-demo__hint">single / multiple / range를 각각 직접 조작해 동작을 확인할 수 있습니다.</p>
+      <p className="app-calendar-demo__hint">
+        single / multiple에서 2026-04-15, 04-22, 05-01은 <code>isDateDisabled</code>로 비활성입니다. range 모드는 일
+        단위 비활성을 지원하지 않습니다.
+      </p>
 
       <section className="app-calendar-demo__section">
         <h2>Single</h2>
@@ -30,6 +42,7 @@ function App() {
           includeTime
           value={singleSelected}
           onSelect={setSingleSelected}
+          isDateDisabled={demoIsDateDisabled}
         />
         <p className="app-calendar-demo__value" aria-live="polite">
           선택됨: <strong>{singleSelected === null ? '없음' : singleSelected.toString()}</strong>
@@ -44,6 +57,7 @@ function App() {
           includeTime
           value={multipleSelected}
           onSelect={setMultipleSelected}
+          isDateDisabled={demoIsDateDisabled}
         />
         <p className="app-calendar-demo__value" aria-live="polite">
           선택됨:{' '}

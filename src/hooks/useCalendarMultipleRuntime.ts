@@ -14,11 +14,9 @@ import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlay
 
 export function useCalendarMultipleRuntime(props: CalendarMultipleProps): CalendarRuntime {
   const {
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
+    isDateDisabled,
     keyboardNavigation = true,
     includeTime,
     minuteStep,
@@ -34,11 +32,9 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
   const rawSelection = useMultipleSelection({
     value,
     defaultValue,
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
+    isDateDisabled,
     includeTime,
     minuteStep,
     onSelect,

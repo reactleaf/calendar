@@ -61,11 +61,9 @@ declare function useCalendarState(options: UseCalendarStateOptions): UseCalendar
 interface UseSingleSelectionOptions {
   value?: DateValue | null
   defaultValue?: DateValue | null
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
   minuteStep?: number
   onSelect?: (next: DateValue | null) => void
@@ -86,7 +84,7 @@ declare function useSingleSelection(options: UseSingleSelectionOptions): UseSing
 
 핵심 규칙:
 
-- disabled/min/max에 걸리는 날짜는 선택 무시.
+- `minDate`/`maxDate` 범위 밖이거나 `isDateDisabled`가 true인 날은 선택 무시.
 - controlled(`value`)일 때 내부 상태를 source of truth로 사용하지 않는다.
 - `allowDeselect`가 `true`면 이미 선택된 날짜를 다시 누르면 `null`로 해제된다(기본값 `false`).
 - `includeTime`이 `true`일 때 `setSelectedTime(hour, minute)`으로 선택된 날짜의 시·분만 갱신할 수 있다.
@@ -99,11 +97,9 @@ declare function useSingleSelection(options: UseSingleSelectionOptions): UseSing
 interface UseMultipleSelectionOptions {
   value?: DateValue[]
   defaultValue?: DateValue[]
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
   minuteStep?: number
   maxSelections?: number
@@ -136,11 +132,8 @@ declare function useMultipleSelection(options: UseMultipleSelectionOptions): Use
 interface UseRangeSelectionOptions {
   value?: CalendarRangeValue
   defaultValue?: CalendarRangeValue
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
   includeTime?: boolean
   minuteStep?: number
   allowRangePreview?: boolean
@@ -170,6 +163,7 @@ declare function useRangeSelection(options: UseRangeSelectionOptions): UseRangeS
 - `onSelect`는 **범위가 완료된 시점**(start/end 확정)에만 호출한다.
 - 진행 중 상태(시작점만, 프리뷰 중)는 `onRangePreview`로만 알린다. 프리뷰 종료 시 `onRangePreview(null)`을 호출할 수 있다.
 - 확정 시 `start > end`면 자동 정렬한다.
+- 일 단위 `isDateDisabled`는 **지원하지 않는다**. 막는 날은 `minDate`/`maxDate` 밖뿐이다(공개 `Calendar`의 range 모드와 동일).
 - `includeTime`이 `true`일 때 `setRangeTime('start' | 'end', hour, minute)`으로 range 양 끝 각각의 시·분만 갱신할 수 있다.
 
 ## 5) useCalendarKeyboard

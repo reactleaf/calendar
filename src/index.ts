@@ -10,6 +10,7 @@ export {
 
 export type {
   CalendarBaseProps,
+  CalendarDayDisablingProps,
   CalendarMode,
   CalendarMultipleProps,
   CalendarProps,

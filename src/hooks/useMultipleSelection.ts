@@ -2,17 +2,15 @@ import { Temporal } from '@js-temporal/polyfill'
 import { useCallback, useMemo, useState } from 'react'
 import type { DateValue } from '../core/api.types'
 import { toPlainDate, toSelectionValue, withTime } from '../core/calendarDate'
-import { disableConstraintsFromOptions, isDateDisabled } from '../core/constraints'
+import { disableConstraintsFromOptions, isDateDisabled as isDateBlockedByConstraints } from '../core/constraints'
 import { toggleMultipleSelection } from '../core/selection/multiple'
 
 export interface UseMultipleSelectionOptions {
   value?: DateValue[]
   defaultValue?: DateValue[]
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: readonly DateValue[]
-  disabledDays?: readonly number[]
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
   minuteStep?: number
   maxSelections?: number
@@ -32,11 +30,9 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
   const {
     value: valueProp,
     defaultValue = [],
-    disabled,
     minDate,
     maxDate,
-    disabledDates,
-    disabledDays,
+    isDateDisabled,
     includeTime,
     minuteStep,
     maxSelections,
@@ -48,11 +44,11 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
   const value = isControlled ? valueProp : inner
 
   const constraints = useMemo(
-    () => disableConstraintsFromOptions({ disabled, minDate, maxDate, disabledDates, disabledDays }),
-    [disabled, disabledDates, disabledDays, maxDate, minDate],
+    () => disableConstraintsFromOptions({ minDate, maxDate, isDateDisabled }),
+    [isDateDisabled, maxDate, minDate],
   )
 
-  const isDisabled = useCallback((d: DateValue) => isDateDisabled(d, constraints), [constraints])
+  const isDisabled = useCallback((d: DateValue) => isDateBlockedByConstraints(d, constraints), [constraints])
 
   const isSelected = useCallback((d: DateValue) => value.some((v) => toPlainDate(v).equals(toPlainDate(d))), [value])
 

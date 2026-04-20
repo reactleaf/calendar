@@ -13,11 +13,8 @@ export interface CalendarRangeValue {
 export interface CalendarBaseProps {
   id?: string
   className?: string
-  disabled?: boolean
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: DateValue[]
-  disabledDays?: number[]
   keyboardNavigation?: boolean
   includeTime?: boolean
   minuteStep?: number
@@ -25,14 +22,23 @@ export interface CalendarBaseProps {
   onFocusedDateChange?: (date: DateValue | null) => void
 }
 
-export interface CalendarSingleProps extends CalendarBaseProps {
+/**
+ * `single` / `multiple` 전용.
+ * `range`는 시작·끝 사이 날짜가 모두 구간에 포함되는 모델이라 일 단위 블랙리스트를 두지 않는다.
+ */
+export interface CalendarDayDisablingProps {
+  /** `minDate`~`maxDate` 안에서 추가로 선택 불가로 만들 날. 범위 밖은 항상 비활성. */
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
+}
+
+export interface CalendarSingleProps extends CalendarBaseProps, CalendarDayDisablingProps {
   mode: 'single'
   value?: DateValue | null
   defaultValue?: DateValue | null
   onSelect?: (next: DateValue | null) => void
 }
 
-export interface CalendarMultipleProps extends CalendarBaseProps {
+export interface CalendarMultipleProps extends CalendarBaseProps, CalendarDayDisablingProps {
   mode: 'multiple'
   value?: DateValue[]
   defaultValue?: DateValue[]

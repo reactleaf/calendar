@@ -27,6 +27,15 @@ async function waitForVisibleDayCells(container: HTMLElement) {
   await waitFor(() => expect(getEnabledGridCells(container).length).toBeGreaterThan(0))
 }
 
+function findDayButton(container: HTMLElement, dayOfMonth: number): HTMLButtonElement | undefined {
+  return Array.from(container.querySelectorAll('button.calendar__day')).find((b) => {
+    const plain = b.querySelector('.calendar__dayNumber')
+    const inSelection = b.querySelector('.calendar__daySelectionDay')
+    const text = plain?.textContent ?? inSelection?.textContent
+    return text === String(dayOfMonth)
+  }) as HTMLButtonElement | undefined
+}
+
 beforeAll(() => {
   if (!HTMLElement.prototype.scrollTo) {
     HTMLElement.prototype.scrollTo = function scrollToPolyfill() {}
@@ -77,6 +86,36 @@ describe('Calendar preset mode integration', () => {
     expect(onSelect).toHaveBeenCalled()
     const last = onSelect.mock.calls.at(-1)?.[0]
     expect(last).toBeInstanceOf(Temporal.PlainDate)
+  })
+
+  it('isDateDisabled가 true인 날은 버튼이 비활성이고 클릭해도 onSelect가 호출되지 않는다', async () => {
+    const onSelect = vi.fn()
+    const { container } = render(
+      <Calendar
+        mode="single"
+        defaultValue={Temporal.PlainDate.from('2026-04-10')}
+        minDate={Temporal.PlainDate.from('2026-04-01')}
+        maxDate={Temporal.PlainDate.from('2026-04-30')}
+        isDateDisabled={(d) => d.equals(Temporal.PlainDate.from('2026-04-15'))}
+        onSelect={onSelect}
+      />,
+    )
+
+    await waitForVisibleDayCells(container)
+
+    const day15 = findDayButton(container, 15)
+    expect(day15).toBeDefined()
+    expect(day15?.disabled).toBe(true)
+
+    const day16 = findDayButton(container, 16)
+    expect(day16).toBeDefined()
+    expect(day16?.disabled).toBe(false)
+
+    fireEvent.click(day15!)
+    expect(onSelect).not.toHaveBeenCalled()
+
+    fireEvent.click(day16!)
+    expect(onSelect).toHaveBeenCalled()
   })
 
   it('single 모드에서 화살표 이동은 가상 하이라이트를 이동하고 Space/Enter로 선택한다', async () => {

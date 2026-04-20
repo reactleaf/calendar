@@ -27,12 +27,9 @@ export interface CalendarRangeValue {
 interface CalendarBaseProps {
   id?: string
   className?: string
-  disabled?: boolean
 
   minDate?: DateValue
   maxDate?: DateValue
-  disabledDates?: DateValue[]
-  disabledDays?: number[] // 0 (Sunday) ~ 6 (Saturday)
 
   locale?: {
     weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6
@@ -50,12 +47,26 @@ interface CalendarBaseProps {
 }
 ```
 
+```ts
+/** single / multiple 전용 — range는 지원하지 않는다. */
+interface CalendarDayDisablingProps {
+  isDateDisabled?: (date: Temporal.PlainDate) => boolean
+}
+```
+
+### 3-1) 선택 불가와 스크롤 범위
+
+- **`minDate` / `maxDate`**: 허용 **달력 범위**를 정한다. 이 범위 밖의 날은 항상 선택할 수 없고, 무한 스크롤 그리드에서 **표시·스크롤 가능한 월**에도 영향을 준다.
+- **`isDateDisabled`** (`CalendarDayDisablingProps`, **single/multiple만**): 위 범위 **안**에서 추가로 막을 날. **range**는 구간이 연속이라 “중간만 비활성”이 UX·모델 모두 어색하므로 이 prop을 받지 않는다.
+
+전체 캘린더를 한꺼번에 끄는 `disabled` prop은 두지 않는다.
+
 ## 4) mode별 props 차이
 
 ### 4-1) single
 
 ```ts
-interface CalendarSingleProps extends CalendarBaseProps {
+interface CalendarSingleProps extends CalendarBaseProps, CalendarDayDisablingProps {
   mode: 'single'
   value?: DateValue | null
   defaultValue?: DateValue | null
@@ -71,7 +82,7 @@ interface CalendarSingleProps extends CalendarBaseProps {
 ### 4-2) multiple
 
 ```ts
-interface CalendarMultipleProps extends CalendarBaseProps {
+interface CalendarMultipleProps extends CalendarBaseProps, CalendarDayDisablingProps {
   mode: 'multiple'
   value?: DateValue[]
   defaultValue?: DateValue[]
