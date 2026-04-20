@@ -1,0 +1,116 @@
+.calendar__weekdays {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0.55rem 0;
+  margin: 0;
+  background: var(--calendar-color-bg, #fff);
+  color: var(--calendar-color-muted, #6b6375);
+  border-bottom: 1px solid var(--border, #e5e4e7);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calendar__weekday {
+  text-align: center;
+}
+
+.calendar__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  padding: 0.8rem 0.9rem 0.7rem;
+  border-bottom: 1px solid var(--border, #e5e4e7);
+  background: color-mix(in srgb, var(--calendar-color-bg, #fff) 88%, #000 2%);
+}
+
+.calendar__headerYear {
+  min-height: 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__headerDate {
+  min-height: 1.45rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--calendar-color-fg, #111);
+}
+
+.calendar__headerTime {
+  min-height: 1rem;
+  font-size: 0.75rem;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__headerRange {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0.75rem;
+  row-gap: 0.12rem;
+  align-items: start;
+}
+
+.calendar__headerRange > *:nth-child(odd) {
+  border-right: 1px solid var(--border, #e5e4e7);
+  padding-right: 0.75rem;
+}
+
+.calendar__headerRangeEdge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__headerRangeDate {
+  min-height: 1.45rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--calendar-color-fg, #111);
+}
+
+/* range 모드: 헤더·요일 바 톤 (react-infinite-calendar 레퍼런스) */
+.calendar--mode-range .calendar__header {
+  border-bottom: none;
+  background: var(--calendar-color-accent, #4488e8);
+  color: #fff;
+}
+
+.calendar--mode-range .calendar__headerYear,
+.calendar--mode-range .calendar__headerDate {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.calendar--mode-range .calendar__headerRangeEdge,
+.calendar--mode-range .calendar__headerRangeDate {
+  color: #fff;
+}
+
+.calendar--mode-range .calendar__headerRangeEdge {
+  opacity: 0.9;
+}
+
+.calendar--mode-range .calendar__headerRange > *:nth-child(odd) {
+  border-right-color: rgba(255, 255, 255, 0.35);
+}
+
+.calendar--mode-range .calendar__headerTime,
+.calendar--mode-range .calendar__timeHint,
+.calendar--mode-range .calendar__timeEditorLabel,
+.calendar--mode-range .calendar__timeColon {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.calendar--mode-range .calendar__weekdays {
+  background: color-mix(in srgb, var(--calendar-color-accent, #4488e8) 72%, #000 28%);
+  color: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid color-mix(in srgb, var(--calendar-color-accent, #4488e8) 55%, #000 45%);
+}

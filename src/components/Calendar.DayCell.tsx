@@ -48,6 +48,34 @@ function buildDayClass(
     .join(' ')
 }
 
+function buildSelectionLayerClass(
+  mode: CalendarMode,
+  isSelected: boolean,
+  isInPreview: boolean,
+  isRangeStartDate: boolean,
+  isRangeEndDate: boolean,
+): string {
+  const isPreviewOnly = isInPreview && !isSelected
+  const shape =
+    mode !== 'range'
+      ? 'single'
+      : isRangeStartDate && isRangeEndDate
+        ? 'single'
+        : isRangeStartDate
+          ? 'start'
+          : isRangeEndDate
+            ? 'end'
+            : 'between'
+
+  return [
+    'calendar__selectionLayer',
+    isPreviewOnly ? 'calendar__selectionLayer--preview' : 'calendar__selectionLayer--selected',
+    `calendar__selectionLayer--${shape}`,
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
 export const CalendarDayCell = memo(function CalendarDayCell({
   mode,
   dayStamp,
@@ -68,6 +96,7 @@ export const CalendarDayCell = memo(function CalendarDayCell({
   onDayClick,
   onDayMouseEnter,
 }: CalendarDayCellProps) {
+  const selectionLayerActive = isSelected || (mode === 'range' && isInPreview)
   const dayClass = buildDayClass(
     mode,
     dayStamp,
@@ -78,6 +107,9 @@ export const CalendarDayCell = memo(function CalendarDayCell({
     isRangeEndDate,
     isInPreview,
   )
+  const selectionLayerClass = selectionLayerActive
+    ? buildSelectionLayerClass(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)
+    : null
 
   return (
     <li className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`}>
@@ -93,6 +125,7 @@ export const CalendarDayCell = memo(function CalendarDayCell({
         {...(onDayMouseEnter ? { onMouseEnter: onDayMouseEnter } : {})}
         onClick={onDayClick}
       >
+        {selectionLayerClass ? <span className={selectionLayerClass} aria-hidden="true" /> : null}
         {isFirstOfMonth ? <span className="calendar__dayMonth">{monthShort}</span> : null}
         <span className="calendar__dayNumber">{dayOfMonth}</span>
         {showYear ? <span className="calendar__dayYear">{year}</span> : null}

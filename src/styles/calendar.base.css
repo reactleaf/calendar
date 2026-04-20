@@ -1,0 +1,17 @@
+.calendar {
+  --calendar-row-height: 3.25rem;
+  --calendar-cell-width: calc(100% / 7);
+  /* range 끝점 원(레퍼런스와 동일한 정수 px 오프셋: row − 4px) */
+  --calendar-range-pip: calc(var(--calendar-row-height) - 4px);
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, 22rem);
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 12px;
+  background: var(--calendar-color-bg, #fff);
+  color: var(--calendar-color-fg, #111);
+  overflow: hidden;
+  font:
+    0.875rem/1.3 system-ui,
+    sans-serif;
+}

@@ -1,0 +1,34 @@
+.calendar__monthOverlayBlock {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  background: color-mix(in srgb, var(--bg, #fff) 65%, transparent);
+  transition: opacity 0.18s ease;
+}
+
+.calendar__monthOverlayBlock > span {
+  position: absolute;
+  inset: 0 0 var(--calendar-row-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.calendar__monthOverlayBlock.is-fullLastRow > span {
+  inset: 0;
+}
+
+.calendar__monthOverlayBlock.is-partialFirstRow {
+  top: var(--calendar-row-height);
+}
+
+.calendar__scroll.is-scrolling .calendar__monthOverlayBlock {
+  opacity: 1;
+}

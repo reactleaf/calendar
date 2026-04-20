@@ -1,0 +1,119 @@
+.calendar__timeEditor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.calendar__timeEditorLabel {
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.calendar__timeFields {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.06rem;
+}
+
+.calendar__timePart {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  width: 1.8rem;
+  height: 1.55rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: auto;
+  overscroll-behavior-y: none;
+  scrollbar-width: none;
+}
+
+.calendar__timePart::-webkit-scrollbar {
+  display: none;
+}
+
+.calendar__timePartControl {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  align-items: stretch;
+  background: transparent;
+}
+
+.calendar__timeEditor:hover .calendar__timePartControl,
+.calendar__timeEditor:focus-within .calendar__timePartControl {
+  background: #fff;
+}
+
+.calendar__timeDisplay,
+.calendar__timeInput {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--calendar-color-fg, #111);
+  font: inherit;
+  padding: 0.04rem 0.08rem;
+  text-align: center;
+}
+
+.calendar__timeDisplay {
+  cursor: text;
+}
+
+.calendar__timeInput {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.calendar__timeInput::-webkit-outer-spin-button,
+.calendar__timeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.calendar__timeEditor:hover .calendar__timeDisplay:not(:disabled),
+.calendar__timeEditor:focus-within .calendar__timeDisplay:not(:disabled),
+.calendar__timeEditor:hover .calendar__timeInput:not(:disabled),
+.calendar__timeEditor:focus-within .calendar__timeInput:not(:disabled) {
+  border-color: var(--border, #e5e4e7);
+  background: #fff;
+}
+
+.calendar__timeDisplay:disabled,
+.calendar__timeInput:disabled {
+  opacity: 0.45;
+}
+
+.calendar__timeDisplay:disabled {
+  cursor: not-allowed;
+}
+
+.calendar__timeColon {
+  flex: 0 0 auto;
+  padding: 0 0.02rem;
+  font-size: 0.95em;
+  line-height: 1;
+  color: var(--calendar-color-muted, #6b6375);
+}
+
+.calendar__timeScrollSensorTrack {
+  flex-shrink: 0;
+  height: 2200px;
+  width: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.calendar__timeHint {
+  margin-top: 0.28rem;
+  font-size: 0.66rem;
+  color: var(--calendar-color-muted, #6b6375);
+}
