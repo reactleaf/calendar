@@ -17,10 +17,7 @@ function App() {
     end: Temporal.PlainDateTime.from('2026-04-20T13:33'),
   })
 
-  const demoBlockedDayStrings = useMemo(
-    () => new Set(['2026-04-15', '2026-04-22', '2026-05-01']),
-    [],
-  )
+  const demoBlockedDayStrings = useMemo(() => new Set(['2026-04-15', '2026-04-22', '2026-05-01']), [])
   const demoIsDateDisabled = useCallback(
     (date: Temporal.PlainDate) => demoBlockedDayStrings.has(date.toString()),
     [demoBlockedDayStrings],

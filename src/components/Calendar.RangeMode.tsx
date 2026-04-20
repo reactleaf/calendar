@@ -1,6 +1,6 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent, UIEvent } from 'react'
-import { startTransition, useCallback, useMemo, useRef } from 'react'
+import { startTransition, useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { toPlainDate } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { dayStamp } from './Calendar.utils'
@@ -30,14 +30,12 @@ export function CalendarRangeMode() {
     displayMode,
   } = runtime
 
-  const selectionRef = useRef(selection)
-  const setFocusedDateRef = useRef(setFocusedDate)
   const handleScrollRef = useRef(handleScroll)
   const handleKeyDownRef = useRef(handleKeyDown)
-  selectionRef.current = selection
-  setFocusedDateRef.current = setFocusedDate
-  handleScrollRef.current = handleScroll
-  handleKeyDownRef.current = handleKeyDown
+  useLayoutEffect(() => {
+    handleScrollRef.current = handleScroll
+    handleKeyDownRef.current = handleKeyDown
+  }, [handleScroll, handleKeyDown])
 
   const selectedDateKey = useMemo(() => {
     if (selectionSnapshot.mode !== 'range') return ''
@@ -49,25 +47,25 @@ export function CalendarRangeMode() {
   const onDateClick = useCallback(
     (date: Temporal.PlainDate) => {
       startTransition(() => {
-        setFocusedDateRef.current(date)
-        selectionRef.current.selectDate(date, 'click')
+        setFocusedDate(date)
+        selection.selectDate(date, 'click')
       })
       queueMicrotask(() => {
         scrollRef.current?.focus({ preventScroll: true })
       })
     },
-    [scrollRef],
+    [scrollRef, selection, setFocusedDate],
   )
-  const onDateHover = useCallback((date: Temporal.PlainDate) => selectionRef.current.previewDate?.(date, 'hover'), [])
+  const onDateHover = useCallback((date: Temporal.PlainDate) => selection.previewDate?.(date, 'hover'), [selection])
   const onScroll = useCallback((event: UIEvent<HTMLDivElement>) => handleScrollRef.current(event), [])
   const onKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => handleKeyDownRef.current(event), [])
-  const isDateSelected = useCallback((date: Temporal.PlainDate) => selectionRef.current.isSelected(date), [])
-  const isDateDisabled = useCallback((date: Temporal.PlainDate) => selectionRef.current.isDisabled(date), [])
-  const isRangeStart = useCallback((date: Temporal.PlainDate) => selectionRef.current.isRangeStart?.(date) ?? false, [])
-  const isRangeEnd = useCallback((date: Temporal.PlainDate) => selectionRef.current.isRangeEnd?.(date) ?? false, [])
+  const isDateSelected = useCallback((date: Temporal.PlainDate) => selection.isSelected(date), [selection])
+  const isDateDisabled = useCallback((date: Temporal.PlainDate) => selection.isDisabled(date), [selection])
+  const isRangeStart = useCallback((date: Temporal.PlainDate) => selection.isRangeStart?.(date) ?? false, [selection])
+  const isRangeEnd = useCallback((date: Temporal.PlainDate) => selection.isRangeEnd?.(date) ?? false, [selection])
   const isInPreviewRange = useCallback(
-    (date: Temporal.PlainDate) => selectionRef.current.isInPreviewRange?.(date) ?? false,
-    [],
+    (date: Temporal.PlainDate) => selection.isInPreviewRange?.(date) ?? false,
+    [selection],
   )
 
   if (displayMode === 'months') return <CalendarMonthPicker />

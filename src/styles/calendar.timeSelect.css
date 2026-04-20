@@ -148,7 +148,13 @@
    * fade 는 위/아래 1.25rem 고정 두께로, frame 높이와 무관하게 동일한 경계감을 유지한다.
    */
   mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 1.25rem,
+    #000 calc(100% - 1.25rem),
+    transparent 100%
+  );
 }
 
 .calendar__timeScrollPickerScroll {
@@ -187,7 +193,9 @@
   cursor: pointer;
   outline: none;
   opacity: 0.55;
-  transition: color 120ms ease, opacity 120ms ease;
+  transition:
+    color 120ms ease,
+    opacity 120ms ease;
 }
 
 /*
@@ -204,7 +212,10 @@
   height: 2rem;
   border-radius: 50%;
   background: transparent;
-  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .calendar__timeScrollItem.is-active {

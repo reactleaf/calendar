@@ -139,7 +139,9 @@ export function CalendarTimeInput({
 
   return (
     <div
-      className={['calendar__timeEditor', hidePointer ? 'calendar__timeEditor--hidePointer' : ''].filter(Boolean).join(' ')}
+      className={['calendar__timeEditor', hidePointer ? 'calendar__timeEditor--hidePointer' : '']
+        .filter(Boolean)
+        .join(' ')}
       data-view="time"
       data-time-target={timeEditTarget}
     >

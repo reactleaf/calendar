@@ -93,7 +93,9 @@
 }
 
 /* 프리뷰 막대(시작/끝 캡 제외) — fill 이 확정보다 연하지만 흰 글자 대비 확보 */
-.calendar__day--inPreviewRange:not(.calendar__day--selected):not(.calendar__day--rangeStart):not(.calendar__day--rangeEnd) {
+.calendar__day--inPreviewRange:not(.calendar__day--selected):not(.calendar__day--rangeStart):not(
+    .calendar__day--rangeEnd
+  ) {
   color: #fff;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);

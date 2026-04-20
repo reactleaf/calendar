@@ -1,4 +1,6 @@
+import type { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode } from 'react'
+import type { RefObject } from 'react'
 import { useCallback, useLayoutEffect, useState } from 'react'
 import type { DateViewportPlacement } from './Calendar.types'
 import { useCalendarContext } from './Calendar.context'
@@ -24,6 +26,72 @@ function TodayChevron({ direction }: { direction: 'up' | 'down' }) {
   )
 }
 
+interface CalendarTodayBarActiveProps {
+  label: string
+  today: Temporal.PlainDate
+  setFocusedDate: (d: Temporal.PlainDate) => void
+  keepDateVisible: (d: Temporal.PlainDate) => void
+  getDateViewportPlacement: (d: Temporal.PlainDate) => DateViewportPlacement
+  scrollRef: RefObject<HTMLDivElement | null>
+  keyboardNavigation: boolean
+}
+
+/** `displayMode === 'days'` 이고 오늘이 선택 가능할 때만 마운트 — effect 초반 reset setState 불필요 */
+function CalendarTodayBarActive({
+  label,
+  today,
+  setFocusedDate,
+  keepDateVisible,
+  getDateViewportPlacement,
+  scrollRef,
+  keyboardNavigation,
+}: CalendarTodayBarActiveProps) {
+  const [placement, setPlacement] = useState<DateViewportPlacement | null>(null)
+
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+
+    const update = () => {
+      setPlacement(getDateViewportPlacement(today))
+    }
+
+    update()
+    scrollEl.addEventListener('scroll', update, { passive: true })
+    let ro: ResizeObserver | undefined
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(update)
+      ro.observe(scrollEl)
+    }
+
+    return () => {
+      scrollEl.removeEventListener('scroll', update)
+      ro?.disconnect()
+    }
+  }, [getDateViewportPlacement, scrollRef, today])
+
+  const onClick = useCallback(() => {
+    setFocusedDate(today)
+    requestAnimationFrame(() => {
+      keepDateVisible(today)
+      if (keyboardNavigation) scrollRef.current?.focus({ preventScroll: true })
+    })
+  }, [keepDateVisible, keyboardNavigation, scrollRef, setFocusedDate, today])
+
+  if (placement === null || placement === 'visible') return null
+
+  return (
+    <div className="calendar__todayBar">
+      <button type="button" className="calendar__todayButton" onClick={onClick}>
+        <span className="calendar__todayButtonInner">
+          <span>{label}</span>
+          {placement === 'above' ? <TodayChevron direction="up" /> : <TodayChevron direction="down" />}
+        </span>
+      </button>
+    </div>
+  )
+}
+
 /**
  * react-infinite-calendar Today 행: 오늘이 뷰 밖이면만 표시, 스크롤 방향에 따라 쉐브론 방향.
  * @see https://github.com/clauderic/react-infinite-calendar/blob/master/src/Today/Today.scss
@@ -44,59 +112,18 @@ export function CalendarTodayBar() {
   const label = todayWordLabel(locale)
   const disabled = selection.isDisabled(today)
 
-  const [placement, setPlacement] = useState<DateViewportPlacement | null>(null)
-
-  useLayoutEffect(() => {
-    if (displayMode !== 'days' || disabled) {
-      setPlacement(null)
-      return
-    }
-
-    const scrollEl = scrollRef.current
-    if (!scrollEl) {
-      setPlacement(null)
-      return
-    }
-
-    const update = () => {
-      setPlacement(getDateViewportPlacement(today))
-    }
-
-    update()
-    scrollEl.addEventListener('scroll', update, { passive: true })
-    let ro: ResizeObserver | undefined
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(update)
-      ro.observe(scrollEl)
-    }
-
-    return () => {
-      scrollEl.removeEventListener('scroll', update)
-      ro?.disconnect()
-    }
-  }, [disabled, displayMode, getDateViewportPlacement, scrollRef, today])
-
-  const onClick = useCallback(() => {
-    if (disabled) return
-    setFocusedDate(today)
-    requestAnimationFrame(() => {
-      keepDateVisible(today)
-      if (keyboardNavigation) scrollRef.current?.focus({ preventScroll: true })
-    })
-  }, [disabled, keepDateVisible, keyboardNavigation, scrollRef, setFocusedDate, today])
-
   if (displayMode !== 'days' || disabled) return null
-  if (placement === null || placement === 'visible') return null
 
   return (
-    <div className="calendar__todayBar">
-      <button type="button" className="calendar__todayButton" onClick={onClick}>
-        <span className="calendar__todayButtonInner">
-          <span>{label}</span>
-          {placement === 'above' ? <TodayChevron direction="up" /> : <TodayChevron direction="down" />}
-        </span>
-      </button>
-    </div>
+    <CalendarTodayBarActive
+      label={label}
+      today={today}
+      setFocusedDate={setFocusedDate}
+      keepDateVisible={keepDateVisible}
+      getDateViewportPlacement={getDateViewportPlacement}
+      scrollRef={scrollRef}
+      keyboardNavigation={keyboardNavigation}
+    />
   )
 }
 

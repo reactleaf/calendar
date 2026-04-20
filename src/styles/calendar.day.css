@@ -154,7 +154,13 @@
 }
 
 /* hover: pip 크기의 원형 tint (radial-gradient 로 cell 배경을 원형으로 클리핑) */
-.calendar__day:hover:not(:disabled, .calendar__day--selected, .calendar__day--inRange, .calendar__day--rangeStart, .calendar__day--rangeEnd) {
+.calendar__day:hover:not(
+    :disabled,
+    .calendar__day--selected,
+    .calendar__day--inRange,
+    .calendar__day--rangeStart,
+    .calendar__day--rangeEnd
+  ) {
   background: radial-gradient(
     circle calc(var(--calendar-range-pip) / 2) at center,
     var(--calendar-day-hover-tint, color-mix(in srgb, #7dd3fc 22%, transparent)) 99%,
@@ -212,6 +218,10 @@
   pointer-events: none;
 }
 
-.calendar__day--today:not(.calendar__day--selected, .calendar__day--rangeStart, .calendar__day--rangeEnd):disabled::after {
+.calendar__day--today:not(
+    .calendar__day--selected,
+    .calendar__day--rangeStart,
+    .calendar__day--rangeEnd
+  ):disabled::after {
   box-shadow: inset 0 0 0 1px #bbb;
 }

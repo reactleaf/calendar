@@ -118,7 +118,9 @@
 .calendar__todayChevron {
   flex-shrink: 0;
   opacity: 0.92;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -359,4 +361,3 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-

@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "ci": "pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build"
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",

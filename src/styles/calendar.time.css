@@ -43,7 +43,9 @@
   align-items: stretch;
   background: transparent;
   border-radius: 6px;
-  transition: background 120ms ease, box-shadow 120ms ease;
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease;
 }
 
 /**
@@ -131,4 +133,3 @@
 .calendar__timeEditor--hidePointer .calendar__timeColon {
   cursor: none;
 }
-

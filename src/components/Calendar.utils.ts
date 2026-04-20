@@ -30,9 +30,9 @@ export function plainDateFromDayStamp(stamp: number): Temporal.PlainDate {
 export function weekdayLabels(locale: string, weekStartsOn: WeekStartsOn = 0): string[] {
   const sunday = Temporal.PlainDate.from({ year: 2026, month: 1, day: 4 })
   const base = Array.from({ length: 7 }, (_, i) =>
-    sunday.add({ days: i }).toLocaleString(locale, { weekday: 'short' }),
+    String(sunday.add({ days: i }).toLocaleString(locale, { weekday: 'short' })),
   )
-  return Array.from({ length: 7 }, (_, i) => base[(weekStartsOn + i) % 7])
+  return Array.from({ length: 7 }, (_, i) => base[(weekStartsOn + i) % 7]!)
 }
 
 export function sameDay(a: Temporal.PlainDate, b: Temporal.PlainDate): boolean {
@@ -65,7 +65,10 @@ export function monthIndexFromMin(minMonth: Temporal.PlainYearMonth, month: Temp
   return (month.year - minMonth.year) * 12 + (month.month - minMonth.month)
 }
 
-function monthGridSizing(month: Temporal.PlainYearMonth, weekStartsOn: WeekStartsOn = 0): {
+function monthGridSizing(
+  month: Temporal.PlainYearMonth,
+  weekStartsOn: WeekStartsOn = 0,
+): {
   rowCount: number
   firstPartial: boolean
 } {

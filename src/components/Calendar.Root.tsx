@@ -17,7 +17,12 @@ interface CalendarRuntimeRootProps extends CalendarRootBaseProps {
   className?: string
 }
 
-function CalendarRuntimeRoot({ id, className, children, runtime }: CalendarRuntimeRootProps & { runtime: CalendarRuntime }) {
+function CalendarRuntimeRoot({
+  id,
+  className,
+  children,
+  runtime,
+}: CalendarRuntimeRootProps & { runtime: CalendarRuntime }) {
   const rootClass = ['calendar', `calendar--mode-${runtime.mode}`, className].filter(Boolean).join(' ')
   return (
     <CalendarContext.Provider value={runtime}>

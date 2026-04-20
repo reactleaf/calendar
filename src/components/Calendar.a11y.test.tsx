@@ -163,10 +163,13 @@ describe('Calendar grid ARIA (Phase 5-1 하이브리드)', () => {
       (node): node is HTMLButtonElement => node instanceof HTMLButtonElement && !node.disabled,
     )
     if (!firstEnabled) throw new Error('활성 셀을 찾지 못했습니다.')
+    const stamp = firstEnabled.dataset.dayStamp
+    if (stamp === undefined) throw new Error('day-stamp 없음')
     fireEvent.click(firstEnabled)
 
     await waitFor(() => {
-      expect(firstEnabled.getAttribute('aria-selected')).toBe('true')
+      const updated = container.querySelector(`button.calendar__day[data-day-stamp="${stamp}"]`)
+      expect(updated?.getAttribute('aria-selected')).toBe('true')
     })
   })
 

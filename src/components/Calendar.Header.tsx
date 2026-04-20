@@ -124,7 +124,9 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   )
   const showTimeRow = includeTime === true
 
-  const classes = ['calendar__header', showTimeRow ? 'calendar__header--hasTime' : '', className].filter(Boolean).join(' ')
+  const classes = ['calendar__header', showTimeRow ? 'calendar__header--hasTime' : '', className]
+    .filter(Boolean)
+    .join(' ')
 
   /**
    * 헤더 요소는 각자 연결된 뷰가 있다 (연도→months, 날짜→days, time editor→time).
@@ -149,9 +151,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   }, [selectionSnapshot])
 
   const rangeHeaderSource =
-    mode === 'range' && selectionSnapshot.mode === 'range'
-      ? (rangeHeaderValue ?? selectionSnapshot.value)
-      : null
+    mode === 'range' && selectionSnapshot.mode === 'range' ? (rangeHeaderValue ?? selectionSnapshot.value) : null
   const rangeStartTime = rangeHeaderSource ? resolveEditorDateTime(rangeHeaderSource.start) : null
   const rangeEndTime = rangeHeaderSource ? resolveEditorDateTime(rangeHeaderSource.end) : null
 

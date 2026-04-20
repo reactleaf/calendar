@@ -170,79 +170,79 @@ function CalendarModeBodyImpl({
                 else monthRefs.current.set(key, node)
               }}
             >
-            <div
-              className="calendar__monthRows"
-              onMouseOver={mode === 'range' ? handleMonthRowsMouseOver : undefined}
-            >
-              {rows.map((row, rowIndex) => {
-                const isPartial = row.length !== 7
-                const rowClass = [
-                  'calendar__monthRow',
-                  rowIndex === 0 ? 'is-first' : '',
-                  rowIndex === 1 ? 'is-second' : '',
-                  isPartial ? 'is-partial' : '',
-                  rowIndex === 0 && isPartial ? 'is-partial-first' : '',
-                  rowIndex === rows.length - 1 && isPartial ? 'is-partial-last' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')
-
-                return (
-                  <ul
-                    key={`${key}-row-${rowIndex}`}
-                    className={rowClass}
-                    role="row"
-                    aria-label={`${monthShort} ${rowIndex + 1}주차`}
-                  >
-                    {row.map((date, cellIndex) => {
-                      const dateKey = dayStamp(date)
-                      const isSelected = isDateSelected(date)
-                      const isToday = dateKey === todayDateStamp
-                      const isFirstOfMonth = date.day === 1
-                      const showYear = isFirstOfMonth && date.year !== todayYear
-                      const isRangeStartDate = mode === 'range' ? isRangeStart(date) : false
-                      const isRangeEndDate = mode === 'range' ? isRangeEnd(date) : false
-                      const isInPreview = mode === 'range' ? isInPreviewRange(date) : false
-
-                      return (
-                        <CalendarDayCell
-                          key={dateKey}
-                          mode={mode}
-                          dayStamp={dateKey}
-                          monthShort={monthShort}
-                          focusedDateStamp={focusedDateStamp}
-                          isSelected={isSelected}
-                          isDisabled={isDateDisabled(date)}
-                          isToday={isToday}
-                          isRangeStartDate={isRangeStartDate}
-                          isRangeEndDate={isRangeEndDate}
-                          isInPreview={isInPreview}
-                          isFirstOfMonth={isFirstOfMonth}
-                          showYear={showYear}
-                          year={date.year}
-                          dayOfMonth={date.day}
-                          cellIndex={cellIndex}
-                          todayLabelShort={todayLabelShort}
-                          idPrefix={idPrefix}
-                          onDayMouseDown={handleDayMouseDown}
-                          onDayClick={handleDayClick}
-                        />
-                      )
-                    })}
-                  </ul>
-                )
-              })}
-
-              <label
-                className={`calendar__monthOverlayBlock${
-                  firstPartial && hasPrevious ? ' is-partialFirstRow' : ''
-                }${fullLastRow ? ' is-fullLastRow' : ''}`}
-                aria-hidden="true"
+              <div
+                className="calendar__monthRows"
+                onMouseOver={mode === 'range' ? handleMonthRowsMouseOver : undefined}
               >
-                <span>{monthLabel(month, locale)}</span>
-              </label>
-            </div>
-          </section>
+                {rows.map((row, rowIndex) => {
+                  const isPartial = row.length !== 7
+                  const rowClass = [
+                    'calendar__monthRow',
+                    rowIndex === 0 ? 'is-first' : '',
+                    rowIndex === 1 ? 'is-second' : '',
+                    isPartial ? 'is-partial' : '',
+                    rowIndex === 0 && isPartial ? 'is-partial-first' : '',
+                    rowIndex === rows.length - 1 && isPartial ? 'is-partial-last' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                  return (
+                    <ul
+                      key={`${key}-row-${rowIndex}`}
+                      className={rowClass}
+                      role="row"
+                      aria-label={`${monthShort} ${rowIndex + 1}주차`}
+                    >
+                      {row.map((date, cellIndex) => {
+                        const dateKey = dayStamp(date)
+                        const isSelected = isDateSelected(date)
+                        const isToday = dateKey === todayDateStamp
+                        const isFirstOfMonth = date.day === 1
+                        const showYear = isFirstOfMonth && date.year !== todayYear
+                        const isRangeStartDate = mode === 'range' ? isRangeStart(date) : false
+                        const isRangeEndDate = mode === 'range' ? isRangeEnd(date) : false
+                        const isInPreview = mode === 'range' ? isInPreviewRange(date) : false
+
+                        return (
+                          <CalendarDayCell
+                            key={dateKey}
+                            mode={mode}
+                            dayStamp={dateKey}
+                            monthShort={monthShort}
+                            focusedDateStamp={focusedDateStamp}
+                            isSelected={isSelected}
+                            isDisabled={isDateDisabled(date)}
+                            isToday={isToday}
+                            isRangeStartDate={isRangeStartDate}
+                            isRangeEndDate={isRangeEndDate}
+                            isInPreview={isInPreview}
+                            isFirstOfMonth={isFirstOfMonth}
+                            showYear={showYear}
+                            year={date.year}
+                            dayOfMonth={date.day}
+                            cellIndex={cellIndex}
+                            todayLabelShort={todayLabelShort}
+                            idPrefix={idPrefix}
+                            onDayMouseDown={handleDayMouseDown}
+                            onDayClick={handleDayClick}
+                          />
+                        )
+                      })}
+                    </ul>
+                  )
+                })}
+
+                <label
+                  className={`calendar__monthOverlayBlock${
+                    firstPartial && hasPrevious ? ' is-partialFirstRow' : ''
+                  }${fullLastRow ? ' is-fullLastRow' : ''}`}
+                  aria-hidden="true"
+                >
+                  <span>{monthLabel(month, locale)}</span>
+                </label>
+              </div>
+            </section>
           )
         })}
       </div>

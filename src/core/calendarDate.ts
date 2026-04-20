@@ -73,7 +73,11 @@ export function normalizeMinuteStep(step?: number): number {
   return s
 }
 
-export function normalizeTimeParts(hour: number, minute: number, minuteStep?: number): { hour: number; minute: number } {
+export function normalizeTimeParts(
+  hour: number,
+  minute: number,
+  minuteStep?: number,
+): { hour: number; minute: number } {
   const safeHour = clampInt(hour, 0, 23)
   const step = normalizeMinuteStep(minuteStep)
   const safeMinute = clampInt(Math.round(minute / step) * step, 0, 59)

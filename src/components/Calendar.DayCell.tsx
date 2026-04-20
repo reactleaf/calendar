@@ -138,8 +138,7 @@ export const CalendarDayCell = memo(function CalendarDayCell({
     : null
 
   const selectionShape = getSelectionShape(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)
-  const showSelectionStack =
-    selectionLayerActive && selectionShape !== null && selectionShape !== 'between'
+  const showSelectionStack = selectionLayerActive && selectionShape !== null && selectionShape !== 'between'
   const showBetweenDayOnly = selectionLayerActive && selectionShape === 'between'
 
   return (

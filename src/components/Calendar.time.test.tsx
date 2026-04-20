@@ -34,9 +34,7 @@ function pickerItem(
 
 /** 섹션 내 특정 축(hour/minute) 피커의 "고유" 값 개수. 복제본(REPEAT)이 있으므로 Set 으로 de-dup. */
 function uniqueAxisValueCount(container: HTMLElement, section: string, axis: 'hour' | 'minute'): number {
-  const list = container.querySelector<HTMLElement>(
-    `[data-time-section="${section}"] [data-time-axis="${axis}"]`,
-  )
+  const list = container.querySelector<HTMLElement>(`[data-time-section="${section}"] [data-time-axis="${axis}"]`)
   if (!list) throw new Error(`${axis} listbox not found in section ${section}`)
   const buttons = list.querySelectorAll<HTMLElement>('button.calendar__timeScrollItem')
   return new Set(Array.from(buttons).map((b) => b.getAttribute('data-time-value'))).size
@@ -170,9 +168,7 @@ describe('Calendar includeTime', () => {
     expect(endMinuteListAfter.querySelectorAll('button.calendar__timeScrollItem.is-active').length).toBe(0)
 
     // 반면, 종료 시(hour=13)는 hour 목록에 그대로 있으므로 active 는 유지된다
-    const endHourList = container.querySelector<HTMLElement>(
-      '[data-time-section="rangeEnd"] [data-time-axis="hour"]',
-    )!
+    const endHourList = container.querySelector<HTMLElement>('[data-time-section="rangeEnd"] [data-time-axis="hour"]')!
     expect(endHourList.querySelector('button.calendar__timeScrollItem.is-active[data-time-value="13"]')).toBeTruthy()
   })
 

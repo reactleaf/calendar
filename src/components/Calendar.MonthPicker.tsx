@@ -23,16 +23,8 @@ import { compareMonth, monthShortLabel } from './Calendar.utils'
  * 참고: react-infinite-calendar 의 `Years`(with months) 뷰.
  */
 export function CalendarMonthPicker() {
-  const {
-    locale,
-    minMonth,
-    maxMonth,
-    currentMonth,
-    displayMode,
-    setDisplayMode,
-    scrollToMonth,
-    selectionSnapshot,
-  } = useCalendarContext()
+  const { locale, minMonth, maxMonth, currentMonth, displayMode, setDisplayMode, scrollToMonth, selectionSnapshot } =
+    useCalendarContext()
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const activeButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -161,8 +153,7 @@ export function CalendarMonthPicker() {
                    * multiple 모드에서 is-active 가 여러 개더라도 focus 는 primary(= 첫 선택) 로.
                    * 선택이 없을 땐 currentMonth 로 폴백 (하이라이트는 안 걸림).
                    */
-                  const isFocusTarget =
-                    year === initialFocusMonth.year && monthNumber === initialFocusMonth.month
+                  const isFocusTarget = year === initialFocusMonth.year && monthNumber === initialFocusMonth.month
                   const className = [
                     'calendar__monthPickerMonth',
                     isActive ? 'is-active' : '',
