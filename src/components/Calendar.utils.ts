@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
-
-export const WEEK_STARTS_ON = 0 as const
+import type { WeekStartsOn } from '../core/monthGrid'
+import { weekStartToIsoDay } from '../core/monthGrid'
 export const PRELOAD_MONTH_COUNT = 8
 export const PAGE_MONTH_COUNT = 6
 export const EDGE_THRESHOLD_PX = 220
@@ -26,11 +26,13 @@ export function plainDateFromDayStamp(stamp: number): Temporal.PlainDate {
   return Temporal.PlainDate.from({ year, month, day })
 }
 
-export function weekdayLabels(locale: string): string[] {
+/** @param weekStartsOn — 0=일 … 6=토. 열 순서와 동일하게 라벨을 회전한다. */
+export function weekdayLabels(locale: string, weekStartsOn: WeekStartsOn = 0): string[] {
   const sunday = Temporal.PlainDate.from({ year: 2026, month: 1, day: 4 })
-  return Array.from({ length: 7 }, (_, i) =>
+  const base = Array.from({ length: 7 }, (_, i) =>
     sunday.add({ days: i }).toLocaleString(locale, { weekday: 'short' }),
   )
+  return Array.from({ length: 7 }, (_, i) => base[(weekStartsOn + i) % 7])
 }
 
 export function sameDay(a: Temporal.PlainDate, b: Temporal.PlainDate): boolean {
@@ -63,22 +65,29 @@ export function monthIndexFromMin(minMonth: Temporal.PlainYearMonth, month: Temp
   return (month.year - minMonth.year) * 12 + (month.month - minMonth.month)
 }
 
-function monthGridSizing(month: Temporal.PlainYearMonth): { rowCount: number; firstPartial: boolean } {
+function monthGridSizing(month: Temporal.PlainYearMonth, weekStartsOn: WeekStartsOn = 0): {
+  rowCount: number
+  firstPartial: boolean
+} {
   const dim = month.daysInMonth
   const first = month.toPlainDate({ day: 1 })
-  const lead = (first.dayOfWeek % 7 - WEEK_STARTS_ON + 7) % 7
+  const lead = (first.dayOfWeek - weekStartToIsoDay(weekStartsOn) + 7) % 7
   const firstRowLen = lead === 0 ? Math.min(7, dim) : Math.min(7 - lead, dim)
   const rowCount = dim <= firstRowLen ? 1 : 1 + Math.ceil((dim - firstRowLen) / 7)
   return { rowCount, firstPartial: firstRowLen !== 7 }
 }
 
-/** `monthRows(month).length` 과 동일 — 날짜 배열을 만들지 않음 (가상 스크롤 사이즈 추정용) */
-export function monthRowCount(month: Temporal.PlainYearMonth): number {
-  return monthGridSizing(month).rowCount
+/** `monthRows(month, weekStartsOn).length` 과 동일 — 날짜 배열을 만들지 않음 (가상 스크롤 사이즈 추정용) */
+export function monthRowCount(month: Temporal.PlainYearMonth, weekStartsOn: WeekStartsOn = 0): number {
+  return monthGridSizing(month, weekStartsOn).rowCount
 }
 
-export function estimateMonthBlockHeightPx(month: Temporal.PlainYearMonth, monthIndex = 0): number {
-  const { rowCount, firstPartial } = monthGridSizing(month)
+export function estimateMonthBlockHeightPx(
+  month: Temporal.PlainYearMonth,
+  monthIndex = 0,
+  weekStartsOn: WeekStartsOn = 0,
+): number {
+  const { rowCount, firstPartial } = monthGridSizing(month, weekStartsOn)
   const overlap = monthIndex > 0 && firstPartial ? CALENDAR_ROW_HEIGHT_PX : 0
   return rowCount * CALENDAR_ROW_HEIGHT_PX + CALENDAR_MONTH_BORDER_PX - overlap
 }
@@ -103,9 +112,9 @@ export function buildMonthWindow(
   return out
 }
 
-export function monthRows(month: Temporal.PlainYearMonth): Temporal.PlainDate[][] {
+export function monthRows(month: Temporal.PlainYearMonth, weekStartsOn: WeekStartsOn = 0): Temporal.PlainDate[][] {
   const first = month.toPlainDate({ day: 1 })
-  const lead = (first.dayOfWeek % 7 - WEEK_STARTS_ON + 7) % 7
+  const lead = (first.dayOfWeek - weekStartToIsoDay(weekStartsOn) + 7) % 7
   const rows: Temporal.PlainDate[][] = []
 
   let day = 1

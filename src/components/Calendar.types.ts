@@ -1,7 +1,8 @@
 import type { Virtualizer } from '@tanstack/react-virtual'
 import type { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent, RefObject, UIEvent } from 'react'
-import type { CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
+import type { CalendarMessages, CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
+import type { WeekStartsOn } from '../core/monthGrid'
 
 export type CalendarSelectionSnapshot =
   | { mode: 'single'; value: DateValue | null }
@@ -44,6 +45,8 @@ export interface CalendarSelectionRuntime {
 export interface CalendarRuntime {
   mode: CalendarMode
   locale: string
+  weekStartsOn: WeekStartsOn
+  messages: CalendarMessages
   includeTime?: boolean
   minuteStep?: number
   /** range: 헤더 표시용 `preview ?? 확정 value` (싱글/멀티에서는 미사용) */

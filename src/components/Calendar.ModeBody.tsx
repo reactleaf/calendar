@@ -1,7 +1,8 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import { memo, useCallback, useId, useRef } from 'react'
 import type { KeyboardEvent, MouseEvent, RefObject, UIEvent } from 'react'
-import type { CalendarMode } from '../core/api.types'
+import type { CalendarMessages, CalendarMode } from '../core/api.types'
+import type { WeekStartsOn } from '../core/monthGrid'
 import { CalendarDayCell } from './Calendar.DayCell'
 import {
   dayStamp,
@@ -17,6 +18,8 @@ import {
 interface CalendarModeBodyProps {
   mode: CalendarMode
   locale: string
+  weekStartsOn: WeekStartsOn
+  messages: CalendarMessages
   keyboardNavigation: boolean
   isScrolling: boolean
   minMonth: Temporal.PlainYearMonth
@@ -46,6 +49,8 @@ interface CalendarModeBodyProps {
 function CalendarModeBodyImpl({
   mode,
   locale,
+  weekStartsOn,
+  messages,
   keyboardNavigation,
   isScrolling,
   minMonth,
@@ -136,13 +141,13 @@ function CalendarModeBodyImpl({
       onScroll={onScroll}
       onKeyDown={onKeyDown}
       onMouseLeave={mode === 'range' ? handleScrollMouseLeave : undefined}
-      aria-label="무한 스크롤 달력"
+      aria-label={messages.ariaCalendarGrid}
     >
       <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
         {virtualItems.map((vi) => {
           const month = monthAtOffset(minMonth, vi.index)
           const key = monthKey(month)
-          const rows = monthRows(month)
+          const rows = monthRows(month, weekStartsOn)
           const monthShort = monthShortLabel(month, locale)
           const firstPartial = rows[0] ? rows[0].length !== 7 : false
           const fullLastRow = (rows[rows.length - 1]?.length ?? 0) === 7
@@ -249,6 +254,8 @@ function equalModeBodyProps(prev: CalendarModeBodyProps, next: CalendarModeBodyP
   return (
     prev.mode === next.mode &&
     prev.locale === next.locale &&
+    prev.weekStartsOn === next.weekStartsOn &&
+    prev.messages === next.messages &&
     prev.keyboardNavigation === next.keyboardNavigation &&
     prev.isScrolling === next.isScrolling &&
     prev.minMonth === next.minMonth &&

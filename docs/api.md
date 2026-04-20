@@ -24,19 +24,31 @@ export interface CalendarRangeValue {
 ## 3) 공통 props (모든 mode)
 
 ```ts
+type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6 // 0=일요일 시작 (react-infinite-calendar 와 동일)
+
+interface CalendarMessages {
+  selectDate: string
+  rangeIncompleteEnd: string
+  rangeFromPrefix: string
+  rangeToPrefix: string
+  ariaOpenMonthPicker: string
+  ariaOpenDayGrid: string
+  ariaCalendarGrid: string
+}
+
 interface CalendarBaseProps {
   id?: string
   className?: string
 
+  /** BCP 47. 생략 시 `navigator.language` 등 (`defaultNavigatorLocale`). */
+  locale?: string
+  /** 생략 시 0(일요일). `Intl` 요일·월 라벨과 그리드 열 정렬에 모두 쓰인다. */
+  weekStartsOn?: WeekStartsOn
+  /** 헤더·aria 등 고정 문구. 생략 시 영어 기본값 (`DEFAULT_CALENDAR_MESSAGES`). */
+  messages?: Partial<CalendarMessages>
+
   minDate?: DateValue
   maxDate?: DateValue
-
-  locale?: {
-    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6
-    weekdays?: string[]
-    monthLabelFormat?: string
-    dayLabelFormat?: string
-  }
 
   keyboardNavigation?: boolean
   includeTime?: boolean
@@ -60,6 +72,11 @@ interface CalendarDayDisablingProps {
 - **`isDateDisabled`** (`CalendarDayDisablingProps`, **single/multiple만**): 위 범위 **안**에서 추가로 막을 날. **range**는 구간이 연속이라 “중간만 비활성”이 UX·모델 모두 어색하므로 이 prop을 받지 않는다.
 
 전체 캘린더를 한꺼번에 끄는 `disabled` prop은 두지 않는다.
+
+### 3-2) 로케일·주 시작 요일
+
+- 레퍼런스(`react-infinite-calendar`)와 같이 **주의 첫 열**은 `weekStartsOn`으로 정하고, `monthGrid`의 ISO 요일 오프셋 계산(`weekStartToIsoDay`)과 동일한 규칙을 `monthRows`·가상 스크롤 높이 추정에 사용한다.
+- **요일 헤더**는 고정 문자열이 아니라 `Temporal` + `locale`으로 `weekday: 'short'` 포맷 후, `weekStartsOn`만큼 회전해 열과 맞춘다.
 
 ## 4) mode별 props 차이
 

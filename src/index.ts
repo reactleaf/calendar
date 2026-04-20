@@ -11,6 +11,7 @@ export {
 export type {
   CalendarBaseProps,
   CalendarDayDisablingProps,
+  CalendarMessages,
   CalendarMode,
   CalendarMultipleProps,
   CalendarProps,
@@ -19,4 +20,5 @@ export type {
   CalendarSingleProps,
   DateValue,
   MonthValue,
+  WeekStartsOn,
 } from './core/api.types'

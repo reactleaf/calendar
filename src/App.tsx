@@ -31,7 +31,8 @@ function App() {
       <h1 className="app-calendar-demo__title">Calendar mode playground</h1>
       <p className="app-calendar-demo__hint">
         single / multiple에서 2026-04-15, 04-22, 05-01은 <code>isDateDisabled</code>로 비활성입니다. range 모드는 일
-        단위 비활성을 지원하지 않습니다.
+        단위 비활성을 지원하지 않습니다. Single 예시는 <code>locale=&quot;ko-KR&quot;</code>,{' '}
+        <code>weekStartsOn=&#123;1&#125;</code>(월요일 시작)입니다.
       </p>
 
       <section className="app-calendar-demo__section">
@@ -40,6 +41,17 @@ function App() {
           className="mx-auto"
           mode="single"
           includeTime
+          locale="ko-KR"
+          weekStartsOn={1}
+          messages={{
+            selectDate: '날짜를 선택하세요',
+            rangeIncompleteEnd: '?',
+            rangeFromPrefix: '시작 ',
+            rangeToPrefix: '종료 ',
+            ariaOpenMonthPicker: '월 선택',
+            ariaOpenDayGrid: '날짜 그리드',
+            ariaCalendarGrid: '달력 그리드',
+          }}
           value={singleSelected}
           onSelect={setSingleSelected}
           isDateDisabled={demoIsDateDisabled}

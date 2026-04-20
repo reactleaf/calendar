@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import type { DateValue } from '../core/api.types'
+import type { CalendarMessages, DateValue } from '../core/api.types'
 import { toPlainDate, toSelectionValue } from '../core/calendarDate'
 import { useCalendarContext } from './Calendar.context'
 import { CalendarTimeInput } from './Calendar.TimeInput'
@@ -34,6 +34,7 @@ function rangeHeaderGrid(snapshot: Extract<CalendarSelectionSnapshot, { mode: 'r
 
 function labelsFromSnapshot(
   locale: string,
+  messages: CalendarMessages,
   snapshot: CalendarSelectionSnapshot,
 ): { headerYear: string | null; headerDate: string } {
   let headerYear: string | null = null
@@ -44,7 +45,7 @@ function labelsFromSnapshot(
       const v = snapshot.value
       const selectedDay = v ? toPlainDate(v) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, locale) : 'Select a date...'
+      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.selectDate
       break
     }
     case 'multiple': {
@@ -52,7 +53,7 @@ function labelsFromSnapshot(
       const selectedValue = sorted[sorted.length - 1] ?? null
       const selectedDay = selectedValue ? toPlainDate(selectedValue) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, locale) : 'Select a date...'
+      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.selectDate
       break
     }
     case 'range': {
@@ -71,8 +72,8 @@ function labelsFromSnapshot(
         startDay && endDay
           ? `${formatDay(startDay, locale)} - ${formatDay(endDay, locale)}`
           : startDay
-            ? `${formatDay(startDay, locale)} - ?`
-            : 'Select a date...'
+            ? `${formatDay(startDay, locale)} - ${messages.rangeIncompleteEnd}`
+            : messages.selectDate
       break
     }
   }
@@ -89,6 +90,7 @@ function resolveEditorDateTime(value: DateValue | null) {
 export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   const {
     locale,
+    messages,
     mode,
     includeTime,
     selectionSnapshot,
@@ -117,8 +119,8 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   const monthPickerOpen = displayMode === 'months'
   const daysViewOpen = displayMode === 'days'
   const { headerYear, headerDate } = useMemo(
-    () => labelsFromSnapshot(locale, selectionSnapshot),
-    [locale, selectionSnapshot],
+    () => labelsFromSnapshot(locale, messages, selectionSnapshot),
+    [locale, messages, selectionSnapshot],
   )
   const showTimeRow = includeTime === true
 
@@ -175,17 +177,18 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
               className="calendar__headerRangeEdge calendar__headerYearButton"
               onClick={openMonthPicker}
               aria-expanded={monthPickerOpen}
-              aria-label="월 선택 보기"
+              aria-label={messages.ariaOpenMonthPicker}
               data-view="months"
             >
-              from {rangeGrid.fromYear}
+              {messages.rangeFromPrefix}
+              {rangeGrid.fromYear}
             </button>
             <button
               type="button"
               className="calendar__headerRangeDate calendar__headerDateButton"
               onClick={openDaysView}
               aria-pressed={daysViewOpen}
-              aria-label="날짜 선택 보기"
+              aria-label={messages.ariaOpenDayGrid}
               data-view="days"
             >
               {rangeGrid.fromDate}
@@ -206,17 +209,18 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
               className="calendar__headerRangeEdge calendar__headerYearButton"
               onClick={openMonthPicker}
               aria-expanded={monthPickerOpen}
-              aria-label="월 선택 보기"
+              aria-label={messages.ariaOpenMonthPicker}
               data-view="months"
             >
-              to {rangeGrid.toYear}
+              {messages.rangeToPrefix}
+              {rangeGrid.toYear}
             </button>
             <button
               type="button"
               className="calendar__headerRangeDate calendar__headerDateButton"
               onClick={openDaysView}
               aria-pressed={daysViewOpen}
-              aria-label="날짜 선택 보기"
+              aria-label={messages.ariaOpenDayGrid}
               data-view="days"
             >
               {rangeGrid.toDate}
@@ -244,7 +248,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
         className="calendar__headerYear calendar__headerYearButton"
         onClick={openMonthPicker}
         aria-expanded={monthPickerOpen}
-        aria-label="월 선택 보기"
+        aria-label={messages.ariaOpenMonthPicker}
         data-view="months"
       >
         {displayYear}
@@ -254,7 +258,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
         className="calendar__headerDate calendar__headerDateButton"
         onClick={openDaysView}
         aria-pressed={daysViewOpen}
-        aria-label="날짜 선택 보기"
+        aria-label={messages.ariaOpenDayGrid}
         data-view="days"
       >
         {headerDate}

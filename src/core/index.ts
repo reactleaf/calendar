@@ -1,4 +1,5 @@
 export * from './api.types'
+export * from './calendarLocale'
 export * from './calendarDate'
 export * from './constraints'
 export * from './monthGrid'

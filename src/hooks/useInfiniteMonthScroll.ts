@@ -4,6 +4,7 @@ import { observeElementRect as observeElementRectImpl, useVirtualizer } from '@t
 import type { MutableRefObject, RefObject, UIEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DateViewportPlacement } from '../components/Calendar.types'
+import type { WeekStartsOn } from '../core/monthGrid'
 import {
   CALENDAR_ROW_HEIGHT_PX,
   compareMonth,
@@ -18,6 +19,7 @@ import {
 
 interface UseInfiniteMonthScrollArgs {
   locale: string
+  weekStartsOn: WeekStartsOn
   initialMonth: Temporal.PlainYearMonth
   minMonth: Temporal.PlainYearMonth
   maxMonth: Temporal.PlainYearMonth
@@ -45,10 +47,14 @@ const observeElementRect = ((instance: Virtualizer<Element, Element>, cb: (rect:
   return observeElementRectImpl(instance, cb)
 }) as typeof observeElementRectImpl
 
-function sumEstimatedMonthHeightsBefore(minMonth: Temporal.PlainYearMonth, endIndex: number): number {
+function sumEstimatedMonthHeightsBefore(
+  minMonth: Temporal.PlainYearMonth,
+  endIndex: number,
+  weekStartsOn: WeekStartsOn,
+): number {
   let acc = 0
   for (let i = 0; i < endIndex; i += 1) {
-    acc += estimateMonthBlockHeightPx(monthAtOffset(minMonth, i), i)
+    acc += estimateMonthBlockHeightPx(monthAtOffset(minMonth, i), i, weekStartsOn)
   }
   return acc
 }
@@ -71,19 +77,19 @@ export interface InfiniteMonthScrollRuntime {
 }
 
 export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): InfiniteMonthScrollRuntime {
-  const { locale, initialMonth, minMonth, maxMonth, onMonthChange, overlaySuppressUntilRef } = args
+  const { locale, weekStartsOn, initialMonth, minMonth, maxMonth, onMonthChange, overlaySuppressUntilRef } = args
 
   const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
   const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
   const initialOffset = useMemo(() => {
     const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
-    const offset = sumEstimatedMonthHeightsBefore(minMonth, clamped)
+    const offset = sumEstimatedMonthHeightsBefore(minMonth, clamped, weekStartsOn)
     return Math.max(0, offset - 12)
-  }, [initialMonthIndex, minMonth, monthCount])
+  }, [initialMonthIndex, minMonth, monthCount, weekStartsOn])
 
   const estimateSize = useCallback(
-    (index: number) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index),
-    [minMonth],
+    (index: number) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index, weekStartsOn),
+    [minMonth, weekStartsOn],
   )
 
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
@@ -101,7 +107,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const weekdays = useMemo(() => weekdayLabels(locale), [locale])
+  const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
 
   const monthVirtualizer = useVirtualizer({
     count: monthCount,
@@ -150,9 +156,9 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (virtualItem) return virtualItem.start
       const offset = v.getOffsetForIndex(monthIndex, 'start')
       if (offset) return offset[0]
-      return sumEstimatedMonthHeightsBefore(minMonth, monthIndex)
+      return sumEstimatedMonthHeightsBefore(minMonth, monthIndex, weekStartsOn)
     },
-    [minMonth],
+    [minMonth, weekStartsOn],
   )
 
   const getDateViewportPlacement = useCallback(
@@ -163,7 +169,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (compareMonth(month, minMonth) < 0 || compareMonth(month, maxMonth) > 0) return 'visible'
 
       const monthIndex = monthIndexFromMin(minMonth, month)
-      const rows = monthRows(month)
+      const rows = monthRows(month, weekStartsOn)
       const rowIndex = Math.max(
         0,
         rows.findIndex((row) => row.some((day) => day.day === date.day)),
@@ -179,7 +185,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (rowTop >= viewBottom) return 'below'
       return 'visible'
     },
-    [getMonthStartOffset, maxMonth, minMonth],
+    [getMonthStartOffset, maxMonth, minMonth, weekStartsOn],
   )
 
   const keepDateVisible = useCallback(
@@ -190,7 +196,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (compareMonth(month, minMonth) < 0 || compareMonth(month, maxMonth) > 0) return
 
       const monthIndex = monthIndexFromMin(minMonth, month)
-      const rows = monthRows(month)
+      const rows = monthRows(month, weekStartsOn)
       const rowIndex = Math.max(
         0,
         rows.findIndex((row) => row.some((day) => day.day === date.day)),
@@ -206,7 +212,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
         monthVirtualizer.scrollToOffset(Math.max(0, rowBottom - scrollEl.clientHeight + 12))
       }
     },
-    [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer],
+    [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer, weekStartsOn],
   )
 
   const handleScroll = useCallback(

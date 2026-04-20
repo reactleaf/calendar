@@ -12,6 +12,8 @@ export function CalendarRangeMode() {
   const runtime = useCalendarContext()
   const {
     locale,
+    weekStartsOn,
+    messages,
     keyboardNavigation,
     isScrolling,
     minMonth,
@@ -75,6 +77,8 @@ export function CalendarRangeMode() {
     <CalendarModeBody
       mode="range"
       locale={locale}
+      weekStartsOn={weekStartsOn}
+      messages={messages}
       keyboardNavigation={keyboardNavigation}
       isScrolling={isScrolling}
       minMonth={minMonth}

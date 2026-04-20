@@ -12,6 +12,8 @@ export function CalendarSingleMode() {
   const runtime = useCalendarContext()
   const {
     locale,
+    weekStartsOn,
+    messages,
     keyboardNavigation,
     isScrolling,
     minMonth,
@@ -64,6 +66,8 @@ export function CalendarSingleMode() {
     <CalendarModeBody
       mode="single"
       locale={locale}
+      weekStartsOn={weekStartsOn}
+      messages={messages}
       keyboardNavigation={keyboardNavigation}
       isScrolling={isScrolling}
       minMonth={minMonth}

@@ -2,6 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Calendar } from '../Calendar'
+import { DEFAULT_CALENDAR_MESSAGES } from '../core/calendarLocale'
 
 function getScroll(container: HTMLElement): HTMLElement | null {
   return container.querySelector('.calendar__scroll')
@@ -47,12 +48,12 @@ describe('Calendar month overlay (isScrolling)', () => {
 
     await waitForDayCells(container)
 
-    fireEvent.click(getByLabelText('월 선택 보기'))
+    fireEvent.click(getByLabelText(DEFAULT_CALENDAR_MESSAGES.ariaOpenMonthPicker))
     await waitFor(() => {
       expect(container.querySelector('.calendar__monthPicker')).toBeTruthy()
     })
 
-    fireEvent.click(getByLabelText('날짜 선택 보기'))
+    fireEvent.click(getByLabelText(DEFAULT_CALENDAR_MESSAGES.ariaOpenDayGrid))
 
     await waitFor(() => {
       expect(container.querySelector('.calendar__monthPicker')).toBeNull()

@@ -1,7 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRangeProps } from '../core/api.types'
+import { defaultNavigatorLocale, resolveCalendarMessages } from '../core/calendarLocale'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
@@ -14,6 +15,9 @@ import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlay
 
 export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRuntime {
   const {
+    locale: localeProp,
+    weekStartsOn: weekStartsOnProp,
+    messages: messagesProp,
     minDate,
     maxDate,
     keyboardNavigation = true,
@@ -28,7 +32,9 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     onRangePreview,
   } = props
 
-  const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en-US'
+  const locale = localeProp ?? defaultNavigatorLocale()
+  const weekStartsOn = weekStartsOnProp ?? 0
+  const messages = useMemo(() => resolveCalendarMessages(messagesProp), [messagesProp])
   const rawSelection = useRangeSelection({
     value,
     defaultValue,
@@ -78,6 +84,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     getDateViewportPlacement,
   } = useInfiniteMonthScroll({
     locale,
+    weekStartsOn,
     initialMonth,
     minMonth: minDay.toPlainYearMonth(),
     maxMonth: maxDay.toPlainYearMonth(),
@@ -144,6 +151,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
   return {
     mode: 'range',
     locale,
+    weekStartsOn,
+    messages,
     includeTime,
     minuteStep,
     rangeHeaderValue: rawSelection.preview ?? rawSelection.value,

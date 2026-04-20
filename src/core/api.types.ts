@@ -1,4 +1,7 @@
 import type { Temporal } from '@js-temporal/polyfill'
+import type { WeekStartsOn } from './monthGrid'
+
+export type { WeekStartsOn } from './monthGrid'
 
 export type CalendarMode = 'single' | 'multiple' | 'range'
 
@@ -10,9 +13,27 @@ export interface CalendarRangeValue {
   end: DateValue | null
 }
 
+/** `locale`(Intl)과 별도로 헤더·aria 등 고정 문구를 덮어쓸 때 사용 */
+export interface CalendarMessages {
+  selectDate: string
+  /** range 시작만 있을 때 끝 날짜 자리 표시 (예: "?") */
+  rangeIncompleteEnd: string
+  rangeFromPrefix: string
+  rangeToPrefix: string
+  ariaOpenMonthPicker: string
+  ariaOpenDayGrid: string
+  ariaCalendarGrid: string
+}
+
 export interface CalendarBaseProps {
   id?: string
   className?: string
+  /** BCP 47. 생략 시 브라우저 `navigator.language`, 없으면 `en-US`. */
+  locale?: string
+  /** 0=일요일 시작 … 6=토요일 시작. 생략 시 0 (`react-infinite-calendar` 와 동일). */
+  weekStartsOn?: WeekStartsOn
+  /** 헤더·접근성 문구. 생략 시 영어 기본값. */
+  messages?: Partial<CalendarMessages>
   minDate?: DateValue
   maxDate?: DateValue
   keyboardNavigation?: boolean

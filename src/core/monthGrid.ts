@@ -7,7 +7,8 @@ export interface MonthGridCell {
   inCurrentMonth: boolean
 }
 
-function weekStartToIsoDay(weekStartsOn: WeekStartsOn): number {
+/** `weekStartsOn` 0(일)~6(토) 를 Temporal 요일(월=1 … 일=7) 기준 주 시작으로 변환 */
+export function weekStartToIsoDay(weekStartsOn: WeekStartsOn): number {
   return weekStartsOn === 0 ? 7 : weekStartsOn
 }
 

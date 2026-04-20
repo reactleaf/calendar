@@ -12,6 +12,8 @@ export function CalendarMultipleMode() {
   const runtime = useCalendarContext()
   const {
     locale,
+    weekStartsOn,
+    messages,
     keyboardNavigation,
     isScrolling,
     minMonth,
@@ -67,6 +69,8 @@ export function CalendarMultipleMode() {
     <CalendarModeBody
       mode="multiple"
       locale={locale}
+      weekStartsOn={weekStartsOn}
+      messages={messages}
       keyboardNavigation={keyboardNavigation}
       isScrolling={isScrolling}
       minMonth={minMonth}
