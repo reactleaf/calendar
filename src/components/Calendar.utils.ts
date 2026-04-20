@@ -63,11 +63,24 @@ export function monthIndexFromMin(minMonth: Temporal.PlainYearMonth, month: Temp
   return (month.year - minMonth.year) * 12 + (month.month - minMonth.month)
 }
 
+function monthGridSizing(month: Temporal.PlainYearMonth): { rowCount: number; firstPartial: boolean } {
+  const dim = month.daysInMonth
+  const first = month.toPlainDate({ day: 1 })
+  const lead = (first.dayOfWeek % 7 - WEEK_STARTS_ON + 7) % 7
+  const firstRowLen = lead === 0 ? Math.min(7, dim) : Math.min(7 - lead, dim)
+  const rowCount = dim <= firstRowLen ? 1 : 1 + Math.ceil((dim - firstRowLen) / 7)
+  return { rowCount, firstPartial: firstRowLen !== 7 }
+}
+
+/** `monthRows(month).length` 과 동일 — 날짜 배열을 만들지 않음 (가상 스크롤 사이즈 추정용) */
+export function monthRowCount(month: Temporal.PlainYearMonth): number {
+  return monthGridSizing(month).rowCount
+}
+
 export function estimateMonthBlockHeightPx(month: Temporal.PlainYearMonth, monthIndex = 0): number {
-  const rows = monthRows(month)
-  const firstPartial = rows[0] ? rows[0].length !== 7 : false
+  const { rowCount, firstPartial } = monthGridSizing(month)
   const overlap = monthIndex > 0 && firstPartial ? CALENDAR_ROW_HEIGHT_PX : 0
-  return rows.length * CALENDAR_ROW_HEIGHT_PX + CALENDAR_MONTH_BORDER_PX - overlap
+  return rowCount * CALENDAR_ROW_HEIGHT_PX + CALENDAR_MONTH_BORDER_PX - overlap
 }
 
 export function buildMonthWindow(

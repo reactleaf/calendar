@@ -30,8 +30,6 @@ function App() {
           includeTime
           value={singleSelected}
           onSelect={setSingleSelected}
-          minDate={Temporal.PlainDate.from('2025-01-01')}
-          maxDate={Temporal.PlainDate.from('2027-12-31')}
         />
         <p className="app-calendar-demo__value" aria-live="polite">
           선택됨: <strong>{singleSelected === null ? '없음' : singleSelected.toString()}</strong>
@@ -46,8 +44,6 @@ function App() {
           includeTime
           value={multipleSelected}
           onSelect={setMultipleSelected}
-          minDate={Temporal.PlainDate.from('2025-01-01')}
-          maxDate={Temporal.PlainDate.from('2027-12-31')}
         />
         <p className="app-calendar-demo__value" aria-live="polite">
           선택됨:{' '}
@@ -66,8 +62,6 @@ function App() {
           value={rangeSelected}
           onSelect={setRangeSelected}
           allowRangePreview
-          minDate={Temporal.PlainDate.from('2025-01-01')}
-          maxDate={Temporal.PlainDate.from('2027-12-31')}
         />
         <p className="app-calendar-demo__value" aria-live="polite">
           선택됨:{' '}

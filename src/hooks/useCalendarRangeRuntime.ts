@@ -81,6 +81,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     scrollRef,
     handleScroll,
     keepDateVisible,
+    getDateViewportPlacement,
   } = useInfiniteMonthScroll({
     locale,
     initialMonth,
@@ -173,6 +174,8 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     openTimeView,
     selection,
     setFocusedDate,
+    keepDateVisible,
+    getDateViewportPlacement,
     handleScroll,
     handleKeyDown,
   }

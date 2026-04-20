@@ -67,6 +67,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     scrollRef,
     handleScroll,
     keepDateVisible,
+    getDateViewportPlacement,
   } = useInfiniteMonthScroll({
     locale,
     initialMonth,
@@ -156,6 +157,8 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     openTimeView,
     selection,
     setFocusedDate,
+    keepDateVisible,
+    getDateViewportPlacement,
     handleScroll,
     handleKeyDown,
   }

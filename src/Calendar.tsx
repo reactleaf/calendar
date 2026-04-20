@@ -8,6 +8,7 @@ import { CalendarRangeMode } from './components/Calendar.RangeMode'
 import { CalendarRoot } from './components/Calendar.Root'
 import { CalendarSingleMode } from './components/Calendar.SingleMode'
 import { CalendarTimeSelectView } from './components/Calendar.TimeSelectView'
+import { CalendarDaysShell, CalendarTodayBar } from './components/Calendar.TodayBar'
 import { CalendarWeekdays } from './components/Calendar.Weekdays'
 import type { CalendarProps } from './core/api.types'
 
@@ -27,7 +28,7 @@ function CalendarImpl(props: CalendarProps) {
     <CalendarRoot {...props}>
       <CalendarHeader />
       <CalendarWeekdays />
-      {modeBody}
+      <CalendarDaysShell>{modeBody}</CalendarDaysShell>
     </CalendarRoot>
   )
 }
@@ -38,6 +39,7 @@ type CalendarCompound = ((props: CalendarProps) => JSX.Element) & {
   TimeInput: typeof CalendarTimeInput
   TimeSelectView: typeof CalendarTimeSelectView
   Weekdays: typeof CalendarWeekdays
+  TodayBar: typeof CalendarTodayBar
   MonthPicker: typeof CalendarMonthPicker
   SingleMode: typeof CalendarSingleMode
   MultipleMode: typeof CalendarMultipleMode
@@ -50,6 +52,7 @@ export const Calendar: CalendarCompound = Object.assign(CalendarImpl, {
   TimeInput: CalendarTimeInput,
   TimeSelectView: CalendarTimeSelectView,
   Weekdays: CalendarWeekdays,
+  TodayBar: CalendarTodayBar,
   MonthPicker: CalendarMonthPicker,
   SingleMode: CalendarSingleMode,
   MultipleMode: CalendarMultipleMode,
@@ -66,4 +69,5 @@ export {
   CalendarTimeInput,
   CalendarTimeSelectView,
   CalendarWeekdays,
+  CalendarTodayBar,
 }

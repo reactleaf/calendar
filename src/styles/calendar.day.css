@@ -157,7 +157,7 @@
 .calendar__day:hover:not(:disabled, .calendar__day--selected, .calendar__day--inRange, .calendar__day--rangeStart, .calendar__day--rangeEnd) {
   background: radial-gradient(
     circle calc(var(--calendar-range-pip) / 2) at center,
-    var(--accent-bg, rgba(170, 59, 255, 0.08)) 99%,
+    var(--calendar-day-hover-tint, color-mix(in srgb, #7dd3fc 22%, transparent)) 99%,
     transparent 100%
   );
 }
@@ -180,7 +180,7 @@
   margin-top: calc(-0.5 * var(--calendar-range-pip));
   border-radius: 50%;
   box-sizing: border-box;
-  box-shadow: inset 0 0 0 2px var(--calendar-color-accent, #aa3bff);
+  box-shadow: inset 0 0 0 2px var(--calendar-color-accent, #4488e8);
   pointer-events: none;
 }
 

@@ -102,7 +102,7 @@
 .calendar__monthPickerMonth:hover:not(:disabled, .is-active) {
   background: radial-gradient(
     circle 1.125rem at center,
-    var(--accent-bg, rgba(170, 59, 255, 0.08)) 99%,
+    var(--calendar-day-hover-tint, color-mix(in srgb, #7dd3fc 22%, transparent)) 99%,
     transparent 100%
   );
 }

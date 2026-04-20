@@ -75,6 +75,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     scrollRef,
     handleScroll,
     keepDateVisible,
+    getDateViewportPlacement,
   } = useInfiniteMonthScroll({
     locale,
     initialMonth,
@@ -164,6 +165,8 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     openTimeView,
     selection,
     setFocusedDate,
+    keepDateVisible,
+    getDateViewportPlacement,
     handleScroll,
     handleKeyDown,
   }

@@ -10,6 +10,8 @@
   --calendar-body-height: 27.5rem;
   /** 요일 헤더(S/M/T…)의 고정 높이. */
   --calendar-weekdays-height: 2.1rem;
+  /** 요일 아래 «오늘» 이동 행 (react-infinite-calendar Today 라벨 유사). */
+  --calendar-today-bar-height: 1.75rem;
   /**
    * 보조 뷰(month / time)의 높이.
    * days view 는 `weekdays + body` 두 층이지만, 보조 뷰는 weekdays 가 숨겨지므로
@@ -27,4 +29,6 @@
   font:
     0.875rem/1.3 system-ui,
     sans-serif;
+  /** 일 셀·월 피커 hover — 밝은 하늘색 계열 (보라 기본값 대체) */
+  --calendar-day-hover-tint: color-mix(in srgb, #7dd3fc 22%, transparent);
 }

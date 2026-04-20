@@ -3,6 +3,7 @@ import type { Rect, Virtualizer } from '@tanstack/react-virtual'
 import { observeElementRect as observeElementRectImpl, useVirtualizer } from '@tanstack/react-virtual'
 import type { MutableRefObject, RefObject, UIEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { DateViewportPlacement } from '../components/Calendar.types'
 import {
   CALENDAR_ROW_HEIGHT_PX,
   compareMonth,
@@ -44,6 +45,14 @@ const observeElementRect = ((instance: Virtualizer<Element, Element>, cb: (rect:
   return observeElementRectImpl(instance, cb)
 }) as typeof observeElementRectImpl
 
+function sumEstimatedMonthHeightsBefore(minMonth: Temporal.PlainYearMonth, endIndex: number): number {
+  let acc = 0
+  for (let i = 0; i < endIndex; i += 1) {
+    acc += estimateMonthBlockHeightPx(monthAtOffset(minMonth, i), i)
+  }
+  return acc
+}
+
 export interface InfiniteMonthScrollRuntime {
   weekdays: string[]
   minMonth: Temporal.PlainYearMonth
@@ -58,32 +67,24 @@ export interface InfiniteMonthScrollRuntime {
   expandForTargetMonth: (target: Temporal.PlainYearMonth) => void
   keepMonthVisible: (month: Temporal.PlainYearMonth) => void
   keepDateVisible: (date: Temporal.PlainDate) => void
+  getDateViewportPlacement: (date: Temporal.PlainDate) => DateViewportPlacement
 }
 
 export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): InfiniteMonthScrollRuntime {
   const { locale, initialMonth, minMonth, maxMonth, onMonthChange, overlaySuppressUntilRef } = args
 
   const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
-  const estimatedMonthHeights = useMemo(
-    () =>
-      Array.from({ length: monthCount }, (_, index) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index)),
-    [minMonth, monthCount],
-  )
-  const estimatedMonthOffsets = useMemo(() => {
-    const offsets: number[] = new Array(monthCount)
-    let acc = 0
-    for (let i = 0; i < monthCount; i += 1) {
-      offsets[i] = acc
-      acc += estimatedMonthHeights[i] ?? 0
-    }
-    return offsets
-  }, [estimatedMonthHeights, monthCount])
   const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
   const initialOffset = useMemo(() => {
     const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
-    const offset = estimatedMonthOffsets[clamped] ?? 0
+    const offset = sumEstimatedMonthHeightsBefore(minMonth, clamped)
     return Math.max(0, offset - 12)
-  }, [estimatedMonthOffsets, initialMonthIndex, monthCount])
+  }, [initialMonthIndex, minMonth, monthCount])
+
+  const estimateSize = useCallback(
+    (index: number) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index),
+    [minMonth],
+  )
 
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
   /**
@@ -106,7 +107,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     count: monthCount,
     getScrollElement: () => scrollRef.current,
     initialOffset,
-    estimateSize: (index) => estimatedMonthHeights[index] ?? CALENDAR_ROW_HEIGHT_PX * 5,
+    estimateSize,
     overscan: 4,
     getItemKey: (index) => monthKey(monthAtOffset(minMonth, index)),
     observeElementRect,
@@ -149,9 +150,36 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (virtualItem) return virtualItem.start
       const offset = v.getOffsetForIndex(monthIndex, 'start')
       if (offset) return offset[0]
-      return estimatedMonthOffsets[monthIndex] ?? 0
+      return sumEstimatedMonthHeightsBefore(minMonth, monthIndex)
     },
-    [estimatedMonthOffsets],
+    [minMonth],
+  )
+
+  const getDateViewportPlacement = useCallback(
+    (date: Temporal.PlainDate): DateViewportPlacement => {
+      const scrollEl = scrollRef.current
+      if (!scrollEl) return 'visible'
+      const month = date.toPlainYearMonth()
+      if (compareMonth(month, minMonth) < 0 || compareMonth(month, maxMonth) > 0) return 'visible'
+
+      const monthIndex = monthIndexFromMin(minMonth, month)
+      const rows = monthRows(month)
+      const rowIndex = Math.max(
+        0,
+        rows.findIndex((row) => row.some((day) => day.day === date.day)),
+      )
+
+      const rowTop = getMonthStartOffset(monthIndex) + rowIndex * CALENDAR_ROW_HEIGHT_PX
+      const rowBottom = rowTop + CALENDAR_ROW_HEIGHT_PX
+      const margin = 12
+      const viewTop = scrollEl.scrollTop + margin
+      const viewBottom = scrollEl.scrollTop + scrollEl.clientHeight - margin
+
+      if (rowBottom <= viewTop) return 'above'
+      if (rowTop >= viewBottom) return 'below'
+      return 'visible'
+    },
+    [getMonthStartOffset, maxMonth, minMonth],
   )
 
   const keepDateVisible = useCallback(
@@ -218,5 +246,6 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     expandForTargetMonth,
     keepMonthVisible,
     keepDateVisible,
+    getDateViewportPlacement,
   }
 }

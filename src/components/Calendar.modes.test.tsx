@@ -34,6 +34,25 @@ beforeAll(() => {
 })
 
 describe('Calendar preset mode integration', () => {
+  it('days 뷰에서 오늘이 스크롤 밖이면 Today 버튼이 노출된다', async () => {
+    const { container } = render(
+      <Calendar
+        mode="single"
+        minDate={Temporal.PlainDate.from('2020-01-01')}
+        maxDate={Temporal.PlainDate.from('2030-12-31')}
+      />,
+    )
+    await waitForVisibleDayCells(container)
+    const grid = getGrid(container)
+    grid.scrollTop = 0
+    fireEvent.scroll(grid)
+    await waitFor(() => {
+      const btn = container.querySelector('.calendar__todayButton')
+      expect(btn).toBeInstanceOf(HTMLButtonElement)
+    })
+    expect(container.querySelector('.calendar__todayChevron--down')).toBeTruthy()
+  })
+
   it('single 모드에서 클릭/키보드 선택 및 월 변경 콜백이 동작한다', async () => {
     const onSelect = vi.fn()
     const onMonthChange = vi.fn()

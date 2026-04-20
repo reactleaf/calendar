@@ -26,6 +26,9 @@ export type CalendarDisplayMode = 'days' | 'months' | 'time'
  */
 export type CalendarTimeEditTarget = 'primary' | 'rangeStart' | 'rangeEnd'
 
+/** 스크롤 뷰포트 대비 특정 일자 행 위치(react-infinite-calendar Today 쉐브론과 동일 개념) */
+export type DateViewportPlacement = 'visible' | 'above' | 'below'
+
 export interface CalendarSelectionRuntime {
   isSelected: (date: Temporal.PlainDate) => boolean
   isDisabled: (date: Temporal.PlainDate) => boolean
@@ -72,6 +75,10 @@ export interface CalendarRuntime {
   openTimeView: (target: CalendarTimeEditTarget) => void
   selection: CalendarSelectionRuntime
   setFocusedDate: (next: Temporal.PlainDate) => void
+  /** 그리드 스크롤만 해당 날짜 행이 보이도록 조정 (포커스 날짜 변경 후 호출) */
+  keepDateVisible: (date: Temporal.PlainDate) => void
+  /** 일 그리드 스크롤 영역 기준 해당 날짜 행이 보이는지·어느 쪽에 있는지 */
+  getDateViewportPlacement: (date: Temporal.PlainDate) => DateViewportPlacement
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
   handleKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
 }
