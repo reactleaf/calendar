@@ -24,8 +24,5 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Verify (format, lint, test, build)
+      - name: Verify (format, lint, test, build lib)
         run: pnpm verify
-
-      - name: Build docs (GitHub Pages static bundle)
-        run: pnpm --filter ./docs build

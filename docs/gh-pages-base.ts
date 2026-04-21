@@ -2,6 +2,9 @@
  * GitHub project Pages: `https://{owner}.github.io/{repo}/`
  * CI에서 `GITHUB_PAGES_BASE`를 `/${{ github.event.repository.name }}/` 형태로 넘깁니다 (끝 슬래시 포함).
  * 로컬 개발: 미설정 → 루트 `/`.
+ *
+ * prerender는 basename을 디렉터리에 반영해 `build/client/:repo/`가 생기므로,
+ * `react-router.config.ts`의 `buildEnd`에서 사이트 루트로 펼친다(RR에 해당 전용 옵션 없음).
  */
 export function viteBasePath(): string {
   const b = process.env.GITHUB_PAGES_BASE?.trim()

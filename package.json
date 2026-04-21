@@ -19,14 +19,15 @@
   ],
   "scripts": {
     "dev": "pnpm --filter ./docs dev",
-    "build": "vite build && tsc -p tsconfig.lib.json",
+    "build:lib": "vite build && tsc -p tsconfig.lib.json",
+    "build:docs": "pnpm --filter ./docs  build",
     "lint": "oxlint --react-plugin --vitest-plugin --import-plugin ./src",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build"
+    "verify": "pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build:lib"
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
