@@ -1,5 +1,11 @@
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
+
+/**
+ * CI 등 느린 환경에서 `waitFor` / `findBy*` 기본 1000ms 로는 부족할 수 있어 전역 한도를 올린다.
+ * 개별 `waitFor(..., { timeout })` 가 있으면 그 값이 우선한다.
+ */
+configure({ asyncUtilTimeout: 5000 })
 
 /**
  * Vitest setup — 테스트 간 DOM / React tree 정리.
