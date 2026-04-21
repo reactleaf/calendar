@@ -274,14 +274,20 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
             >
               {rangeGrid.fromDate}
             </button>
-            {showTimeRow ? (
-              <CalendarTimeInput
-                ariaLabelPrefix="from"
-                value={rangeStartTime}
-                timeEditTarget="rangeStart"
-                interactionLocked={rangeHeaderPreviewActive === true}
-                onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
-              />
+            {includeTime ? (
+              <div className="calendar__headerTime">
+                {showTimeRow ? (
+                  <CalendarTimeInput
+                    ariaLabelPrefix="from"
+                    value={rangeStartTime}
+                    timeEditTarget="rangeStart"
+                    interactionLocked={rangeHeaderPreviewActive === true}
+                    onTimeChange={(hour, minute) => selection.setRangeTime?.('start', hour, minute)}
+                  />
+                ) : (
+                  <div className="calendar__headerTimePlaceholder" aria-hidden />
+                )}
+              </div>
             ) : null}
           </div>
           <div className="calendar__headerRangeColumn">
@@ -306,14 +312,20 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
             >
               {rangeGrid.toDate}
             </button>
-            {showTimeRow ? (
-              <CalendarTimeInput
-                ariaLabelPrefix="to"
-                value={rangeEndTime}
-                timeEditTarget="rangeEnd"
-                interactionLocked={rangeHeaderPreviewActive === true}
-                onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
-              />
+            {includeTime ? (
+              <div className="calendar__headerTime">
+                {showTimeRow ? (
+                  <CalendarTimeInput
+                    ariaLabelPrefix="to"
+                    value={rangeEndTime}
+                    timeEditTarget="rangeEnd"
+                    interactionLocked={rangeHeaderPreviewActive === true}
+                    onTimeChange={(hour, minute) => selection.setRangeTime?.('end', hour, minute)}
+                  />
+                ) : (
+                  <div className="calendar__headerTimePlaceholder" aria-hidden />
+                )}
+              </div>
             ) : null}
           </div>
         </div>
@@ -329,9 +341,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
 
   return (
     <div className={classes} {...headerDataAttrs}>
-      {isHeaderSelectionEmpty ? (
-        <div className="calendar__headerYear calendar__headerYearSlot" aria-hidden />
-      ) : (
+      {!isHeaderSelectionEmpty ? (
         <button
           type="button"
           className="calendar__headerYear calendar__headerYearButton"
@@ -342,7 +352,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
         >
           {displayYear}
         </button>
-      )}
+      ) : null}
       {showMultipleMoreChip ? (
         <div className="calendar__headerDateRow">
           <button

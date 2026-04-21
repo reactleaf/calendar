@@ -46,7 +46,7 @@
 }
 
 .calendar__timeSelectGranularity input[type='checkbox'] {
-  accent-color: var(--calendar-color-accent, #aa3bff);
+  accent-color: var(--calendar-color-accent, #4488e8);
   width: 0.9rem;
   height: 0.9rem;
   cursor: pointer;
@@ -223,7 +223,7 @@
 }
 
 .calendar__timeScrollItem.is-active .calendar__timeScrollItemPip {
-  background: var(--calendar-color-accent, #aa3bff);
+  background: var(--calendar-color-accent, #4488e8);
   color: #fff;
   font-weight: 700;
 }
@@ -237,10 +237,10 @@
 }
 
 .calendar__timeScrollItem:hover:not(.is-active) .calendar__timeScrollItemPip {
-  background: color-mix(in srgb, var(--calendar-color-accent, #aa3bff) 10%, transparent);
-  color: var(--calendar-color-accent, #aa3bff);
+  background: color-mix(in srgb, var(--calendar-color-accent, #4488e8) 10%, transparent);
+  color: var(--calendar-color-accent, #4488e8);
 }
 
 .calendar__timeScrollItem:focus-visible .calendar__timeScrollItemPip {
-  box-shadow: 0 0 0 2px var(--calendar-color-accent, #aa3bff);
+  box-shadow: 0 0 0 2px var(--calendar-color-accent, #4488e8);
 }

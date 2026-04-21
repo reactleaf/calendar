@@ -42,9 +42,9 @@
 
 /* 연도 라벨: 작고 muted. 현재 연도만 accent 색으로 강조 (크기는 동일). */
 .calendar__monthPickerYear {
-  font-size: 0.75rem;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 20px;
   color: var(--calendar-color-muted, #9ca3af);
   text-align: right;
   letter-spacing: 0.02em;
@@ -52,7 +52,7 @@
 }
 
 .calendar__monthPickerRow.is-current .calendar__monthPickerYear {
-  color: var(--calendar-color-accent, #aa3bff);
+  color: var(--calendar-color-accent, #4488e8);
   font-weight: 700;
 }
 
@@ -119,7 +119,7 @@
   transform: translate(-50%, -50%);
   border-radius: 50%;
   box-sizing: border-box;
-  box-shadow: inset 0 0 0 2px var(--calendar-color-accent, #aa3bff);
+  box-shadow: inset 0 0 0 2px var(--calendar-color-accent, #4488e8);
   pointer-events: none;
 }
 
@@ -139,7 +139,7 @@
   height: 2.25rem;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: var(--calendar-color-accent, #aa3bff);
+  background: var(--calendar-color-accent, #4488e8);
   pointer-events: none;
 }
 

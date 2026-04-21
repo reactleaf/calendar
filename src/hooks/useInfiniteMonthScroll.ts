@@ -203,14 +203,12 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       )
 
       const rowTop = getMonthStartOffset(monthIndex) + rowIndex * CALENDAR_ROW_HEIGHT_PX
-      const rowBottom = rowTop + CALENDAR_ROW_HEIGHT_PX
-      const viewTop = scrollEl.scrollTop + 12
-      const viewBottom = scrollEl.scrollTop + scrollEl.clientHeight - 12
-
-      if (rowTop < viewTop) monthVirtualizer.scrollToOffset(Math.max(0, rowTop - 12))
-      else if (rowBottom > viewBottom) {
-        monthVirtualizer.scrollToOffset(Math.max(0, rowBottom - scrollEl.clientHeight + 12))
-      }
+      const rowCenter = rowTop + CALENDAR_ROW_HEIGHT_PX / 2
+      const clientH = scrollEl.clientHeight
+      const rawScrollTop = rowCenter - clientH / 2
+      const maxScrollTop = Math.max(0, monthVirtualizer.getTotalSize() - clientH)
+      const nextScrollTop = Math.max(0, Math.min(maxScrollTop, rawScrollTop))
+      monthVirtualizer.scrollToOffset(nextScrollTop)
     },
     [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer, weekStartsOn],
   )

@@ -1,16 +1,16 @@
+import { HomePage } from '@/components/home-page'
 import type { Route } from './+types/home'
-import { CalendarPlayground } from '@/components/calendar-playground'
 
 export function meta(_props: Route.MetaArgs) {
   return [
-    { title: 'Calendar mode playground' },
+    { title: '@reactleaf/calendar' },
     {
       name: 'description',
-      content: 'React smooth calendar — single, multiple, and range demos.',
+      content: 'A modern rewrite of react-infinite-calendar — virtualized calendar for React with Temporal.',
     },
   ]
 }
 
 export default function Home() {
-  return <CalendarPlayground />
+  return <HomePage />
 }
