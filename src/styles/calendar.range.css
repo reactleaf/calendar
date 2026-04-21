@@ -125,7 +125,8 @@
 }
 
 /* multiple 대표 일: 끝점 캡과 동일하게 액센트 글자색 */
-.calendar--mode-multiple .calendar__day--multiplePrimary.calendar__day--selected:not(
+.calendar--mode-multiple
+  .calendar__day--multiplePrimary.calendar__day--selected:not(
     .calendar__day--inRange,
     .calendar__day--rangeStart,
     .calendar__day--rangeEnd

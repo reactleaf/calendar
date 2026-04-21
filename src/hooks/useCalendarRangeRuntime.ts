@@ -11,7 +11,7 @@ import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useRangeSelection } from './useRangeSelection'
 import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
 
-/* eslint-disable react-hooks/preserve-manual-memoization -- Temporal 값 의존 useCallback 패턴 유지 */
+/* oxlint-disable react-hooks/exhaustive-deps -- range selection 콜백이 매 렌더 갱신되는 스냅샷 객체에 의존 */
 
 export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRuntime {
   const {
@@ -34,10 +34,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
 
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
-  const messages = useMemo(
-    () => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }),
-    [messagesProp],
-  )
+  const messages = useMemo(() => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }), [messagesProp])
   const rawSelection = useRangeSelection({
     value,
     defaultValue,

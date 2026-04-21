@@ -76,7 +76,7 @@
 
 ### Phase 6. Docs & Developer Experience ⏳
 
-1. ⏳ Storybook(또는 문서 사이트) 세팅 — 현재는 `src/App.tsx` 내 mode playground 만 존재
+1. ⏳ Storybook(또는 문서 사이트) 세팅 — 플레이그라운드는 `docs/` 홈에서 유지
 2. ⏳ mode별 예제 추가 (single / multiple / range / custom day/header)
 3. ⏳ 마이그레이션 가이드 작성
 4. ⏳ 성능 가이드 (큰 기간 범위 / overscan 튜닝 / 메모이제이션)

@@ -5,7 +5,13 @@ import type { CalendarMultipleProps, DateValue } from '../core/api.types'
 import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
-import { clampDate, dayStamp, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import {
+  clampDate,
+  dayStamp,
+  DEFAULT_MAX_DATE,
+  DEFAULT_MIN_DATE,
+  monthIndexFromMin,
+} from '../components/Calendar.utils'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useMultipleSelection } from './useMultipleSelection'
@@ -44,10 +50,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
 
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
-  const messages = useMemo(
-    () => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }),
-    [messagesProp],
-  )
+  const messages = useMemo(() => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }), [messagesProp])
   const rawSelection = useMultipleSelection({
     value,
     defaultValue,
@@ -66,7 +69,11 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
   )
 
   const selectionPlainKey = useMemo(
-    () => rawSelection.value.map((v) => dayStamp(toPlainDate(v))).sort().join('|'),
+    () =>
+      rawSelection.value
+        .map((v) => dayStamp(toPlainDate(v)))
+        .sort()
+        .join('|'),
     [rawSelection.value],
   )
 
@@ -81,10 +88,13 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     })
   }, [selectionPlainKey, rawSelection.value])
 
-  const setMultiplePrimaryPlainDate = useCallback((date: Temporal.PlainDate) => {
-    if (!selectedValues.some((v) => toPlainDate(v).equals(date))) return
-    setPrimaryPlainDate(date)
-  }, [selectedValues])
+  const setMultiplePrimaryPlainDate = useCallback(
+    (date: Temporal.PlainDate) => {
+      if (!selectedValues.some((v) => toPlainDate(v).equals(date))) return
+      setPrimaryPlainDate(date)
+    },
+    [selectedValues],
+  )
 
   const today = Temporal.Now.plainDateISO()
   const selectedPlain = rawSelection.value[0] ? toPlainDate(rawSelection.value[0]) : null

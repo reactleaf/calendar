@@ -64,10 +64,9 @@ function labelsFromSnapshot(
     }
     case 'multiple': {
       const sorted = [...snapshot.values].sort((a, b) => Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)))
+      const primaryPlain = snapshot.primaryPlainDate
       const primaryValue =
-        snapshot.primaryPlainDate !== null
-          ? snapshot.values.find((v) => toPlainDate(v).equals(snapshot.primaryPlainDate))
-          : null
+        primaryPlain !== null ? snapshot.values.find((v) => toPlainDate(v).equals(primaryPlain)) : null
       const selectedValue = primaryValue ?? sorted[sorted.length - 1] ?? null
       const selectedDay = selectedValue ? toPlainDate(selectedValue) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
@@ -220,19 +219,16 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     const sorted = [...selectionSnapshot.values].sort((a, b) =>
       Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
     )
+    const primaryPlain = selectionSnapshot.primaryPlainDate
     const primary =
-      selectionSnapshot.primaryPlainDate !== null
-        ? selectionSnapshot.values.find((v) => toPlainDate(v).equals(selectionSnapshot.primaryPlainDate))
-        : null
+      primaryPlain !== null ? selectionSnapshot.values.find((v) => toPlainDate(v).equals(primaryPlain)) : null
     const value = primary ?? sorted[sorted.length - 1] ?? null
     return resolveEditorDateTime(value)
   }, [selectionSnapshot])
 
   const multipleSortedValues = useMemo(() => {
     if (selectionSnapshot.mode !== 'multiple') return []
-    return [...selectionSnapshot.values].sort((a, b) =>
-      Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
-    )
+    return [...selectionSnapshot.values].sort((a, b) => Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)))
   }, [selectionSnapshot])
 
   const rangeHeaderSource =

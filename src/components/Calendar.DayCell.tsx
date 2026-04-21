@@ -142,14 +142,7 @@ export const CalendarDayCell = memo(function CalendarDayCell({
     isMultiplePrimaryEdit,
   )
   const selectionLayerClass = selectionLayerActive
-    ? buildSelectionLayerClass(
-        mode,
-        isSelected,
-        isInPreview,
-        isRangeStartDate,
-        isRangeEndDate,
-        isMultiplePrimaryEdit,
-      )
+    ? buildSelectionLayerClass(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate, isMultiplePrimaryEdit)
     : null
 
   const selectionShape = getSelectionShape(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)

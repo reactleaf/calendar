@@ -33,10 +33,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
 
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
-  const messages = useMemo(
-    () => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }),
-    [messagesProp],
-  )
+  const messages = useMemo(() => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }), [messagesProp])
   const selection = useSingleSelection({
     value,
     defaultValue,
