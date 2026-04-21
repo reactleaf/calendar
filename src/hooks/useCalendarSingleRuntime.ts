@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarSingleProps } from '../core/api.types'
-import { defaultNavigatorLocale, resolveCalendarMessages } from '../core/calendarLocale'
+import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { toPlainDate } from '../core/calendarDate'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
@@ -33,7 +33,10 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
 
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
-  const messages = useMemo(() => resolveCalendarMessages(messagesProp), [messagesProp])
+  const messages = useMemo(
+    () => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }),
+    [messagesProp],
+  )
   const selection = useSingleSelection({
     value,
     defaultValue,

@@ -5,6 +5,7 @@ export function defaultNavigatorLocale(): string {
 }
 
 export const DEFAULT_CALENDAR_MESSAGES: CalendarMessages = {
+  blank: 'Select a date...',
   selectDate: 'Select a date...',
   rangeIncompleteEnd: '?',
   rangeFromPrefix: 'from ',
@@ -15,8 +16,4 @@ export const DEFAULT_CALENDAR_MESSAGES: CalendarMessages = {
   multipleMoreCount: '+{count}',
   ariaOpenMultipleSelectedList: 'Show {count} more selected dates',
   ariaMultipleSelectedDatesPanel: 'Selected dates',
-}
-
-export function resolveCalendarMessages(partial?: Partial<CalendarMessages>): CalendarMessages {
-  return { ...DEFAULT_CALENDAR_MESSAGES, ...partial }
 }

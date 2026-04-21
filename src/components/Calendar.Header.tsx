@@ -59,7 +59,7 @@ function labelsFromSnapshot(
       const v = snapshot.value
       const selectedDay = v ? toPlainDate(v) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.selectDate
+      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.blank
       break
     }
     case 'multiple': {
@@ -71,7 +71,7 @@ function labelsFromSnapshot(
       const selectedValue = primaryValue ?? sorted[sorted.length - 1] ?? null
       const selectedDay = selectedValue ? toPlainDate(selectedValue) : null
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.selectDate
+      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.blank
       break
     }
     case 'range': {
@@ -91,7 +91,7 @@ function labelsFromSnapshot(
           ? `${formatDay(startDay, locale)} - ${formatDay(endDay, locale)}`
           : startDay
             ? `${formatDay(startDay, locale)} - ${messages.rangeIncompleteEnd}`
-            : messages.selectDate
+            : messages.blank
       break
     }
   }
@@ -180,9 +180,25 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     () => labelsFromSnapshot(locale, messages, selectionSnapshot),
     [locale, messages, selectionSnapshot],
   )
-  const showTimeRow = includeTime === true
 
-  const classes = ['calendar__header', showTimeRow ? 'calendar__header--hasTime' : '', className]
+  const isHeaderSelectionEmpty = useMemo(() => {
+    if (mode === 'single' && selectionSnapshot.mode === 'single') return selectionSnapshot.value === null
+    if (mode === 'multiple' && selectionSnapshot.mode === 'multiple') return selectionSnapshot.values.length === 0
+    return false
+  }, [mode, selectionSnapshot])
+
+  const showTimeRow = includeTime === true && !isHeaderSelectionEmpty
+  /** 시간 행이 비어 있어도 패딩·간격은 `includeTime` 기준으로 맞춰 헤더 높이를 고정한다. */
+  const useTimeHeaderLayout = includeTime === true
+  const dateButtonClass = [
+    'calendar__headerDate',
+    'calendar__headerDateButton',
+    isHeaderSelectionEmpty ? 'calendar__headerDate--placeholder' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const classes = ['calendar__header', useTimeHeaderLayout ? 'calendar__header--hasTime' : '', className]
     .filter(Boolean)
     .join(' ')
 
@@ -317,21 +333,25 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
 
   return (
     <div className={classes} {...headerDataAttrs}>
-      <button
-        type="button"
-        className="calendar__headerYear calendar__headerYearButton"
-        onClick={openMonthPicker}
-        aria-expanded={monthPickerOpen}
-        aria-label={messages.ariaOpenMonthPicker}
-        data-view="months"
-      >
-        {displayYear}
-      </button>
+      {isHeaderSelectionEmpty ? (
+        <div className="calendar__headerYear calendar__headerYearSlot" aria-hidden />
+      ) : (
+        <button
+          type="button"
+          className="calendar__headerYear calendar__headerYearButton"
+          onClick={openMonthPicker}
+          aria-expanded={monthPickerOpen}
+          aria-label={messages.ariaOpenMonthPicker}
+          data-view="months"
+        >
+          {displayYear}
+        </button>
+      )}
       {showMultipleMoreChip ? (
         <div className="calendar__headerDateRow">
           <button
             type="button"
-            className="calendar__headerDate calendar__headerDateButton"
+            className={dateButtonClass}
             onClick={openDaysView}
             aria-pressed={daysViewOpen}
             aria-label={messages.ariaOpenDayGrid}
@@ -387,7 +407,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
       ) : (
         <button
           type="button"
-          className="calendar__headerDate calendar__headerDateButton"
+          className={dateButtonClass}
           onClick={openDaysView}
           aria-pressed={daysViewOpen}
           aria-label={messages.ariaOpenDayGrid}
@@ -396,13 +416,17 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
           {headerDate}
         </button>
       )}
-      {showTimeRow ? (
+      {includeTime ? (
         <div className="calendar__headerTime">
-          <CalendarTimeInput
-            value={mode === 'single' ? singleTimeValue : multipleLatestTime}
-            timeEditTarget="primary"
-            onTimeChange={(hour, minute) => selection.setSelectedTime?.(hour, minute)}
-          />
+          {showTimeRow ? (
+            <CalendarTimeInput
+              value={mode === 'single' ? singleTimeValue : multipleLatestTime}
+              timeEditTarget="primary"
+              onTimeChange={(hour, minute) => selection.setSelectedTime?.(hour, minute)}
+            />
+          ) : (
+            <div className="calendar__headerTimePlaceholder" aria-hidden />
+          )}
         </div>
       ) : null}
     </div>

@@ -41,6 +41,7 @@ describe('Calendar month overlay (isScrolling)', () => {
     const { container, getByLabelText } = render(
       <Calendar
         mode="single"
+        defaultValue={Temporal.PlainDate.from('2026-04-15')}
         minDate={Temporal.PlainDate.from('2020-01-01')}
         maxDate={Temporal.PlainDate.from('2030-12-31')}
       />,

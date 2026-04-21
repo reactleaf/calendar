@@ -15,6 +15,12 @@ export interface CalendarRangeValue {
 
 /** `locale`(Intl)과 별도로 헤더·aria 등 고정 문구를 덮어쓸 때 사용 */
 export interface CalendarMessages {
+  /**
+   * 헤더 날짜 라인: 선택이 없을 때 표시 (single `value === null`, multiple `[]`, range 시작일 없음).
+   * 레퍼런스 `react-infinite-calendar` 의 `locale.blank` 와 동등 역할.
+   */
+  blank: string
+  /** 다른 용도 확장·하위 호환용. 기본은 `blank` 와 동일; `messages` 에 `blank` 만 넣으면 둘 다 채워진다. */
   selectDate: string
   /** range 시작만 있을 때 끝 날짜 자리 표시 (예: "?") */
   rangeIncompleteEnd: string

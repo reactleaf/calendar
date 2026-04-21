@@ -27,6 +27,8 @@ export interface CalendarRangeValue {
 type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6 // 0=일요일 시작 (react-infinite-calendar 와 동일)
 
 interface CalendarMessages {
+  /** 헤더 날짜 라인: 선택 없음(single `null`, multiple `[]`, range 시작 없음). 레퍼런스 `locale.blank`. */
+  blank: string
   selectDate: string
   rangeIncompleteEnd: string
   rangeFromPrefix: string
@@ -34,6 +36,9 @@ interface CalendarMessages {
   ariaOpenMonthPicker: string
   ariaOpenDayGrid: string
   ariaCalendarGrid: string
+  multipleMoreCount: string
+  ariaOpenMultipleSelectedList: string
+  ariaMultipleSelectedDatesPanel: string
 }
 
 interface CalendarBaseProps {

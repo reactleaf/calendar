@@ -5,9 +5,7 @@ import { Calendar } from './Calendar'
 import type { CalendarRangeValue, DateValue } from './core/api.types'
 
 function App() {
-  const [singleSelected, setSingleSelected] = useState<DateValue | null>(
-    Temporal.PlainDateTime.from('2026-04-14T09:00'),
-  )
+  const [singleSelected, setSingleSelected] = useState<DateValue | null>(null)
   const [multipleSelected, setMultipleSelected] = useState<DateValue[]>([
     Temporal.PlainDateTime.from('2026-04-10T09:00'),
     Temporal.PlainDateTime.from('2026-04-12T10:30'),
@@ -44,7 +42,7 @@ function App() {
           locale="ko-KR"
           weekStartsOn={1}
           messages={{
-            selectDate: '날짜를 선택하세요',
+            blank: '날짜를 선택하세요',
             rangeIncompleteEnd: '?',
             rangeFromPrefix: '시작 ',
             rangeToPrefix: '종료 ',

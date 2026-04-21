@@ -125,11 +125,9 @@
 
 /**
  * time 보조 뷰가 열렸거나 시·분 숫자 편집 중일 때 — 셀이 작아 포인터가 어색하므로
- * 마우스 커서만 숨긴다 (텍스트 캐럿은 브라우저 기본 유지).
+ * 시·분 셀(`button` / `input`) 위에서만 커서를 숨긴다 (콜론·여백은 기본 커서).
  */
-.calendar__timeEditor--hidePointer,
 .calendar__timeEditor--hidePointer .calendar__timeDisplay,
-.calendar__timeEditor--hidePointer .calendar__timeInput,
-.calendar__timeEditor--hidePointer .calendar__timeColon {
+.calendar__timeEditor--hidePointer .calendar__timeInput {
   cursor: none;
 }
