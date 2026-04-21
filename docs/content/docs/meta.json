@@ -1,11 +1,4 @@
 {
   "title": "Documentation",
-  "pages": [
-    "index",
-    "props",
-    "---Examples---",
-    "examples/single",
-    "examples/multiple",
-    "examples/range"
-  ]
+  "pages": ["index", "props", "---Examples---", "examples/single", "examples/multiple", "examples/range"]
 }

@@ -50,15 +50,7 @@ function previewKey(p: CalendarRangeValue | null): string {
 }
 
 export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSelectionResult {
-  const {
-    value: valueProp,
-    defaultValue,
-    minDate,
-    maxDate,
-    includeTime,
-    onSelect,
-    onRangePreview,
-  } = options
+  const { value: valueProp, defaultValue, minDate, maxDate, includeTime, onSelect, onRangePreview } = options
 
   const isControlled = valueProp !== undefined
   const [internalCommitted, setInternalCommitted] = useState<CalendarRangeValue>(() => defaultValue ?? EMPTY)

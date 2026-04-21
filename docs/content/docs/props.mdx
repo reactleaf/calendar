@@ -13,18 +13,18 @@ Types are exported from **`@reactleaf/calendar`** (for example `CalendarProps`, 
 
 These apply to **every** `mode`. Mode sections below add fields on top of this table.
 
-| Prop | Type | Notes |
-| --- | --- | --- |
-| `mode` | `'single' \| 'multiple' \| 'range'` | Required. |
-| `locale` | `string` (BCP 47) | `Intl` formatting. Falls back to `navigator.language`, then `en-US`. |
-| `weekStartsOn` | `0`–`6` | `0` = Sunday … `6` = Saturday. Default **`0`** (same convention as react-infinite-calendar). |
-| `messages` | `Partial<CalendarMessages>` | Header and ARIA strings; merged with English defaults. See **`CalendarMessages`** below. |
-| `minDate` | `DateValue` | Inclusive lower bound; also limits which months appear in the virtual list. |
-| `maxDate` | `DateValue` | Inclusive upper bound; same as above. |
-| `keyboardNavigation` | `boolean` | When **`true`** (default), Arrow keys move focus in the day grid; Enter/Space commits the focused day. Set **`false`** to disable that behavior. |
-| `includeTime` | `boolean` | When set, enables time editing in the header and the time subview where applicable. |
-| `onMonthChange` | `(monthStart: MonthValue) => void` | Fires when the month aligned to the viewport changes (virtual scroll). |
-| `onFocusedDateChange` | `(date: DateValue \| null) => void` | Called when the **focused** day in the grid changes (keyboard moves focus, clamping, or programmatic updates). |
+| Prop                  | Type                                | Notes                                                                                                                                            |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mode`                | `'single' \| 'multiple' \| 'range'` | Required.                                                                                                                                        |
+| `locale`              | `string` (BCP 47)                   | `Intl` formatting. Falls back to `navigator.language`, then `en-US`.                                                                             |
+| `weekStartsOn`        | `0`–`6`                             | `0` = Sunday … `6` = Saturday. Default **`0`** (same convention as react-infinite-calendar).                                                     |
+| `messages`            | `Partial<CalendarMessages>`         | Header and ARIA strings; merged with English defaults. See **`CalendarMessages`** below.                                                         |
+| `minDate`             | `DateValue`                         | Inclusive lower bound; also limits which months appear in the virtual list.                                                                      |
+| `maxDate`             | `DateValue`                         | Inclusive upper bound; same as above.                                                                                                            |
+| `keyboardNavigation`  | `boolean`                           | When **`true`** (default), Arrow keys move focus in the day grid; Enter/Space commits the focused day. Set **`false`** to disable that behavior. |
+| `includeTime`         | `boolean`                           | When set, enables time editing in the header and the time subview where applicable.                                                              |
+| `onMonthChange`       | `(monthStart: MonthValue) => void`  | Fires when the month aligned to the viewport changes (virtual scroll).                                                                           |
+| `onFocusedDateChange` | `(date: DateValue \| null) => void` | Called when the **focused** day in the grid changes (keyboard moves focus, clamping, or programmatic updates).                                   |
 
 `DateValue` = `Temporal.PlainDate | Temporal.PlainDateTime`.  
 `MonthValue` = `Temporal.PlainYearMonth`.
@@ -35,22 +35,22 @@ Each `mode` extends **`CalendarBaseProps`** with the fields in its subsection (`
 
 ### `mode: 'single'` (`CalendarSingleProps`)
 
-| Prop | Type | Notes |
-| --- | --- | --- |
-| `value` | `DateValue \| null` | Controlled selection. |
-| `defaultValue` | `DateValue \| null` | Uncontrolled initial value. |
-| `onSelect` | `(next: DateValue \| null) => void` | Selection changes. |
+| Prop             | Type                                    | Notes                                                                                                       |
+| ---------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `value`          | `DateValue \| null`                     | Controlled selection.                                                                                       |
+| `defaultValue`   | `DateValue \| null`                     | Uncontrolled initial value.                                                                                 |
+| `onSelect`       | `(next: DateValue \| null) => void`     | Selection changes.                                                                                          |
 | `isDateDisabled` | `(date: Temporal.PlainDate) => boolean` | Optional. Marks dates non-selectable **inside** `minDate`–`maxDate`. Outside that range is always disabled. |
 
 ### `mode: 'multiple'` (`CalendarMultipleProps`)
 
-| Prop | Type | Notes |
-| --- | --- | --- |
-| `value` | `DateValue[]` | Controlled selected dates. |
-| `defaultValue` | `DateValue[]` | Uncontrolled initial list. |
-| `onSelect` | `(next: DateValue[]) => void` | Selection changes. |
-| `maxSelections` | `number` | Optional cap on how many dates can be selected. |
-| `isDateDisabled` | `(date: Temporal.PlainDate) => boolean` | Same contract as **single**. |
+| Prop             | Type                                    | Notes                                           |
+| ---------------- | --------------------------------------- | ----------------------------------------------- |
+| `value`          | `DateValue[]`                           | Controlled selected dates.                      |
+| `defaultValue`   | `DateValue[]`                           | Uncontrolled initial list.                      |
+| `onSelect`       | `(next: DateValue[]) => void`           | Selection changes.                              |
+| `maxSelections`  | `number`                                | Optional cap on how many dates can be selected. |
+| `isDateDisabled` | `(date: Temporal.PlainDate) => boolean` | Same contract as **single**.                    |
 
 ### `mode: 'range'` (`CalendarRangeProps`)
 
@@ -58,24 +58,24 @@ Each `mode` extends **`CalendarBaseProps`** with the fields in its subsection (`
 
 Range does **not** support **`isDateDisabled`**: the model is a contiguous interval, so “holes” inside a range are not allowed—use **`minDate` / `maxDate`** only.
 
-| Prop | Type | Notes |
-| --- | --- | --- |
-| `value` | `CalendarRangeValue` | Controlled range value; see shape above. |
-| `defaultValue` | `CalendarRangeValue` | Uncontrolled initial range. |
-| `onSelect` | `(next: CalendarRangeValue) => void` | Called when the range is **committed** (both ends resolved per internal rules). |
+| Prop             | Type                                         | Notes                                                                                                                                                                                     |
+| ---------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`          | `CalendarRangeValue`                         | Controlled range value; see shape above.                                                                                                                                                  |
+| `defaultValue`   | `CalendarRangeValue`                         | Uncontrolled initial range.                                                                                                                                                               |
+| `onSelect`       | `(next: CalendarRangeValue) => void`         | Called when the range is **committed** (both ends resolved per internal rules).                                                                                                           |
 | `onRangePreview` | `(next: CalendarRangeValue \| null) => void` | Fires while the user is **still choosing** the range (e.g. after the first anchor, before commit). Hover and keyboard focus always update the provisional end; `null` clears the preview. |
 
 ## `CalendarMessages`
 
 Pass a partial object; any omitted keys fall back to the built-in English defaults (`DEFAULT_CALENDAR_MESSAGES`).
 
-| Key | Role | en (default) |
-| --- | --- | --- |
-| `blank` | Header line when there is no selection (single `null`, multiple `[]`, range with no start). **Used in the UI today.** | `Select a date...` |
-| `rangeFromPrefix` | Prefix before the range start column label. | `from ` |
-| `rangeToPrefix` | Prefix before the range end column label. | `to ` |
-| `ariaOpenMonthPicker` | Accessible name for opening the month picker. | `Open month picker` |
-| `ariaOpenDayGrid` | Accessible name for returning to the day grid. | `Show day calendar` |
-| `ariaCalendarGrid` | Accessible name for the scrollable calendar grid. | `Infinite scroll calendar` |
-| `ariaOpenMultipleSelectedList` | Chip `aria-label`; `{count}` as above. | `Show {count} more selected dates` |
-| `ariaMultipleSelectedDatesPanel` | `aria-label` for the extra-dates popover. | `Selected dates` |
+| Key                              | Role                                                                                                                  | en (default)                       |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `blank`                          | Header line when there is no selection (single `null`, multiple `[]`, range with no start). **Used in the UI today.** | `Select a date...`                 |
+| `rangeFromPrefix`                | Prefix before the range start column label.                                                                           | `from `                            |
+| `rangeToPrefix`                  | Prefix before the range end column label.                                                                             | `to `                              |
+| `ariaOpenMonthPicker`            | Accessible name for opening the month picker.                                                                         | `Open month picker`                |
+| `ariaOpenDayGrid`                | Accessible name for returning to the day grid.                                                                        | `Show day calendar`                |
+| `ariaCalendarGrid`               | Accessible name for the scrollable calendar grid.                                                                     | `Infinite scroll calendar`         |
+| `ariaOpenMultipleSelectedList`   | Chip `aria-label`; `{count}` as above.                                                                                | `Show {count} more selected dates` |
+| `ariaMultipleSelectedDatesPanel` | `aria-label` for the extra-dates popover.                                                                             | `Selected dates`                   |
