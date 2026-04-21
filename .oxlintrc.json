@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "vitest/require-mock-type-parameters": "allow",
+    "jest/no-conditional-expect": "allow"
+  }
+}

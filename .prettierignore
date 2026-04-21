@@ -1,3 +1,7 @@
 dist
 node_modules
 pnpm-lock.yaml
+docs/build
+docs/.react-router
+docs/.source
+docs/node_modules
