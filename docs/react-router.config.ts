@@ -1,11 +1,15 @@
 import type { Config } from '@react-router/dev/config'
 import { glob } from 'node:fs/promises'
 import { createGetUrl, getSlugs } from 'fumadocs-core/source'
+import { reactRouterBasename } from './gh-pages-base'
 
+/** prerender 경로는 basename 없이(React Router가 파일 출력 시 basename을 붙임). */
 const getUrl = createGetUrl('/docs')
+const basename = reactRouterBasename()
 
 export default {
   ssr: false,
+  ...(basename ? { basename } : {}),
   future: {
     v8_middleware: true,
   },

@@ -1,11 +1,14 @@
 export const appName = 'React Router'
-export const docsRoute = '/docs'
-export const docsImageRoute = '/og/docs'
-export const docsContentRoute = '/llms.mdx/docs'
 
-// fill this with your actual GitHub info, for example:
+const base = import.meta.env.BASE_URL
+const baseNoSlash = base.endsWith('/') ? base.slice(0, -1) : base
+
+export const docsRoute = `${baseNoSlash}/docs`
+export const docsImageRoute = `${baseNoSlash}/og/docs`
+export const docsContentRoute = `${baseNoSlash}/llms.mdx/docs`
+
 export const gitConfig = {
-  user: 'fuma-nama',
-  repo: 'fumadocs',
+  user: 'reactleaf',
+  repo: 'calendar',
   branch: 'main',
 }

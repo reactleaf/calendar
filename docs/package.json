@@ -1,5 +1,5 @@
 {
-  "name": "react-smooth-calendar/docs",
+  "name": "@reactleaf/calendar/docs",
   "private": true,
   "type": "module",
   "scripts": {

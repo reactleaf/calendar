@@ -1,6 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { docsRoute } from '@/lib/shared'
 import { Calendar } from 'infinite-calendar-next'
 import type { CalendarRangeValue, DateValue } from 'infinite-calendar-next'
 import '@/styles/calendar-playground.css'
@@ -27,7 +28,7 @@ export function CalendarPlayground() {
 
   return (
     <main className="app-calendar-demo">
-      <Link className="app-calendar-demo__docsLink" to="/docs">
+      <Link className="app-calendar-demo__docsLink" to={docsRoute}>
         문서 (Fumadocs) →
       </Link>
       <h1 className="app-calendar-demo__title">Calendar mode playground</h1>
