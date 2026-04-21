@@ -10,7 +10,9 @@
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "@/*": ["./app/*"],
-      "collections/*": ["./.source/*"]
+      "collections/*": ["./.source/*"],
+      "@reactleaf/calendar": ["../src/index.ts"],
+      "@reactleaf/calendar/index.css": ["../src/Calendar.css"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,

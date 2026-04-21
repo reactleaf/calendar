@@ -65,28 +65,15 @@ function clampInt(value: number, min: number, max: number): number {
   return n
 }
 
-export function normalizeMinuteStep(step?: number): number {
-  if (!step || !Number.isFinite(step)) return 1
-  const s = Math.trunc(step)
-  if (s < 1) return 1
-  if (s > 30) return 30
-  return s
-}
-
-export function normalizeTimeParts(
-  hour: number,
-  minute: number,
-  minuteStep?: number,
-): { hour: number; minute: number } {
+export function normalizeTimeParts(hour: number, minute: number): { hour: number; minute: number } {
   const safeHour = clampInt(hour, 0, 23)
-  const step = normalizeMinuteStep(minuteStep)
-  const safeMinute = clampInt(Math.round(minute / step) * step, 0, 59)
+  const safeMinute = clampInt(minute, 0, 59)
   return { hour: safeHour, minute: safeMinute }
 }
 
-export function withTime(day: PlainDay, hour: number, minute: number, minuteStep?: number): Temporal.PlainDateTime {
+export function withTime(day: PlainDay, hour: number, minute: number): Temporal.PlainDateTime {
   const base = toPlainDate(day)
-  const next = normalizeTimeParts(hour, minute, minuteStep)
+  const next = normalizeTimeParts(hour, minute)
   return Temporal.PlainDateTime.from({
     year: base.year,
     month: base.month,

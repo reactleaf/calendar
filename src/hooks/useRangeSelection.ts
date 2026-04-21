@@ -16,8 +16,6 @@ export interface UseRangeSelectionOptions {
   minDate?: DateValue
   maxDate?: DateValue
   includeTime?: boolean
-  minuteStep?: number
-  allowRangePreview?: boolean
   onSelect?: (next: CalendarRangeValue) => void
   onRangePreview?: (next: CalendarRangeValue | null) => void
 }
@@ -58,8 +56,6 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     minDate,
     maxDate,
     includeTime,
-    minuteStep,
-    allowRangePreview,
     onSelect,
     onRangePreview,
   } = options
@@ -82,9 +78,8 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
 
   const previewPlain = useMemo(() => {
     if (pointer.kind !== 'anchored') return null
-    const hover = allowRangePreview ? hoverDate : null
-    return rangePointerPreview(pointer, hover ?? pointer.anchor)
-  }, [allowRangePreview, hoverDate, pointer])
+    return rangePointerPreview(pointer, hoverDate ?? pointer.anchor)
+  }, [hoverDate, pointer])
 
   const preview = useMemo(() => toPreviewPayload(previewPlain, includeTime), [includeTime, previewPlain])
 
@@ -183,11 +178,10 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
   const previewDate = useCallback(
     (date: DateValue, source?: 'hover' | 'keyboard') => {
       void source
-      if (!allowRangePreview) return
       if (isDisabled(date)) return
       setHoverDate(toPlainDate(toSelectionValue(date, includeTime)))
     },
-    [allowRangePreview, includeTime, isDisabled],
+    [includeTime, isDisabled],
   )
 
   const clear = useCallback(() => {
@@ -205,11 +199,11 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
         start: committed.start,
         end: committed.end,
       }
-      payload[edge] = withTime(target, hour, minute, minuteStep)
+      payload[edge] = withTime(target, hour, minute)
       onSelect?.(payload)
       if (!isControlled) setInternalCommitted(payload)
     },
-    [committed, includeTime, isControlled, minuteStep, onSelect],
+    [committed, includeTime, isControlled, onSelect],
   )
 
   return {

@@ -1,32 +1,70 @@
 ---
-title: Hello World
-description: |
-  Your first `document`
-  You'll love it!
+title: Introduction
+description: >-
+  Virtualized calendar with single, multiple, and range selection—Temporal dates,
+  optional time editing, and keyboard-friendly interaction.
 ---
 
-Hey there! Fumadocs is the docs framework that also works on React Router!
+**`@reactleaf/calendar`** is a date and optional-time picker for React. It targets the same product niche as [react-infinite-calendar](https://github.com/clauderic/react-infinite-calendar), but the implementation is new: React 19, a virtualized month list, and **`@js-temporal/polyfill`** for values.
 
-## Heading
+## Compared with react-infinite-calendar
 
-Hello World
+Spiritual successor, not a drop-in replacement:
 
-<Cards>
-  <Card title="Learn more about React Router" href="https://reactrouter.com" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+- **Values**: Props expect **`Temporal.PlainDate`** or **`Temporal.PlainDateTime`** only—not `Date` or raw ISO strings. Parse strings at your app boundary with **`Temporal.PlainDate.from(...)`** / **`Temporal.PlainDateTime.from(...)`** (or your own conversion into those types).
+- **Time**: Optional **`includeTime`** adds header time fields, direct hour/minute input, and a dedicated **time subview** (scroll picker). Date-only flows stay on plain dates; time is minute-precision wall time, not IANA time zones.
+- **Modes**: First-class **`single`**, **`multiple`**, and **`range`** on one component (`mode` discriminant).
+- **Layout**: Month list is **virtualized**; the card height is stabilized with CSS tokens so switching between day, month, and time views does not resize the shell.
+- **Accessibility**: Grid-oriented ARIA for the day body, localized labels via `locale` + overridable **`messages`**.
 
-```ts
-console.log('I love React!')
+## Features
+
+- **Modes**: `single`, `multiple`, and `range` selection.
+- **Dates**: `Temporal.PlainDate` / `Temporal.PlainDateTime` only; turn ISO or other formats into those types before passing them in.
+- **Optional time**: `includeTime` enables header time editing and the time subview when you need clock times.
+- **Bounds**: `minDate` / `maxDate`, plus per-day disabling in **single** and **multiple** (`isDateDisabled`). **Range** uses bounds only (no per-day blacklist).
+- **Accessibility**: Focus management, ARIA on key regions, and keyboard navigation for the day grid.
+
+## Requirements
+
+- **React** 19+ and **react-dom** (peers).
+- **`@js-temporal/polyfill`** (dependency alongside this package) for `Temporal` in environments that lack it.
+- **Styles**: Import the package stylesheet so layout and tokens apply (see below).
+
+## Install
+
+The package is published as **`@reactleaf/calendar`**. It ships ESM, TypeScript types, and a stylesheet entry.
+
+Use your package manager of choice, e.g. `pnpm add @reactleaf/calendar @js-temporal/polyfill`, or `npm install @reactleaf/calendar @js-temporal/polyfill`, or `yarn add @reactleaf/calendar @js-temporal/polyfill`. Peers: `react`, `react-dom`.
+
+Import the default styles once (path may vary by bundler):
+
+```tsx
+import '@reactleaf/calendar/index.css'
 ```
 
-### Heading
+Theme hooks such as **`--calendar-color-accent`**, **`--calendar-body-height`**, and related tokens live in the bundled CSS; override them in your own stylesheet after the import if you need branding or density tweaks.
 
-#### Heading
+## Minimal usage
 
-| Head                            | Description                         |
-| ------------------------------- | ----------------------------------- |
-| `hello`                         | Hello World                         |
-| very **important**              | Hey                                 |
-| _Surprisingly_                  | Fumadocs                            |
-| very long text that looks weird | hello world hello world hello world |
+```tsx
+import { useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+export function Demo() {
+  const [date, setDate] = useState<DateValue | null>(null)
+  return <Calendar mode="single" value={date} onSelect={setDate} />
+}
+```
+
+## Next steps
+
+<Cards>
+  <Card title="Props reference" description="All Calendar props by mode." href="./props" />
+  <Card title="Single example" description="mode=&quot;single&quot; live demo." href="./examples/single" />
+  <Card title="Multiple example" description="mode=&quot;multiple&quot; live demo." href="./examples/multiple" />
+  <Card title="Range example" description="mode=&quot;range&quot; live demo." href="./examples/range" />
+  <Card title="GitHub" href="https://github.com/reactleaf/calendar" />
+</Cards>

@@ -12,7 +12,6 @@ export interface UseSingleSelectionOptions {
   maxDate?: DateValue
   isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
-  minuteStep?: number
   onSelect?: (next: DateValue | null) => void
   allowDeselect?: boolean
 }
@@ -34,7 +33,6 @@ export function useSingleSelection(options: UseSingleSelectionOptions): UseSingl
     maxDate,
     isDateDisabled,
     includeTime,
-    minuteStep,
     onSelect,
     allowDeselect = false,
   } = options
@@ -76,9 +74,9 @@ export function useSingleSelection(options: UseSingleSelectionOptions): UseSingl
   const setSelectedTime = useCallback(
     (hour: number, minute: number) => {
       if (!includeTime || value === null) return
-      commit(withTime(value, hour, minute, minuteStep))
+      commit(withTime(value, hour, minute))
     },
-    [commit, includeTime, minuteStep, value],
+    [commit, includeTime, value],
   )
 
   return {

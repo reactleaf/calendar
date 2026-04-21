@@ -12,7 +12,6 @@ export interface UseMultipleSelectionOptions {
   maxDate?: DateValue
   isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
-  minuteStep?: number
   maxSelections?: number
   onSelect?: (next: DateValue[]) => void
 }
@@ -41,7 +40,6 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
     maxDate,
     isDateDisabled,
     includeTime,
-    minuteStep,
     maxSelections,
     onSelect,
   } = options
@@ -90,10 +88,10 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
       if (!includeTime || value.length === 0) return
       const idx = value.findIndex((v) => toPlainDate(v).equals(plain))
       if (idx === -1) return
-      const next = value.map((v, i) => (i === idx ? withTime(v, hour, minute, minuteStep) : v))
+      const next = value.map((v, i) => (i === idx ? withTime(v, hour, minute) : v))
       commit(next)
     },
-    [commit, includeTime, minuteStep, value],
+    [commit, includeTime, value],
   )
 
   return { value, isSelected, isDisabled, toggleDate, setTimeForPlainDate, clear }

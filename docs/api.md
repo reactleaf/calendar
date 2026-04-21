@@ -29,14 +29,11 @@ type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6 // 0=일요일 시작 (react-infin
 interface CalendarMessages {
   /** 헤더 날짜 라인: 선택 없음(single `null`, multiple `[]`, range 시작 없음). 레퍼런스 `locale.blank`. */
   blank: string
-  selectDate: string
-  rangeIncompleteEnd: string
   rangeFromPrefix: string
   rangeToPrefix: string
   ariaOpenMonthPicker: string
   ariaOpenDayGrid: string
   ariaCalendarGrid: string
-  multipleMoreCount: string
   ariaOpenMultipleSelectedList: string
   ariaMultipleSelectedDatesPanel: string
 }
@@ -57,7 +54,6 @@ interface CalendarBaseProps {
 
   keyboardNavigation?: boolean
   includeTime?: boolean
-  minuteStep?: number
 
   onMonthChange?: (monthStart: MonthValue) => void
   onFocusedDateChange?: (date: DateValue | null) => void
@@ -131,9 +127,6 @@ interface CalendarRangeProps extends CalendarBaseProps {
 
   // 진행 중 프리뷰(첫 점만 잡힘, 호버로 끝 후보 이동 등). null이면 프리뷰 종료
   onRangePreview?: (next: CalendarRangeValue | null) => void
-
-  // true면 선택 중 hover 등으로 프리뷰를 갱신한다
-  allowRangePreview?: boolean
 }
 ```
 
@@ -163,7 +156,6 @@ type CalendarProps = CalendarSingleProps | CalendarMultipleProps | CalendarRange
 - `includeTime`이 `true`면 `Temporal.PlainDateTime`을 사용한다.
 - 날짜 셀만 먼저 고르는 UX에서는 `PlainDateTime`으로 합성할 때 **`00:00` 고정**을 사용한다.
 - 시간 정밀도는 Draft 0에서 분(minute) 단위로 고정하며, `timePrecision` props는 제공하지 않는다.
-- `minuteStep` 기본값은 `1`이며, 시간 UI가 있을 때 minute 선택 간격에만 적용한다.
 - 이 캘린더는 **IANA 타임존을 해석하지 않는다**. `PlainDate`/`PlainDateTime`은 wall 값이며, `Temporal.PlainDate#toZonedDateTime` 등은 **소비자가 호출**한다.
 - 입력 포맷 문자열 파싱은 초기 릴리즈 범위에서 제외하고, 소비자가 `Temporal` 값으로 전달하는 것을 기본으로 한다.
 

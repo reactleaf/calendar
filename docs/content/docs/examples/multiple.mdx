@@ -1,0 +1,20 @@
+---
+title: Multiple selection
+description: Live example of Calendar with mode="multiple".
+---
+
+Select many dates; toggling a chosen day removes it. Use `maxSelections` to cap how many days can be active.
+
+<MultipleModeExample />
+
+```tsx
+import { useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+export function Example() {
+  const [dates, setDates] = useState<DateValue[]>([])
+  return <Calendar mode="multiple" value={dates} onSelect={setDates} />
+}
+```

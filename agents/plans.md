@@ -8,6 +8,8 @@
 
 ## Decision Baseline
 
+- **npm 패키지명**: `@reactleaf/calendar` (저장소 루트 `package.json` 과 동일).
+- 공개 API에서 **`minuteStep` prop 제거** (2026-04): 분 스텝은 시간 보조 뷰 UI(예: 5분 단위 표시 토글)로만 다루고, 캘린더 루트 props에는 두지 않는다.
 - 선택 모드 공개 API는 `mode` 기반 variant로 통일한다: `single | multiple | range`.
 - 핵심 상태 로직은 headless hook으로 분리한다: `useCalendarState`, `useSingleSelection`, `useMultipleSelection`, `useRangeSelection`, `useCalendarKeyboard` (+ 모드별 런타임 hook `useCalendarSingleRuntime` / `useCalendarMultipleRuntime` / `useCalendarRangeRuntime`, 보조 뷰 상태 hook `useCalendarSecondaryView`).
 - UI 확장 지점은 compound 컴포넌트로 제공한다: `Calendar.Root`, `Calendar.Header`, `Calendar.Weekdays`, `Calendar.SingleMode` / `Calendar.MultipleMode` / `Calendar.RangeMode`, `Calendar.MonthPicker`, `Calendar.TimeSelectView` (+ 편의 facade `Calendar`).
@@ -74,12 +76,13 @@
 3. ⏳ 스크린리더 라벨링 점검 (월/년 전환, 선택 상태 변경 안내, time 뷰 진입/이탈)
 4. ⏳ pointer + keyboard + touch 상호작용 동등성 회귀 테스트
 
-### Phase 6. Docs & Developer Experience ⏳
+### Phase 6. Docs & Developer Experience 🚧
 
-1. ⏳ Storybook(또는 문서 사이트) 세팅 — 플레이그라운드는 `docs/` 홈에서 유지
+1. 🚧 문서 사이트 (`docs/`) — 소개·전체 props 페이지 우선 (`content/docs/index.mdx`, `props.mdx`), 홈 데모 유지
 2. ⏳ mode별 예제 추가 (single / multiple / range / custom day/header)
 3. ⏳ 마이그레이션 가이드 작성
 4. ⏳ 성능 가이드 (큰 기간 범위 / overscan 튜닝 / 메모이제이션)
+5. ⏳ **compound export 범위** 재검토 — `agents/todos.md` 참고
 
 ### Phase 7. Release Preparation ⏳
 
@@ -90,11 +93,12 @@
 
 ## Immediate Next Tasks
 
-1. Phase 5-2: 보조 뷰(`MonthPicker` / `TimeScrollPicker`) 에 ARIA 역할(listbox/option) + 키보드 등가 동작 추가. 특히 TimeScrollPicker 는 화살표/Home/End/Enter 경로 설계가 필요 (현재는 포인터 전용)
-2. Phase 5-3/5-4: 스크린리더 라이브 안내 (월 변경, 선택, time 뷰 진입/이탈) + 포인터·키보드·터치 동등성 통합 테스트
-3. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 계약 + 새 ARIA 계약(`role="grid"` / `aria-activedescendant` / `aria-selected`) 반영
-4. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
-5. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
+1. 공개 export 목록(compound vs facade-only) 정리 — `agents/todos.md`
+2. Phase 5-2: 보조 뷰(`MonthPicker` / `TimeScrollPicker`) 에 ARIA 역할(listbox/option) + 키보드 등가 동작 추가. 특히 TimeScrollPicker 는 화살표/Home/End/Enter 경로 설계가 필요 (현재는 포인터 전용)
+3. Phase 5-3/5-4: 스크린리더 라이브 안내 (월 변경, 선택, time 뷰 진입/이탈) + 포인터·키보드·터치 동등성 통합 테스트
+4. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 계약 + 새 ARIA 계약(`role="grid"` / `aria-activedescendant` / `aria-selected`) 반영
+5. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
+6. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
 
 ## Risks & Mitigations
 

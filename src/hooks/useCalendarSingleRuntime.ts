@@ -23,7 +23,6 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     isDateDisabled,
     keyboardNavigation = true,
     includeTime,
-    minuteStep,
     onMonthChange,
     onFocusedDateChange,
     value,
@@ -41,7 +40,6 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     maxDate,
     isDateDisabled,
     includeTime,
-    minuteStep,
     onSelect,
   })
   const today = Temporal.Now.plainDateISO()
@@ -141,7 +139,6 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     weekStartsOn,
     messages,
     includeTime,
-    minuteStep,
     selectionSnapshot: { mode: 'single', value: selection.value },
     weekdays,
     keyboardNavigation,

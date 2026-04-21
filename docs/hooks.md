@@ -29,7 +29,6 @@ interface UseCalendarStateOptions {
   initialVisibleMonth?: DateValue | null // month start를 권장
   keyboardNavigation?: boolean
   includeTime?: boolean
-  minuteStep?: number
   onFocusedDateChange?: (date: DateValue | null) => void
   onMonthChange?: (monthStart: MonthValue) => void
 }
@@ -65,7 +64,6 @@ interface UseSingleSelectionOptions {
   maxDate?: DateValue
   isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
-  minuteStep?: number
   onSelect?: (next: DateValue | null) => void
   allowDeselect?: boolean
 }
@@ -101,7 +99,6 @@ interface UseMultipleSelectionOptions {
   maxDate?: DateValue
   isDateDisabled?: (date: Temporal.PlainDate) => boolean
   includeTime?: boolean
-  minuteStep?: number
   maxSelections?: number
   onSelect?: (next: DateValue[]) => void
 }
@@ -135,8 +132,6 @@ interface UseRangeSelectionOptions {
   minDate?: DateValue
   maxDate?: DateValue
   includeTime?: boolean
-  minuteStep?: number
-  allowRangePreview?: boolean
   onSelect?: (next: CalendarRangeValue) => void
   onRangePreview?: (next: CalendarRangeValue | null) => void
 }
@@ -200,8 +195,7 @@ declare function useCalendarKeyboard(options: UseCalendarKeyboardOptions): UseCa
 추가 시간 규칙:
 
 - `includeTime`이 `true`면 hook은 `Temporal.PlainDateTime` 값을 다룬다.
-- `minuteStep`은 minute UI/입력 보정에 사용하며 기본값은 `1`이다.
-- `timePrecision` props는 지원하지 않으며 minute 고정이다.
+- `timePrecision` props는 지원하지 않으며 minute 고정이다. 시간 보조 뷰의 “5분 단위로 보기” 등은 UI 필터이며 공개 `minuteStep` prop과는 별개다.
 
 ## 6) 구현 순서 권장
 

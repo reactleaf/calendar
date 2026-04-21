@@ -39,7 +39,6 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     isDateDisabled,
     keyboardNavigation = true,
     includeTime,
-    minuteStep,
     onMonthChange,
     onFocusedDateChange,
     value,
@@ -58,7 +57,6 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     maxDate,
     isDateDisabled,
     includeTime,
-    minuteStep,
     onSelect,
     maxSelections,
   })
@@ -242,7 +240,6 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     weekStartsOn,
     messages,
     includeTime,
-    minuteStep,
     selectionSnapshot: { mode: 'multiple', values: rawSelection.value, primaryPlainDate },
     weekdays,
     keyboardNavigation,

@@ -20,20 +20,11 @@ export interface CalendarMessages {
    * 레퍼런스 `react-infinite-calendar` 의 `locale.blank` 와 동등 역할.
    */
   blank: string
-  /** 다른 용도 확장·하위 호환용. 기본은 `blank` 와 동일; `messages` 에 `blank` 만 넣으면 둘 다 채워진다. */
-  selectDate: string
-  /** range 시작만 있을 때 끝 날짜 자리 표시 (예: "?") */
-  rangeIncompleteEnd: string
   rangeFromPrefix: string
   rangeToPrefix: string
   ariaOpenMonthPicker: string
   ariaOpenDayGrid: string
   ariaCalendarGrid: string
-  /**
-   * multiple: 대표 날짜 옆 칩에 표시. `{count}` → **그 외** 선택 수(전체 − 1).
-   * 예: 전체 5일이면 `'+{count}'` → `+4`
-   */
-  multipleMoreCount: string
   /** multiple: 추가 선택 목록 토글 버튼 `aria-label`. `{count}` → 그 외 선택 수 */
   ariaOpenMultipleSelectedList: string
   /** multiple: 열린 선택 목록 영역(`role="region"`)의 접근 가능 이름 */
@@ -53,7 +44,6 @@ export interface CalendarBaseProps {
   maxDate?: DateValue
   keyboardNavigation?: boolean
   includeTime?: boolean
-  minuteStep?: number
   onMonthChange?: (monthStart: MonthValue) => void
   onFocusedDateChange?: (date: DateValue | null) => void
 }
@@ -88,7 +78,6 @@ export interface CalendarRangeProps extends CalendarBaseProps {
   defaultValue?: CalendarRangeValue
   onSelect?: (next: CalendarRangeValue) => void
   onRangePreview?: (next: CalendarRangeValue | null) => void
-  allowRangePreview?: boolean
 }
 
 export type CalendarProps = CalendarSingleProps | CalendarMultipleProps | CalendarRangeProps

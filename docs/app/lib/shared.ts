@@ -1,4 +1,4 @@
-export const appName = 'React Router'
+export const appName = '@reactleaf/calendar'
 
 const base = import.meta.env.BASE_URL
 const baseNoSlash = base.endsWith('/') ? base.slice(0, -1) : base

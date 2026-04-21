@@ -39,8 +39,8 @@ function rangeHeaderGrid(snapshot: Extract<CalendarSelectionSnapshot, { mode: 'r
   const startDay = snapshot.value.start ? toPlainDate(snapshot.value.start) : null
   const endDay = snapshot.value.end ? toPlainDate(snapshot.value.end) : null
   return {
-    fromYear: startDay ? String(startDay.year) : '—',
-    toYear: endDay ? String(endDay.year) : '—',
+    fromYear: startDay ? String(startDay.year) : '',
+    toYear: endDay ? String(endDay.year) : '',
     fromDate: formatRangeColumnDate(startDay, locale),
     toDate: formatRangeColumnDate(endDay, locale),
   }
@@ -89,7 +89,7 @@ function labelsFromSnapshot(
         startDay && endDay
           ? `${formatDay(startDay, locale)} - ${formatDay(endDay, locale)}`
           : startDay
-            ? `${formatDay(startDay, locale)} - ${messages.rangeIncompleteEnd}`
+            ? formatDay(startDay, locale)
             : messages.blank
       break
     }
@@ -376,7 +376,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
               aria-label={formatCountMessage(messages.ariaOpenMultipleSelectedList, multipleExtraCount)}
               onClick={() => setMultipleListOpen((open) => !open)}
             >
-              {formatCountMessage(messages.multipleMoreCount, multipleExtraCount)}
+              {formatCountMessage('+{count}', multipleExtraCount)}
             </button>
             {multipleListOpen ? (
               <div

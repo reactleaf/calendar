@@ -22,13 +22,11 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     maxDate,
     keyboardNavigation = true,
     includeTime,
-    minuteStep,
     onMonthChange,
     onFocusedDateChange,
     value,
     defaultValue,
     onSelect,
-    allowRangePreview,
     onRangePreview,
   } = props
 
@@ -41,9 +39,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     minDate,
     maxDate,
     includeTime,
-    minuteStep,
     onSelect,
-    allowRangePreview,
     onRangePreview,
   })
   const selection = {
@@ -113,11 +109,11 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     (days: number) => {
       const next = clampDate(focusedDate.add({ days }), minDay, maxDay)
       setFocusedDate(next)
-      if (allowRangePreview) selection.previewDate?.(next, 'keyboard')
+      selection.previewDate?.(next, 'keyboard')
       focusDateRequestRef.current = next
       requestAnimationFrame(() => keepDateVisible(next))
     },
-    [allowRangePreview, focusedDate, keepDateVisible, maxDay, minDay, selection, setFocusedDate],
+    [focusedDate, keepDateVisible, maxDay, minDay, selection, setFocusedDate],
   )
 
   const handleKeyDown = useCallback(
@@ -154,7 +150,6 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     weekStartsOn,
     messages,
     includeTime,
-    minuteStep,
     rangeHeaderValue: rawSelection.preview ?? rawSelection.value,
     rangeHeaderPreviewActive: rawSelection.preview != null,
     selectionSnapshot: { mode: 'range', value: rawSelection.value },

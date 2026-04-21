@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
-    "infinite-calendar-next": "workspace:*",
     "@orama/orama": "^3.1.18",
     "@react-router/node": "^7.14.1",
     "fumadocs-core": "16.8.1",

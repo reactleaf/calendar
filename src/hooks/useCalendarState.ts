@@ -12,7 +12,6 @@ export interface UseCalendarStateOptions {
   initialVisibleMonth?: DateValue | null
   keyboardNavigation?: boolean
   includeTime?: boolean
-  minuteStep?: number
   onFocusedDateChange?: (date: DateValue | null) => void
   onMonthChange?: (monthStart: MonthValue) => void
 }

@@ -6,14 +6,11 @@ export function defaultNavigatorLocale(): string {
 
 export const DEFAULT_CALENDAR_MESSAGES: CalendarMessages = {
   blank: 'Select a date...',
-  selectDate: 'Select a date...',
-  rangeIncompleteEnd: '?',
   rangeFromPrefix: 'from ',
   rangeToPrefix: 'to ',
   ariaOpenMonthPicker: 'Open month picker',
   ariaOpenDayGrid: 'Show day calendar',
   ariaCalendarGrid: 'Infinite scroll calendar',
-  multipleMoreCount: '+{count}',
   ariaOpenMultipleSelectedList: 'Show {count} more selected dates',
   ariaMultipleSelectedDatesPanel: 'Selected dates',
 }

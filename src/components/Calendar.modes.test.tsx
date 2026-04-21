@@ -228,7 +228,6 @@ describe('Calendar preset mode integration', () => {
         maxDate={Temporal.PlainDate.from('2030-12-31')}
         onSelect={onSelect}
         onMonthChange={onMonthChange}
-        allowRangePreview
       />,
     )
 

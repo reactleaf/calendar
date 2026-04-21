@@ -1,7 +1,7 @@
 import { docsPath } from '@/lib/shared'
 import '@/styles/home-page.css'
-import type { DateValue } from 'infinite-calendar-next'
-import { Calendar } from 'infinite-calendar-next'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
 import { useState } from 'react'
 import { Link } from 'react-router'
 

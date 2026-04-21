@@ -1,0 +1,67 @@
+/* Live calendar examples embedded in MDX (docs layout). */
+.doc-example {
+  box-sizing: border-box;
+  margin: 1.25rem 0 0;
+  --de-muted: #6b6375;
+  --de-fg: #08060d;
+  --de-border: #e5e4e7;
+  --de-card-bg: #fafafa;
+  --de-code-bg: #f3f2f5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .doc-example {
+    --de-muted: #9ca3af;
+    --de-fg: #f3f4f6;
+    --de-border: #2e303a;
+    --de-card-bg: #16171c;
+    --de-code-bg: #1e2028;
+  }
+}
+
+.doc-example__card {
+  box-sizing: border-box;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--de-border);
+  background: var(--de-card-bg);
+}
+
+.doc-example__calendar {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.doc-example__output {
+  display: block;
+  margin: 1rem 0 0;
+  font-size: 0.92rem;
+  color: var(--de-muted);
+}
+
+.doc-example__outputLabel {
+  font-weight: 600;
+  color: var(--de-fg);
+}
+
+.doc-example__outputValue {
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
+.doc-example__snippet {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--de-border);
+  background: var(--de-code-bg);
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--de-fg);
+}
+
+.doc-example__snippet code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  white-space: pre;
+}

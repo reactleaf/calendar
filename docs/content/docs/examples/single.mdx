@@ -1,0 +1,20 @@
+---
+title: Single selection
+description: Live example of Calendar with mode="single".
+---
+
+Pick one date. The value is `Temporal.PlainDate` or `Temporal.PlainDateTime` when `includeTime` is enabled.
+
+<SingleModeExample />
+
+```tsx
+import { useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+export function Example() {
+  const [date, setDate] = useState<DateValue | null>(null)
+  return <Calendar mode="single" value={date} onSelect={setDate} />
+}
+```

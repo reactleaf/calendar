@@ -7,7 +7,7 @@ import { useRangeSelection } from './useRangeSelection'
 describe('useRangeSelection', () => {
   it('두 번째 클릭에서 범위를 확정하고 onSelect를 한 번 호출한다', () => {
     const onSelect = vi.fn()
-    const { result } = renderHook(() => useRangeSelection({ onSelect, allowRangePreview: true }))
+    const { result } = renderHook(() => useRangeSelection({ onSelect }))
 
     const a = Temporal.PlainDate.from('2024-06-05')
     const b = Temporal.PlainDate.from('2024-06-01')
@@ -29,7 +29,6 @@ describe('useRangeSelection', () => {
     const { result } = renderHook(() =>
       useRangeSelection({
         onRangePreview,
-        allowRangePreview: true,
       }),
     )
 
@@ -57,7 +56,7 @@ describe('useRangeSelection', () => {
       start: Temporal.PlainDate.from('2024-01-01'),
       end: Temporal.PlainDate.from('2024-01-05'),
     }
-    const { result } = renderHook(() => useRangeSelection({ defaultValue: initial, allowRangePreview: true }))
+    const { result } = renderHook(() => useRangeSelection({ defaultValue: initial }))
 
     const midOld = Temporal.PlainDate.from('2024-01-03')
     expect(result.current.isSelected(midOld)).toBe(true)

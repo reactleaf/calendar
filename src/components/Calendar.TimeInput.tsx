@@ -15,7 +15,7 @@ import type { CalendarTimeEditTarget } from './Calendar.types'
  *  2) Time view 진입: 위 클릭과 **동시에** `openTimeView(timeEditTarget)` 를 호출해
  *     보조 뷰로 전환한다. 타이핑도 되고, 그리드 선택도 되는 이중 진입점이다.
  *
- * 값 정규화(minuteStep 등)는 `onTimeChange` 바깥의 `setSelectedTime / setRangeTime`
+ * 시·분 정규화는 `onTimeChange` 바깥의 `setSelectedTime / setRangeTime`
  * 내부에서 처리되므로, 여기서는 단순 파싱만 한다.
  */
 interface CalendarTimeInputProps {

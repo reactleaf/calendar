@@ -13,7 +13,8 @@ export default defineConfig({
     tsconfigPaths: true,
     /** 루트 `pnpm build` 없이도 docs dev/build 가 소스에서 캘린더를 묶도록 */
     alias: {
-      'infinite-calendar-next': path.resolve(__dirname, '../src/index.ts'),
+      '@reactleaf/calendar': path.resolve(__dirname, '../src/index.ts'),
+      '@reactleaf/calendar/index.css': path.resolve(__dirname, '../src/Calendar.css'),
     },
   },
 })
