@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DateViewportPlacement } from '../components/Calendar.types'
 import type { WeekStartsOn } from '../core/monthGrid'
 import {
-  CALENDAR_ROW_HEIGHT_PX,
+  DEFAULT_CALENDAR_ROW_HEIGHT_PX,
   compareMonth,
   estimateMonthBlockHeightPx,
   monthAtOffset,
@@ -47,14 +47,33 @@ const observeElementRect = ((instance: Virtualizer<Element, Element>, cb: (rect:
   return observeElementRectImpl(instance, cb)
 }) as typeof observeElementRectImpl
 
+function readCalendarRowHeightPx(scrollElement: HTMLDivElement | null): number {
+  if (!scrollElement || typeof window === 'undefined') return DEFAULT_CALENDAR_ROW_HEIGHT_PX
+  const raw = window.getComputedStyle(scrollElement).getPropertyValue('--calendar-row-height').trim()
+  if (!raw) return DEFAULT_CALENDAR_ROW_HEIGHT_PX
+  if (raw.endsWith('px')) {
+    const px = Number.parseFloat(raw)
+    return Number.isFinite(px) ? px : DEFAULT_CALENDAR_ROW_HEIGHT_PX
+  }
+  if (raw.endsWith('rem')) {
+    const rem = Number.parseFloat(raw)
+    if (!Number.isFinite(rem)) return DEFAULT_CALENDAR_ROW_HEIGHT_PX
+    const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize)
+    return Number.isFinite(rootFontSize) ? rem * rootFontSize : DEFAULT_CALENDAR_ROW_HEIGHT_PX
+  }
+  const numeric = Number.parseFloat(raw)
+  return Number.isFinite(numeric) ? numeric : DEFAULT_CALENDAR_ROW_HEIGHT_PX
+}
+
 function sumEstimatedMonthHeightsBefore(
   minMonth: Temporal.PlainYearMonth,
   endIndex: number,
   weekStartsOn: WeekStartsOn,
+  rowHeightPx: number,
 ): number {
   let acc = 0
   for (let i = 0; i < endIndex; i += 1) {
-    acc += estimateMonthBlockHeightPx(monthAtOffset(minMonth, i), i, weekStartsOn)
+    acc += estimateMonthBlockHeightPx(monthAtOffset(minMonth, i), i, weekStartsOn, rowHeightPx)
   }
   return acc
 }
@@ -80,16 +99,17 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
   const { locale, weekStartsOn, initialMonth, minMonth, maxMonth, onMonthChange, overlaySuppressUntilRef } = args
 
   const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
+  const [rowHeightPx, setRowHeightPx] = useState(DEFAULT_CALENDAR_ROW_HEIGHT_PX)
   const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
   const initialOffset = useMemo(() => {
     const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
-    const offset = sumEstimatedMonthHeightsBefore(minMonth, clamped, weekStartsOn)
+    const offset = sumEstimatedMonthHeightsBefore(minMonth, clamped, weekStartsOn, rowHeightPx)
     return Math.max(0, offset - 12)
-  }, [initialMonthIndex, minMonth, monthCount, weekStartsOn])
+  }, [initialMonthIndex, minMonth, monthCount, rowHeightPx, weekStartsOn])
 
   const estimateSize = useCallback(
-    (index: number) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index, weekStartsOn),
-    [minMonth, weekStartsOn],
+    (index: number) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index, weekStartsOn, rowHeightPx),
+    [minMonth, rowHeightPx, weekStartsOn],
   )
 
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
@@ -106,6 +126,13 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
   const monthRefs = useRef<Map<string, HTMLElement>>(new Map())
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+    const next = readCalendarRowHeightPx(scrollEl)
+    setRowHeightPx((prev) => (prev === next ? prev : next))
+  }, [])
 
   const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
 
@@ -156,9 +183,9 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (virtualItem) return virtualItem.start
       const offset = v.getOffsetForIndex(monthIndex, 'start')
       if (offset) return offset[0]
-      return sumEstimatedMonthHeightsBefore(minMonth, monthIndex, weekStartsOn)
+      return sumEstimatedMonthHeightsBefore(minMonth, monthIndex, weekStartsOn, rowHeightPx)
     },
-    [minMonth, weekStartsOn],
+    [minMonth, rowHeightPx, weekStartsOn],
   )
 
   const getDateViewportPlacement = useCallback(
@@ -175,8 +202,8 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
         rows.findIndex((row) => row.some((day) => day.day === date.day)),
       )
 
-      const rowTop = getMonthStartOffset(monthIndex) + rowIndex * CALENDAR_ROW_HEIGHT_PX
-      const rowBottom = rowTop + CALENDAR_ROW_HEIGHT_PX
+      const rowTop = getMonthStartOffset(monthIndex) + rowIndex * rowHeightPx
+      const rowBottom = rowTop + rowHeightPx
       const margin = 12
       const viewTop = scrollEl.scrollTop + margin
       const viewBottom = scrollEl.scrollTop + scrollEl.clientHeight - margin
@@ -185,7 +212,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (rowTop >= viewBottom) return 'below'
       return 'visible'
     },
-    [getMonthStartOffset, maxMonth, minMonth, weekStartsOn],
+    [getMonthStartOffset, maxMonth, minMonth, rowHeightPx, weekStartsOn],
   )
 
   const keepDateVisible = useCallback(
@@ -202,15 +229,15 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
         rows.findIndex((row) => row.some((day) => day.day === date.day)),
       )
 
-      const rowTop = getMonthStartOffset(monthIndex) + rowIndex * CALENDAR_ROW_HEIGHT_PX
-      const rowCenter = rowTop + CALENDAR_ROW_HEIGHT_PX / 2
+      const rowTop = getMonthStartOffset(monthIndex) + rowIndex * rowHeightPx
+      const rowCenter = rowTop + rowHeightPx / 2
       const clientH = scrollEl.clientHeight
       const rawScrollTop = rowCenter - clientH / 2
       const maxScrollTop = Math.max(0, monthVirtualizer.getTotalSize() - clientH)
       const nextScrollTop = Math.max(0, Math.min(maxScrollTop, rawScrollTop))
       monthVirtualizer.scrollToOffset(nextScrollTop)
     },
-    [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer, weekStartsOn],
+    [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer, rowHeightPx, weekStartsOn],
   )
 
   const handleScroll = useCallback(

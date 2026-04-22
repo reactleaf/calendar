@@ -205,7 +205,14 @@ export function CalendarTimeSelectView() {
   const hasAnySelection = sections.some((s) => s.value !== null)
 
   return (
-    <div ref={rootRef} className="calendar__timeSelect" role="dialog" aria-label={ariaLabel} onKeyDown={onKeyDown}>
+    <div
+      ref={rootRef}
+      className="calendar__timeSelect"
+      role="dialog"
+      aria-modal="true"
+      aria-label={ariaLabel}
+      onKeyDown={onKeyDown}
+    >
       <div className="calendar__timeSelectToolbar">
         <label className="calendar__timeSelectGranularity">
           <input

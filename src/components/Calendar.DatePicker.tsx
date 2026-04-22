@@ -1,42 +1,29 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { clsx } from 'clsx'
 import { useCallback, useId, useRef } from 'react'
-import { toPlainDate, type CalendarMessages, type DateValue } from '../core'
-import { useInfiniteMonthScroll } from '../hooks/useInfiniteMonthScroll'
 import { useCalendarContext } from './Calendar.context'
 import { CalendarDayCell } from './Calendar.DayCell'
 import { CalendarTodayButton } from './Calendar.TodayButton'
-import { getInitialMonth, monthAtOffset, monthLabel, monthRows, monthShortLabel } from './Calendar.utils'
+import { monthAtOffset, monthLabel, monthRows, monthShortLabel } from './Calendar.utils'
 import { CalendarWeekdays } from './Calendar.Weekdays'
 
 interface CalendarDatePickerProps {
-  minDate: DateValue
-  maxDate: DateValue
   onDateHover: (date: Temporal.PlainDate) => void
   onDateClick: (date: Temporal.PlainDate) => void
-  onScroll: (event: React.UIEvent<HTMLDivElement>) => void
-  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void
-  handleScrollMouseLeave: () => void
-  messages: CalendarMessages
 }
 
-export default function CalendarDatePicker({ minDate, maxDate, onDateHover, onDateClick }: CalendarDatePickerProps) {
-  const { messages, locale, weekStartsOn, selectionSnapshot, keyboardNavigation, focusedDate, handleKeyDown } =
-    useCalendarContext()
-
-  const initialMonth = getInitialMonth(selectionSnapshot, toPlainDate(minDate), toPlainDate(maxDate))
-  const minMonth = toPlainDate(minDate).toPlainYearMonth()
-  const maxMonth = toPlainDate(maxDate).toPlainYearMonth()
-  const overlaySuppressUntilRef = useRef(0)
-
-  const { monthVirtualizer, isScrolling, scrollRef, handleScroll } = useInfiniteMonthScroll({
-    locale,
-    weekStartsOn,
-    initialMonth,
+export default function CalendarDatePicker({ onDateHover, onDateClick }: CalendarDatePickerProps) {
+  const {
+    messages,
+    keyboardNavigation,
+    focusedDate,
     minMonth,
-    maxMonth,
-    overlaySuppressUntilRef,
-  })
+    monthVirtualizer,
+    isScrolling,
+    scrollRef,
+    handleScroll,
+    handleKeyDown,
+  } = useCalendarContext()
 
   const idPrefix = useId()
   const focusedDayKey = focusedDate.toString()
@@ -50,7 +37,9 @@ export default function CalendarDatePicker({ minDate, maxDate, onDateHover, onDa
   return (
     <>
       <CalendarWeekdays />
+      <CalendarTodayButton />
       <div
+        key="date-picker"
         ref={scrollRef}
         className={`calendar__scroll${isScrolling ? ' is-scrolling' : ''}`}
         role="grid"
@@ -61,7 +50,6 @@ export default function CalendarDatePicker({ minDate, maxDate, onDateHover, onDa
         onMouseLeave={handleScrollMouseLeave}
         aria-label={messages.ariaCalendarGrid}
       >
-        <CalendarTodayButton />
         <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
           {virtualItems.map((vi) => {
             const month = monthAtOffset(minMonth, vi.index)

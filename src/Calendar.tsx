@@ -13,7 +13,7 @@ import type { CalendarProps } from './core/api.types'
 
 /* eslint-disable react-refresh/only-export-components -- compound component 정적 프로퍼티 조합 */
 
-function Calendar(props: CalendarProps) {
+export function Calendar(props: CalendarProps) {
   return (
     <CalendarRoot {...props}>
       <CalendarHeader />

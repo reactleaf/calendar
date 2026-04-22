@@ -1,7 +1,7 @@
 /* ==========================================================================
  * Time Select View (보조 뷰: displayMode === 'time')
  *
- * 달력 본문 자리에 들어가는 인-플레이스 뷰. 헤더는 유지되고 day grid 만 대체.
+ * DatePicker 위에 얹히는 절대 배치 overlay. 헤더는 유지되고 body 내부를 덮는다.
  *
  * 레이아웃
  *   [툴바: "5분 단위로 보기" 체크박스 — 분 피커 뷰 필터]
@@ -13,18 +13,20 @@
  * ========================================================================== */
 
 /**
- * 달력 본문 + weekdays 자리를 함께 차지한다 (days view 와 달리 weekdays 가 숨겨지므로).
- * 툴바는 위에 두고, 섹션은 남는 세로 공간을 채우며 내용물을 수직 중앙에 정렬한다.
+ * `.calendar__body` 전체를 덮는 overlay.
+ * 툴바는 위에 두고, 섹션은 남는 세로 공간을 채운다.
  */
 .calendar__timeSelect {
-  position: relative;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
   box-sizing: border-box;
-  height: var(--calendar-secondary-body-height);
   background: var(--calendar-color-bg, #fff);
   padding: 0.5rem 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-height: 0;
   outline: none;
 }
 

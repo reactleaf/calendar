@@ -9,9 +9,8 @@ export const EDGE_THRESHOLD_PX = 220
 export const DEFAULT_MIN_DATE = Temporal.PlainDate.from('1980-01-01')
 export const DEFAULT_MAX_DATE = Temporal.PlainDate.from('2050-12-31')
 
-/** `3.2rem` 기준(루트 16px 가정) — 가상 스크롤 추정 높이용 */
-export const CALENDAR_ROW_HEIGHT_PX = Math.round(3.2 * 16)
-export const CALENDAR_MONTH_BORDER_PX = 1
+/** CSS `--calendar-row-height` 와 맞춘 기본 fallback. */
+export const DEFAULT_CALENDAR_ROW_HEIGHT_PX = 52
 
 export function monthKey(month: Temporal.PlainYearMonth): string {
   return `${month.year}-${String(month.month).padStart(2, '0')}`
@@ -91,10 +90,11 @@ export function estimateMonthBlockHeightPx(
   month: Temporal.PlainYearMonth,
   monthIndex = 0,
   weekStartsOn: WeekStartsOn = 0,
+  rowHeightPx = DEFAULT_CALENDAR_ROW_HEIGHT_PX,
 ): number {
   const { rowCount, firstPartial } = monthGridSizing(month, weekStartsOn)
-  const overlap = monthIndex > 0 && firstPartial ? CALENDAR_ROW_HEIGHT_PX : 0
-  return rowCount * CALENDAR_ROW_HEIGHT_PX + CALENDAR_MONTH_BORDER_PX - overlap
+  const overlap = monthIndex > 0 && firstPartial ? rowHeightPx : 0
+  return rowCount * rowHeightPx - overlap
 }
 
 export function buildMonthWindow(

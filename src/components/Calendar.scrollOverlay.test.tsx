@@ -1,7 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import React from 'react'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { Calendar } from '../Calendar'
+import Calendar from '../Calendar'
 import { DEFAULT_CALENDAR_MESSAGES } from '../core/calendarLocale'
 
 function getScroll(container: HTMLElement): HTMLElement | null {

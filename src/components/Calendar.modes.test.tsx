@@ -1,8 +1,9 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import React from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
+import Calendar from '../Calendar'
 import type { CalendarRangeValue } from '../core/api.types'
-import { Calendar } from '../Calendar'
 
 function getGrid(container: HTMLElement): HTMLElement {
   const grid = container.querySelector('.calendar__scroll')

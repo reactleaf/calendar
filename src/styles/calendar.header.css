@@ -58,11 +58,11 @@
   }
 }
 
-/* react-infinite-calendar Today: `position: absolute; top: 0` + transform 으로 리스트 위에 겹침 */
+/* scroll 바깥 sibling 으로 두고 `.calendar__body` 하단에 pinned overlay 로 배치 */
 .calendar__todayBar {
   position: absolute;
   z-index: 5;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   display: flex;

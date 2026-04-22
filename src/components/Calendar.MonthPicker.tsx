@@ -125,7 +125,13 @@ export function CalendarMonthPicker() {
   }, [displayMode])
 
   return (
-    <div className="calendar__monthPicker" role="dialog" aria-label="월 선택" onKeyDown={handleKeyDown}>
+    <div
+      className="calendar__monthPicker"
+      role="dialog"
+      aria-modal="true"
+      aria-label="월 선택"
+      onKeyDown={handleKeyDown}
+    >
       <div ref={scrollContainerRef} className="calendar__monthPickerScroll" tabIndex={-1}>
         {years.map((year) => {
           /**

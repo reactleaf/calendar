@@ -1,8 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { describe, expect, it } from 'vitest'
 import {
-  CALENDAR_MONTH_BORDER_PX,
-  CALENDAR_ROW_HEIGHT_PX,
+  DEFAULT_CALENDAR_ROW_HEIGHT_PX,
   estimateMonthBlockHeightPx,
   monthRowCount,
   monthRows,
@@ -42,8 +41,8 @@ describe('monthRowCount', () => {
         const rows = monthRows(ym, weekStartsOn)
         const firstPartial = rows[0] ? rows[0].length !== 7 : false
         for (let monthIndex = 0; monthIndex < 3; monthIndex += 1) {
-          const overlap = monthIndex > 0 && firstPartial ? CALENDAR_ROW_HEIGHT_PX : 0
-          const fromRows = rows.length * CALENDAR_ROW_HEIGHT_PX + CALENDAR_MONTH_BORDER_PX - overlap
+          const overlap = monthIndex > 0 && firstPartial ? DEFAULT_CALENDAR_ROW_HEIGHT_PX : 0
+          const fromRows = rows.length * DEFAULT_CALENDAR_ROW_HEIGHT_PX - overlap
           expect(estimateMonthBlockHeightPx(ym, monthIndex, weekStartsOn)).toBe(fromRows)
         }
       }

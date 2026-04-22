@@ -1,46 +1,13 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import type { KeyboardEvent, UIEvent } from 'react'
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
-import { toPlainDate } from '../core/calendarDate'
+import { useCallback } from 'react'
 import { useCalendarContext } from './Calendar.context'
-import { dayStamp } from './Calendar.utils'
-import { CalendarModeBody } from './Calendar.ModeBody'
+import CalendarDatePicker from './Calendar.DatePicker'
 import { CalendarMonthPicker } from './Calendar.MonthPicker'
 import { CalendarTimeSelectView } from './Calendar.TimeSelectView'
 
 export function CalendarSingleMode() {
   const runtime = useCalendarContext()
-  const {
-    locale,
-    weekStartsOn,
-    messages,
-    keyboardNavigation,
-    isScrolling,
-    minMonth,
-    monthVirtualizer,
-    monthRefs,
-    scrollRef,
-    focusedDate,
-    today,
-    selectionSnapshot,
-    selection,
-    setFocusedDate,
-    handleScroll,
-    handleKeyDown,
-    displayMode,
-  } = runtime
-
-  const handleScrollRef = useRef(handleScroll)
-  const handleKeyDownRef = useRef(handleKeyDown)
-  useLayoutEffect(() => {
-    handleScrollRef.current = handleScroll
-    handleKeyDownRef.current = handleKeyDown
-  }, [handleScroll, handleKeyDown])
-
-  const selectedDateKey = useMemo(() => {
-    if (selectionSnapshot.mode !== 'single' || selectionSnapshot.value === null) return ''
-    return String(dayStamp(toPlainDate(selectionSnapshot.value)))
-  }, [selectionSnapshot])
+  const { selection, setFocusedDate, scrollRef, displayMode } = runtime
 
   const onDateClick = useCallback(
     (date: Temporal.PlainDate) => {
@@ -51,40 +18,12 @@ export function CalendarSingleMode() {
     [scrollRef, selection, setFocusedDate],
   )
   const onDateHover = useCallback(() => {}, [])
-  const onScroll = useCallback((event: UIEvent<HTMLDivElement>) => handleScrollRef.current(event), [])
-  const onKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => handleKeyDownRef.current(event), [])
-  const isDateSelected = useCallback((date: Temporal.PlainDate) => selection.isSelected(date), [selection])
-  const isDateDisabled = useCallback((date: Temporal.PlainDate) => selection.isDisabled(date), [selection])
-  const alwaysFalse = useCallback(() => false, [])
-
-  if (displayMode === 'months') return <CalendarMonthPicker />
-  if (displayMode === 'time') return <CalendarTimeSelectView />
 
   return (
-    <CalendarModeBody
-      mode="single"
-      locale={locale}
-      weekStartsOn={weekStartsOn}
-      messages={messages}
-      keyboardNavigation={keyboardNavigation}
-      isScrolling={isScrolling}
-      minMonth={minMonth}
-      monthVirtualizer={monthVirtualizer}
-      monthRefs={monthRefs}
-      scrollRef={scrollRef}
-      focusedDateStamp={dayStamp(focusedDate)}
-      todayDateStamp={dayStamp(today)}
-      todayYear={today.year}
-      isDateSelected={isDateSelected}
-      isDateDisabled={isDateDisabled}
-      isRangeStart={alwaysFalse}
-      isRangeEnd={alwaysFalse}
-      isInPreviewRange={alwaysFalse}
-      onDateHover={onDateHover}
-      onDateClick={onDateClick}
-      onScroll={onScroll}
-      onKeyDown={onKeyDown}
-      selectionRenderKey={selectedDateKey}
-    />
+    <>
+      <CalendarDatePicker onDateHover={onDateHover} onDateClick={onDateClick} />
+      {displayMode === 'months' ? <CalendarMonthPicker /> : null}
+      {displayMode === 'time' ? <CalendarTimeSelectView /> : null}
+    </>
   )
 }

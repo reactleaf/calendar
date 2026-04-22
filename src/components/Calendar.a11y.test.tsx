@@ -1,7 +1,9 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import React from 'react'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { Calendar } from '../Calendar'
+
+import Calendar from '../Calendar'
 
 /**
  * Phase 5-1 하이브리드 ARIA 계약 회귀 테스트.
@@ -163,12 +165,12 @@ describe('Calendar grid ARIA (Phase 5-1 하이브리드)', () => {
       (node): node is HTMLButtonElement => node instanceof HTMLButtonElement && !node.disabled,
     )
     if (!firstEnabled) throw new Error('활성 셀을 찾지 못했습니다.')
-    const stamp = firstEnabled.dataset.dayStamp
-    if (stamp === undefined) throw new Error('day-stamp 없음')
+    const date = firstEnabled.dataset.date
+    if (date === undefined) throw new Error('data-date 없음')
     fireEvent.click(firstEnabled)
 
     await waitFor(() => {
-      const updated = container.querySelector(`button.calendar__day[data-day-stamp="${stamp}"]`)
+      const updated = container.querySelector(`button.calendar__day[data-date="${date}"]`)
       expect(updated?.getAttribute('aria-selected')).toBe('true')
     })
   })

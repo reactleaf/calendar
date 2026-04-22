@@ -1,9 +1,9 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { fireEvent, render, waitFor, within } from '@testing-library/react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import Calendar from '../Calendar'
 import type { CalendarRangeValue } from '../core/api.types'
-import { Calendar } from '../Calendar'
 
 function getEnabledDayButtons(container: HTMLElement): HTMLButtonElement[] {
   return Array.from(container.querySelectorAll('button.calendar__day')).filter(
