@@ -1,6 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { toPlainDate } from '../core'
 import type { WeekStartsOn } from '../core/monthGrid'
 import { weekStartToIsoDay } from '../core/monthGrid'
+import type { CalendarSelectionSnapshot } from './Calendar.types'
 export const PRELOAD_MONTH_COUNT = 8
 export const PAGE_MONTH_COUNT = 6
 export const EDGE_THRESHOLD_PX = 220
@@ -40,13 +42,13 @@ export function sameDay(a: Temporal.PlainDate, b: Temporal.PlainDate): boolean {
 }
 
 export function clampDate(
-  value: Temporal.PlainDate,
+  value: Temporal.PlainDate | Temporal.PlainDateTime,
   minDate: Temporal.PlainDate,
   maxDate: Temporal.PlainDate,
 ): Temporal.PlainDate {
   if (Temporal.PlainDate.compare(value, minDate) < 0) return minDate
   if (Temporal.PlainDate.compare(value, maxDate) > 0) return maxDate
-  return value
+  return toPlainDate(value)
 }
 
 export function compareMonth(a: Temporal.PlainYearMonth, b: Temporal.PlainYearMonth): number {
@@ -157,5 +159,35 @@ export function todayWordLabel(locale: string): string {
     return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day')
   } catch {
     return 'Today'
+  }
+}
+
+export function getInitialMonth(
+  selectionSnapshot: CalendarSelectionSnapshot,
+  minDate: Temporal.PlainDate,
+  maxDate: Temporal.PlainDate,
+): Temporal.PlainYearMonth {
+  const today = Temporal.Now.plainDateISO()
+
+  switch (selectionSnapshot.mode) {
+    case 'single': {
+      const initialDate = selectionSnapshot.value ?? today
+      const clamped = clampDate(initialDate, minDate, maxDate)
+      return toPlainDate(clamped).toPlainYearMonth()
+    }
+    case 'multiple': {
+      const initialDate = selectionSnapshot.values[0] ?? today
+      const clamped = clampDate(initialDate, minDate, maxDate)
+      return toPlainDate(clamped).toPlainYearMonth()
+    }
+
+    case 'range': {
+      const initialDate = selectionSnapshot.value.end ?? today
+      const clamped = clampDate(initialDate, minDate, maxDate)
+      return toPlainDate(clamped).toPlainYearMonth()
+    }
+
+    default:
+      return Temporal.PlainYearMonth.from(minDate)
   }
 }

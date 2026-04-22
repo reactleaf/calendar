@@ -1,9 +1,10 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import { memo, useCallback, useId, useRef } from 'react'
 import type { KeyboardEvent, MouseEvent, RefObject, UIEvent } from 'react'
+import { memo, useCallback, useId, useRef } from 'react'
 import type { CalendarMessages, CalendarMode } from '../core/api.types'
 import type { WeekStartsOn } from '../core/monthGrid'
 import { CalendarDayCell } from './Calendar.DayCell'
+import { CalendarTodayButton } from './Calendar.TodayButton'
 import {
   dayStamp,
   monthAtOffset,
@@ -12,7 +13,6 @@ import {
   monthRows,
   monthShortLabel,
   plainDateFromDayStamp,
-  todayWordLabel,
 } from './Calendar.utils'
 
 interface CalendarModeBodyProps {
@@ -81,21 +81,6 @@ function CalendarModeBodyImpl({
   /** range: 셀마다 mouseEnter 대신 monthRows에서 위임 — 호버 경로 얇게 */
   const lastHoverStampRef = useRef<number | null>(null)
 
-  const handleDayMouseDown = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault()
-  }, [])
-
-  const handleDayClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      const raw = event.currentTarget.dataset.dayStamp
-      if (raw === undefined) return
-      const stamp = Number(raw)
-      if (!Number.isFinite(stamp)) return
-      onDateClick(plainDateFromDayStamp(stamp))
-    },
-    [onDateClick],
-  )
-
   const handleMonthRowsMouseOver = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       if (mode !== 'range') return
@@ -118,7 +103,7 @@ function CalendarModeBodyImpl({
 
   const virtualItems = monthVirtualizer.getVirtualItems()
   const totalSize = monthVirtualizer.getTotalSize()
-  const todayLabelShort = todayWordLabel(locale)
+  const todayLabelShort = messages.todayLabel
 
   /**
    * grid 내 "가상 커서" 라우팅용 stable prefix.
@@ -146,6 +131,7 @@ function CalendarModeBodyImpl({
       onMouseLeave={mode === 'range' ? handleScrollMouseLeave : undefined}
       aria-label={messages.ariaCalendarGrid}
     >
+      <CalendarTodayButton />
       <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
         {virtualItems.map((vi) => {
           const month = monthAtOffset(minMonth, vi.index)
@@ -199,6 +185,7 @@ function CalendarModeBodyImpl({
                     >
                       {row.map((date, cellIndex) => {
                         const dateKey = dayStamp(date)
+                        const dayKey = date.toString()
                         const isSelected = isDateSelected(date)
                         const isToday = dateKey === todayDateStamp
                         const isFirstOfMonth = date.day === 1
@@ -214,11 +201,12 @@ function CalendarModeBodyImpl({
 
                         return (
                           <CalendarDayCell
-                            key={dateKey}
+                            key={dayKey}
                             mode={mode}
-                            dayStamp={dateKey}
+                            date={date}
+                            dayKey={dayKey}
                             monthShort={monthShort}
-                            focusedDateStamp={focusedDateStamp}
+                            isFocused={dateKey === focusedDateStamp}
                             isSelected={isSelected}
                             isDisabled={isDateDisabled(date)}
                             isToday={isToday}
@@ -233,8 +221,8 @@ function CalendarModeBodyImpl({
                             cellIndex={cellIndex}
                             todayLabelShort={todayLabelShort}
                             idPrefix={idPrefix}
-                            onDayMouseDown={handleDayMouseDown}
-                            onDayClick={handleDayClick}
+                            legacyDayStamp={dateKey}
+                            onDayClick={onDateClick}
                           />
                         )
                       })}

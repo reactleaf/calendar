@@ -29,7 +29,7 @@
  * Today 바는 레퍼런스(react-infinite-calendar Today.scss)처럼 absolute 로 겹쳐 두어
  * 바가 나타날 때 스크롤 영역 높이가 줄어들지 않게 한다.
  */
-.calendar__daysShell {
+.calendar__body {
   position: relative;
   z-index: 1;
   display: flex;
@@ -39,7 +39,7 @@
   box-sizing: border-box;
 }
 
-.calendar__daysShell .calendar__scroll {
+.calendar__body .calendar__scroll {
   flex: 1;
   min-height: 0;
   height: auto;
@@ -51,6 +51,7 @@
     opacity: 0;
     transform: translateY(-5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

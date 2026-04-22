@@ -20,8 +20,10 @@ export interface CalendarMessages {
    * 레퍼런스 `react-infinite-calendar` 의 `locale.blank` 와 동등 역할.
    */
   blank: string
+  todayLabel: string
   rangeFromPrefix: string
   rangeToPrefix: string
+
   ariaOpenMonthPicker: string
   ariaOpenDayGrid: string
   ariaCalendarGrid: string

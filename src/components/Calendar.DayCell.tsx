@@ -1,12 +1,14 @@
+import type { Temporal } from '@js-temporal/polyfill'
 import type { MouseEvent } from 'react'
 import { memo } from 'react'
 import type { CalendarMode } from '../core/api.types'
 
 export interface CalendarDayCellProps {
   mode: CalendarMode
-  dayStamp: number
+  date: Temporal.PlainDate
+  dayKey: string
   monthShort: string
-  focusedDateStamp: number
+  isFocused: boolean
   isSelected: boolean
   isDisabled: boolean
   isToday: boolean
@@ -24,20 +26,19 @@ export interface CalendarDayCellProps {
   todayLabelShort: string
   /**
    * grid 당 stable prefix (ModeBody 의 `useId()`). 각 셀 `<button>` 은
-   * `${idPrefix}-day-${dayStamp}` 형태의 id 를 가지며, ModeBody 의
+   * `${idPrefix}-day-${dayKey}` 형태의 id 를 가지며, ModeBody 의
    * `aria-activedescendant` 타겟이 된다.
    */
   idPrefix: string
-  onDayMouseDown: (event: MouseEvent<HTMLButtonElement>) => void
-  onDayClick: (event: MouseEvent<HTMLButtonElement>) => void
+  legacyDayStamp?: number
+  onDayClick: (date: Temporal.PlainDate) => void
   /** range 프리뷰는 ModeBody에서 monthRows `mouseover` 위임으로 처리 — 미전달 시 리스너 없음 */
   onDayMouseEnter?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
 function buildDayClass(
   mode: CalendarMode,
-  dayStamp: number,
-  focusedDateStamp: number,
+  isFocused: boolean,
   isSelected: boolean,
   isToday: boolean,
   isRangeStartDate: boolean,
@@ -47,7 +48,7 @@ function buildDayClass(
 ): string {
   return [
     'calendar__day',
-    dayStamp === focusedDateStamp ? 'calendar__day--focused' : '',
+    isFocused ? 'calendar__day--focused' : '',
     isSelected ? 'calendar__day--selected' : '',
     isToday ? 'calendar__day--today' : '',
     isMultiplePrimaryEdit ? 'calendar__day--multiplePrimary' : '',
@@ -106,11 +107,17 @@ function buildSelectionLayerClass(
     .join(' ')
 }
 
+/**
+ * Lots of DayCell will be rendered.
+ * Do not use contexts in this component.
+ * Make this component as stateless as possible.
+ */
 export const CalendarDayCell = memo(function CalendarDayCell({
   mode,
-  dayStamp,
+  date,
+  dayKey,
   monthShort,
-  focusedDateStamp,
+  isFocused,
   isSelected,
   isDisabled,
   isToday,
@@ -125,15 +132,14 @@ export const CalendarDayCell = memo(function CalendarDayCell({
   cellIndex,
   todayLabelShort,
   idPrefix,
-  onDayMouseDown,
+  legacyDayStamp,
   onDayClick,
   onDayMouseEnter,
 }: CalendarDayCellProps) {
   const selectionLayerActive = isSelected || (mode === 'range' && isInPreview)
   const dayClass = buildDayClass(
     mode,
-    dayStamp,
-    focusedDateStamp,
+    isFocused,
     isSelected,
     isToday,
     isRangeStartDate,
@@ -148,21 +154,28 @@ export const CalendarDayCell = memo(function CalendarDayCell({
   const selectionShape = getSelectionShape(mode, isSelected, isInPreview, isRangeStartDate, isRangeEndDate)
   const showSelectionStack = selectionLayerActive && selectionShape !== null && selectionShape !== 'between'
   const showBetweenDayOnly = selectionLayerActive && selectionShape === 'between'
+  const handleMouseDown = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+  }
+  const handleClick = () => {
+    onDayClick(date)
+  }
 
   return (
     <li className={`calendar__dayItem${cellIndex === 0 ? ' is-first' : ''}`} role="gridcell">
       <button
         type="button"
-        id={`${idPrefix}-day-${dayStamp}`}
+        id={`${idPrefix}-day-${dayKey}`}
         className={dayClass}
         disabled={isDisabled}
         tabIndex={-1}
         aria-selected={isSelected}
-        data-day-stamp={String(dayStamp)}
+        data-day-stamp={legacyDayStamp !== undefined ? String(legacyDayStamp) : undefined}
+        data-date={date.toString()}
         {...(isToday ? { 'aria-current': 'date' as const } : {})}
-        onMouseDown={onDayMouseDown}
+        onMouseDown={handleMouseDown}
         {...(onDayMouseEnter ? { onMouseEnter: onDayMouseEnter } : {})}
-        onClick={onDayClick}
+        onClick={handleClick}
       >
         {selectionLayerClass ? <span className={selectionLayerClass} aria-hidden="true" /> : null}
         {showBetweenDayOnly ? (

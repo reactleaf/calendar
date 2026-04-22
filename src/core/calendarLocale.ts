@@ -6,6 +6,7 @@ export function defaultNavigatorLocale(): string {
 
 export const DEFAULT_CALENDAR_MESSAGES: CalendarMessages = {
   blank: 'Select a date...',
+  todayLabel: 'Today',
   rangeFromPrefix: 'from ',
   rangeToPrefix: 'to ',
   ariaOpenMonthPicker: 'Open month picker',

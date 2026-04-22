@@ -1,9 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CalendarMultipleProps, DateValue } from '../core/api.types'
-import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
-import { toPlainDate } from '../core/calendarDate'
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import {
   clampDate,
@@ -12,6 +9,9 @@ import {
   DEFAULT_MIN_DATE,
   monthIndexFromMin,
 } from '../components/Calendar.utils'
+import type { CalendarMultipleProps, DateValue } from '../core/api.types'
+import { toPlainDate } from '../core/calendarDate'
+import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useMultipleSelection } from './useMultipleSelection'
@@ -47,6 +47,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     maxSelections,
   } = props
 
+  const runtimeId = useId()
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
   const messages = useMemo(() => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }), [messagesProp])
@@ -235,6 +236,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
   }, [keepDateVisible])
 
   return {
+    id: runtimeId,
     mode: 'multiple',
     locale,
     weekStartsOn,

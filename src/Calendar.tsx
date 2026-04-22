@@ -1,73 +1,36 @@
-import type { JSX } from 'react'
 import './Calendar.css'
+import CalendarBody from './components/Calendar.Body'
 import { CalendarHeader } from './components/Calendar.Header'
 import { CalendarMonthPicker } from './components/Calendar.MonthPicker'
-import { CalendarTimeInput } from './components/Calendar.TimeInput'
 import { CalendarMultipleMode } from './components/Calendar.MultipleMode'
 import { CalendarRangeMode } from './components/Calendar.RangeMode'
 import { CalendarRoot } from './components/Calendar.Root'
 import { CalendarSingleMode } from './components/Calendar.SingleMode'
+import { CalendarTimeInput } from './components/Calendar.TimeInput'
 import { CalendarTimeSelectView } from './components/Calendar.TimeSelectView'
-import { CalendarDaysShell, CalendarTodayBar } from './components/Calendar.TodayBar'
 import { CalendarWeekdays } from './components/Calendar.Weekdays'
 import type { CalendarProps } from './core/api.types'
 
 /* eslint-disable react-refresh/only-export-components -- compound component 정적 프로퍼티 조합 */
 
-function CalendarImpl(props: CalendarProps) {
-  const modeBody =
-    props.mode === 'single' ? (
-      <CalendarSingleMode />
-    ) : props.mode === 'multiple' ? (
-      <CalendarMultipleMode />
-    ) : (
-      <CalendarRangeMode />
-    )
-
+function Calendar(props: CalendarProps) {
   return (
     <CalendarRoot {...props}>
       <CalendarHeader />
-      <CalendarWeekdays />
-      <CalendarDaysShell>{modeBody}</CalendarDaysShell>
+      <CalendarBody mode={props.mode} />
     </CalendarRoot>
   )
 }
 
-type CalendarCompound = ((props: CalendarProps) => JSX.Element) & {
-  Root: typeof CalendarRoot
-  Header: typeof CalendarHeader
-  TimeInput: typeof CalendarTimeInput
-  TimeSelectView: typeof CalendarTimeSelectView
-  Weekdays: typeof CalendarWeekdays
-  TodayBar: typeof CalendarTodayBar
-  MonthPicker: typeof CalendarMonthPicker
-  SingleMode: typeof CalendarSingleMode
-  MultipleMode: typeof CalendarMultipleMode
-  RangeMode: typeof CalendarRangeMode
-}
+Calendar.Root = CalendarRoot
+Calendar.Header = CalendarHeader
+Calendar.Body = CalendarBody
+Calendar.TimeInput = CalendarTimeInput
+Calendar.TimeSelectView = CalendarTimeSelectView
+Calendar.Weekdays = CalendarWeekdays
+Calendar.MonthPicker = CalendarMonthPicker
+Calendar.SingleMode = CalendarSingleMode
+Calendar.MultipleMode = CalendarMultipleMode
+Calendar.RangeMode = CalendarRangeMode
 
-export const Calendar: CalendarCompound = Object.assign(CalendarImpl, {
-  Root: CalendarRoot,
-  Header: CalendarHeader,
-  TimeInput: CalendarTimeInput,
-  TimeSelectView: CalendarTimeSelectView,
-  Weekdays: CalendarWeekdays,
-  TodayBar: CalendarTodayBar,
-  MonthPicker: CalendarMonthPicker,
-  SingleMode: CalendarSingleMode,
-  MultipleMode: CalendarMultipleMode,
-  RangeMode: CalendarRangeMode,
-})
-
-export {
-  CalendarHeader,
-  CalendarMonthPicker,
-  CalendarMultipleMode,
-  CalendarRangeMode,
-  CalendarRoot,
-  CalendarSingleMode,
-  CalendarTimeInput,
-  CalendarTimeSelectView,
-  CalendarWeekdays,
-  CalendarTodayBar,
-}
+export default Calendar

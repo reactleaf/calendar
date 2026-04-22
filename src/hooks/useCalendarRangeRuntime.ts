@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CalendarRangeProps } from '../core/api.types'
-import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
-import { toPlainDate } from '../core/calendarDate'
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import type { CalendarRangeProps } from '../core/api.types'
+import { toPlainDate } from '../core/calendarDate'
+import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useRangeSelection } from './useRangeSelection'
@@ -30,6 +30,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     onRangePreview,
   } = props
 
+  const runtimeId = useId()
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
   const messages = useMemo(() => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }), [messagesProp])
@@ -145,6 +146,7 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
   }, [keepDateVisible])
 
   return {
+    id: runtimeId,
     mode: 'range',
     locale,
     weekStartsOn,

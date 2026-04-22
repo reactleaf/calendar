@@ -1,5 +1,5 @@
-import type { Virtualizer } from '@tanstack/react-virtual'
 import type { Temporal } from '@js-temporal/polyfill'
+import type { Virtualizer } from '@tanstack/react-virtual'
 import type { KeyboardEvent, RefObject, UIEvent } from 'react'
 import type { CalendarMessages, CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
 import type { WeekStartsOn } from '../core/monthGrid'
@@ -43,6 +43,7 @@ export interface CalendarSelectionRuntime {
 }
 
 export interface CalendarRuntime {
+  id: string
   mode: CalendarMode
   locale: string
   weekStartsOn: WeekStartsOn

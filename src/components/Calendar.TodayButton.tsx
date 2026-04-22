@@ -1,9 +1,8 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import type { ReactNode } from 'react'
 import type { RefObject } from 'react'
 import { useCallback, useLayoutEffect, useState } from 'react'
-import type { DateViewportPlacement } from './Calendar.types'
 import { useCalendarContext } from './Calendar.context'
+import type { DateViewportPlacement } from './Calendar.types'
 import { todayWordLabel } from './Calendar.utils'
 
 /** react-infinite-calendar `Today/CHEVRON` 와 유사한 소형 쉐브론 */
@@ -26,7 +25,7 @@ function TodayChevron({ direction }: { direction: 'up' | 'down' }) {
   )
 }
 
-interface CalendarTodayBarActiveProps {
+interface CalendarTodayButtonActiveProps {
   label: string
   today: Temporal.PlainDate
   setFocusedDate: (d: Temporal.PlainDate) => void
@@ -37,7 +36,7 @@ interface CalendarTodayBarActiveProps {
 }
 
 /** `displayMode === 'days'` 이고 오늘이 선택 가능할 때만 마운트 — effect 초반 reset setState 불필요 */
-function CalendarTodayBarActive({
+function CalendarTodayButtonActive({
   label,
   today,
   setFocusedDate,
@@ -45,7 +44,7 @@ function CalendarTodayBarActive({
   getDateViewportPlacement,
   scrollRef,
   keyboardNavigation,
-}: CalendarTodayBarActiveProps) {
+}: CalendarTodayButtonActiveProps) {
   const [placement, setPlacement] = useState<DateViewportPlacement | null>(null)
 
   useLayoutEffect(() => {
@@ -96,7 +95,7 @@ function CalendarTodayBarActive({
  * react-infinite-calendar Today 행: 오늘이 뷰 밖이면만 표시, 스크롤 방향에 따라 쉐브론 방향.
  * @see https://github.com/clauderic/react-infinite-calendar/blob/master/src/Today/Today.scss
  */
-export function CalendarTodayBar() {
+export function CalendarTodayButton() {
   const {
     displayMode,
     locale,
@@ -115,7 +114,7 @@ export function CalendarTodayBar() {
   if (displayMode !== 'days' || disabled) return null
 
   return (
-    <CalendarTodayBarActive
+    <CalendarTodayButtonActive
       label={label}
       today={today}
       setFocusedDate={setFocusedDate}
@@ -124,20 +123,5 @@ export function CalendarTodayBar() {
       scrollRef={scrollRef}
       keyboardNavigation={keyboardNavigation}
     />
-  )
-}
-
-/**
- * days 본문 래퍼: 스크롤 그리드를 먼저 두어 `scrollRef` 를 붙인 뒤,
- * Today 바는 같은 셸 안에서 `position: absolute` 로만 겹친다(플렉 높이 분할 없음).
- */
-export function CalendarDaysShell({ children }: { children: ReactNode }) {
-  const { displayMode } = useCalendarContext()
-  if (displayMode !== 'days') return <>{children}</>
-  return (
-    <div className="calendar__daysShell">
-      {children}
-      <CalendarTodayBar />
-    </div>
   )
 }

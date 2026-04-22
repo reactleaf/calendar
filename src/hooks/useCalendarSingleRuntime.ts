@@ -1,15 +1,15 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CalendarSingleProps } from '../core/api.types'
-import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
-import { toPlainDate } from '../core/calendarDate'
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import type { CalendarSingleProps } from '../core/api.types'
+import { toPlainDate } from '../core/calendarDate'
+import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
 import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
-import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
 import { useSingleSelection } from './useSingleSelection'
+import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
 
 /* eslint-disable react-hooks/preserve-manual-memoization -- Temporal 값 의존 useCallback 패턴 유지 */
 
@@ -30,6 +30,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     onSelect,
   } = props
 
+  const runtimeId = useId()
   const locale = localeProp ?? defaultNavigatorLocale()
   const weekStartsOn = weekStartsOnProp ?? 0
   const messages = useMemo(() => ({ ...DEFAULT_CALENDAR_MESSAGES, ...messagesProp }), [messagesProp])
@@ -134,6 +135,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
   }, [keepDateVisible])
 
   return {
+    id: runtimeId,
     mode: 'single',
     locale,
     weekStartsOn,

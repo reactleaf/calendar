@@ -1,12 +1,4 @@
-export { Calendar } from './Calendar'
-export {
-  CalendarHeader,
-  CalendarMultipleMode,
-  CalendarRangeMode,
-  CalendarRoot,
-  CalendarSingleMode,
-  CalendarWeekdays,
-} from './Calendar'
+export { default as Calendar } from './Calendar'
 
 export type {
   CalendarBaseProps,
