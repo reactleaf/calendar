@@ -2,13 +2,13 @@ import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toPlainDate } from '../core/calendarDate'
-import { useCalendarContext } from './Calendar.context'
+import { useCalendarContext, useCalendarViewportHandle } from './Calendar.context'
 import { compareMonth, monthShortLabel } from './Calendar.utils'
 
 /**
  * 연도별 12-월 그리드를 보여주는 보조 뷰(월 피커).
  *
- * - `displayMode === 'months'` 일 때 `CalendarModeBody` 대신 렌더된다.
+ * - `displayMode === 'months'` 일 때 DatePicker 위에 오버레이로 렌더된다.
  * - 월 셀 클릭 → 달력 본문을 해당 월로 스크롤(center 정렬) + `displayMode`를 `'days'`로 복귀.
  * - `min/maxMonth` 범위를 벗어난 월은 disabled.
  *
@@ -23,7 +23,8 @@ import { compareMonth, monthShortLabel } from './Calendar.utils'
  * 참고: react-infinite-calendar 의 `Years`(with months) 뷰.
  */
 export function CalendarMonthPicker() {
-  const { locale, minMonth, maxMonth, currentMonth, displayMode, setDisplayMode, scrollToMonth, selectionSnapshot } =
+  const viewportHandle = useCalendarViewportHandle()
+  const { locale, minMonth, maxMonth, currentMonth, displayMode, setDisplayMode, selectionSnapshot } =
     useCalendarContext()
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -91,13 +92,12 @@ export function CalendarMonthPicker() {
     (target: Temporal.PlainYearMonth) => {
       if (compareMonth(target, minMonth) < 0 || compareMonth(target, maxMonth) > 0) return
       /**
-       * scrollToMonth 는 picker 가 열려있으면 pending 으로 저장되고,
-       * setDisplayMode('days') 이후 useLayoutEffect 타이밍에 실행된다.
+       * DatePicker 의 viewport handle 을 통해 가상 스크롤을 직접 제어한다.
        */
-      scrollToMonth(target)
+      viewportHandle.current?.scrollToMonth(target)
       setDisplayMode('days')
     },
-    [maxMonth, minMonth, scrollToMonth, setDisplayMode],
+    [maxMonth, minMonth, setDisplayMode, viewportHandle],
   )
 
   const handleKeyDown = useCallback(

@@ -1,23 +1,19 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { KeyboardEvent } from 'react'
-import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useState } from 'react'
 import type { CalendarRuntime } from '../components/Calendar.types'
 import {
   clampDate,
   dayStamp,
   DEFAULT_MAX_DATE,
   DEFAULT_MIN_DATE,
-  monthIndexFromMin,
+  monthsInclusiveCount,
+  weekdayLabels,
 } from '../components/Calendar.utils'
 import type { CalendarMultipleProps, DateValue } from '../core/api.types'
 import { toPlainDate } from '../core/calendarDate'
 import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
-import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useMultipleSelection } from './useMultipleSelection'
-import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
-
-/* eslint-disable react-hooks/preserve-manual-memoization -- Temporal 값 의존 useCallback 패턴 유지 */
 
 function maxPlainAmong(values: readonly DateValue[]): Temporal.PlainDate | null {
   if (values.length === 0) return null
@@ -95,49 +91,26 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     [selectedValues],
   )
 
-  const today = Temporal.Now.plainDateISO()
+  const today = useMemo(() => Temporal.Now.plainDateISO(), [])
   const selectedPlain = rawSelection.value[0] ? toPlainDate(rawSelection.value[0]) : null
-  const minDay = minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE
-  const maxDay = maxDate ? toPlainDate(maxDate) : DEFAULT_MAX_DATE
+  const minDay = useMemo(() => (minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE), [minDate])
+  const maxDay = useMemo(() => (maxDate ? toPlainDate(maxDate) : DEFAULT_MAX_DATE), [maxDate])
   const initialDate = clampDate(selectedPlain ?? today, minDay, maxDay)
   const initialMonth = initialDate.toPlainYearMonth()
 
   const [focusedDate, setFocusedDateState] = useState<Temporal.PlainDate>(initialDate)
-  const initializedScrollRef = useRef(false)
-  const focusDateRequestRef = useRef<Temporal.PlainDate | null>(null)
-  /** 보조 뷰 → 일 그리드 복귀 시 월 오버레이 깜빡임 방지 — `useSuppressMonthOverlayOnReturnToDays` + `useInfiniteMonthScroll` */
-  const overlaySuppressUntilRef = useRef(0)
+  const minMonth = useMemo(() => minDay.toPlainYearMonth(), [minDay])
+  const maxMonth = useMemo(() => maxDay.toPlainYearMonth(), [maxDay])
+  const monthCount = monthsInclusiveCount(minMonth, maxMonth)
+  const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
+  const [currentMonth, setCurrentMonthState] = useState(initialMonth)
 
   const {
-    weekdays,
-    minMonth,
-    maxMonth,
-    monthCount,
-    monthVirtualizer,
-    currentMonth,
-    isScrolling,
-    monthRefs,
-    scrollRef,
-    handleScroll,
-    keepDateVisible,
-    getDateViewportPlacement,
-  } = useInfiniteMonthScroll({
-    locale,
-    weekStartsOn,
-    initialMonth,
-    minMonth: minDay.toPlainYearMonth(),
-    maxMonth: maxDay.toPlainYearMonth(),
-    onMonthChange,
-    overlaySuppressUntilRef,
-  })
-
-  const { displayMode, setDisplayMode, scrollToMonth, timeEditTarget, openTimeView } = useCalendarSecondaryView({
-    minMonth,
-    monthCount,
-    monthVirtualizer,
-  })
-
-  useSuppressMonthOverlayOnReturnToDays(displayMode, overlaySuppressUntilRef)
+    displayMode,
+    setDisplayMode,
+    timeEditTarget,
+    openTimeView,
+  } = useCalendarSecondaryView()
 
   const setFocusedDate = useCallback(
     (next: Temporal.PlainDate) => {
@@ -149,7 +122,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
   )
 
   /**
-   * multiple: 마우스·키보드 동일 규칙. `focusedDate`는 클릭 시 아직 이전 값(ModeBody 가 먼저 setFocusedDate).
+   * multiple: 마우스·키보드 동일 규칙. 클릭 경로에서 `focusedDate` 업데이트와 선택 토글이 같은 틱에 일어난다.
    * - 가상 커서가 그 날이고 이미 선택됨 → 선택 해제
    * - 선택 안 됨 → 추가
    * - 선택됐지만 가상 커서가 다른 날(주로 마우스) → 선택 유지, 대표일만 이동
@@ -186,54 +159,21 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
 
   const selection = useMemo(
     () => ({
-      isSelected,
-      isDisabled,
       selectDate,
       setSelectedTime:
         includeTime && primaryPlainDate !== null
           ? (hour: number, minute: number) => setTimeForPlainDate(primaryPlainDate, hour, minute)
           : undefined,
     }),
-    [includeTime, primaryPlainDate, isDisabled, isSelected, selectDate, setTimeForPlainDate],
+    [includeTime, primaryPlainDate, selectDate, setTimeForPlainDate],
   )
+  const setCurrentMonth = useCallback((month: Temporal.PlainYearMonth) => {
+    setCurrentMonthState((prev) => (Temporal.PlainYearMonth.compare(prev, month) === 0 ? prev : month))
+  }, [])
 
-  const moveFocusedByDays = useCallback(
-    (days: number) => {
-      const next = clampDate(focusedDate.add({ days }), minDay, maxDay)
-      setFocusedDate(next)
-      focusDateRequestRef.current = next
-      requestAnimationFrame(() => keepDateVisible(next))
-    },
-    [focusedDate, keepDateVisible, maxDay, minDay, setFocusedDate],
-  )
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      if (!keyboardNavigation) return
-      if (event.key === 'ArrowLeft') moveFocusedByDays(-1)
-      else if (event.key === 'ArrowRight') moveFocusedByDays(1)
-      else if (event.key === 'ArrowUp') moveFocusedByDays(-7)
-      else if (event.key === 'ArrowDown') moveFocusedByDays(7)
-      else if (event.key === 'Enter' || event.key === ' ') selection.selectDate(focusedDate, 'keyboard')
-      else return
-      event.preventDefault()
-    },
-    [focusedDate, keyboardNavigation, moveFocusedByDays, selection],
-  )
-
-  useLayoutEffect(() => {
-    if (initializedScrollRef.current) return
-    const idx = monthIndexFromMin(minMonth, initialMonth)
-    monthVirtualizer.scrollToIndex(Math.max(0, Math.min(monthCount - 1, idx)), { align: 'start' })
-    initializedScrollRef.current = true
-  }, [initialMonth, minMonth, monthCount, monthVirtualizer])
-
-  useLayoutEffect(() => {
-    const requested = focusDateRequestRef.current
-    if (!requested) return
-    keepDateVisible(requested)
-    focusDateRequestRef.current = null
-  }, [keepDateVisible])
+  useEffect(() => {
+    onMonthChange?.(currentMonth)
+  }, [currentMonth, onMonthChange])
 
   return {
     id: runtimeId,
@@ -245,27 +185,22 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     selectionSnapshot: { mode: 'multiple', values: rawSelection.value, primaryPlainDate },
     weekdays,
     keyboardNavigation,
-    isScrolling,
+    minDay,
     minMonth,
     maxMonth,
     monthCount,
-    monthVirtualizer,
-    monthRefs,
-    scrollRef,
+    maxDay,
     focusedDate,
     today,
     currentMonth,
+    setCurrentMonth,
     displayMode,
     setDisplayMode,
-    scrollToMonth,
     timeEditTarget,
     openTimeView,
     selection,
+    isDateDisabled: isDisabled,
     setFocusedDate,
-    keepDateVisible,
-    getDateViewportPlacement,
-    handleScroll,
-    handleKeyDown,
     setMultiplePrimaryPlainDate,
   }
 }

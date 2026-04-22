@@ -1,17 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { KeyboardEvent } from 'react'
-import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import type { CalendarRuntime } from '../components/Calendar.types'
-import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthIndexFromMin } from '../components/Calendar.utils'
+import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthsInclusiveCount, weekdayLabels } from '../components/Calendar.utils'
 import type { CalendarRangeProps } from '../core/api.types'
 import { toPlainDate } from '../core/calendarDate'
 import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
 import { useCalendarSecondaryView } from './useCalendarSecondaryView'
-import { useInfiniteMonthScroll } from './useInfiniteMonthScroll'
 import { useRangeSelection } from './useRangeSelection'
-import { useSuppressMonthOverlayOnReturnToDays } from './useSuppressMonthOverlayOnReturnToDays'
-
-/* oxlint-disable react-hooks/exhaustive-deps -- range selection 콜백이 매 렌더 갱신되는 스냅샷 객체에 의존 */
 
 export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRuntime {
   const {
@@ -43,59 +38,34 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     onSelect,
     onRangePreview,
   })
-  const selection = {
-    isSelected: rawSelection.isSelected,
-    isDisabled: rawSelection.isDisabled,
-    selectDate: rawSelection.selectDate,
-    setRangeTime: rawSelection.setRangeTime,
-    previewDate: rawSelection.previewDate,
-    isInPreviewRange: rawSelection.isInPreviewRange,
-    isRangeStart: rawSelection.isRangeStart,
-    isRangeEnd: rawSelection.isRangeEnd,
-  }
-  const today = Temporal.Now.plainDateISO()
+  const selection = useMemo(
+    () => ({
+      selectDate: rawSelection.selectDate,
+      setRangeTime: rawSelection.setRangeTime,
+      previewDate: rawSelection.previewDate,
+    }),
+    [rawSelection.previewDate, rawSelection.selectDate, rawSelection.setRangeTime],
+  )
+  const today = useMemo(() => Temporal.Now.plainDateISO(), [])
   const selectedPlain = rawSelection.value.start ? toPlainDate(rawSelection.value.start) : null
-  const minDay = minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE
-  const maxDay = maxDate ? toPlainDate(maxDate) : DEFAULT_MAX_DATE
+  const minDay = useMemo(() => (minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE), [minDate])
+  const maxDay = useMemo(() => (maxDate ? toPlainDate(maxDate) : DEFAULT_MAX_DATE), [maxDate])
   const initialDate = clampDate(selectedPlain ?? today, minDay, maxDay)
   const initialMonth = initialDate.toPlainYearMonth()
 
   const [focusedDate, setFocusedDateState] = useState<Temporal.PlainDate>(initialDate)
-  const initializedScrollRef = useRef(false)
-  const focusDateRequestRef = useRef<Temporal.PlainDate | null>(null)
-  /** 보조 뷰 → 일 그리드 복귀 시 월 오버레이 깜빡임 방지 — `useSuppressMonthOverlayOnReturnToDays` + `useInfiniteMonthScroll` */
-  const overlaySuppressUntilRef = useRef(0)
+  const minMonth = useMemo(() => minDay.toPlainYearMonth(), [minDay])
+  const maxMonth = useMemo(() => maxDay.toPlainYearMonth(), [maxDay])
+  const monthCount = monthsInclusiveCount(minMonth, maxMonth)
+  const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
+  const [currentMonth, setCurrentMonthState] = useState(initialMonth)
 
   const {
-    weekdays,
-    minMonth,
-    maxMonth,
-    monthCount,
-    monthVirtualizer,
-    currentMonth,
-    isScrolling,
-    monthRefs,
-    scrollRef,
-    handleScroll,
-    keepDateVisible,
-    getDateViewportPlacement,
-  } = useInfiniteMonthScroll({
-    locale,
-    weekStartsOn,
-    initialMonth,
-    minMonth: minDay.toPlainYearMonth(),
-    maxMonth: maxDay.toPlainYearMonth(),
-    onMonthChange,
-    overlaySuppressUntilRef,
-  })
-
-  const { displayMode, setDisplayMode, scrollToMonth, timeEditTarget, openTimeView } = useCalendarSecondaryView({
-    minMonth,
-    monthCount,
-    monthVirtualizer,
-  })
-
-  useSuppressMonthOverlayOnReturnToDays(displayMode, overlaySuppressUntilRef)
+    displayMode,
+    setDisplayMode,
+    timeEditTarget,
+    openTimeView,
+  } = useCalendarSecondaryView()
 
   const setFocusedDate = useCallback(
     (next: Temporal.PlainDate) => {
@@ -105,45 +75,13 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     },
     [maxDay, minDay, onFocusedDateChange],
   )
+  const setCurrentMonth = useCallback((month: Temporal.PlainYearMonth) => {
+    setCurrentMonthState((prev) => (Temporal.PlainYearMonth.compare(prev, month) === 0 ? prev : month))
+  }, [])
 
-  const moveFocusedByDays = useCallback(
-    (days: number) => {
-      const next = clampDate(focusedDate.add({ days }), minDay, maxDay)
-      setFocusedDate(next)
-      selection.previewDate?.(next, 'keyboard')
-      focusDateRequestRef.current = next
-      requestAnimationFrame(() => keepDateVisible(next))
-    },
-    [focusedDate, keepDateVisible, maxDay, minDay, selection, setFocusedDate],
-  )
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      if (!keyboardNavigation) return
-      if (event.key === 'ArrowLeft') moveFocusedByDays(-1)
-      else if (event.key === 'ArrowRight') moveFocusedByDays(1)
-      else if (event.key === 'ArrowUp') moveFocusedByDays(-7)
-      else if (event.key === 'ArrowDown') moveFocusedByDays(7)
-      else if (event.key === 'Enter' || event.key === ' ') selection.selectDate(focusedDate, 'keyboard')
-      else return
-      event.preventDefault()
-    },
-    [focusedDate, keyboardNavigation, moveFocusedByDays, selection],
-  )
-
-  useLayoutEffect(() => {
-    if (initializedScrollRef.current) return
-    const idx = monthIndexFromMin(minMonth, initialMonth)
-    monthVirtualizer.scrollToIndex(Math.max(0, Math.min(monthCount - 1, idx)), { align: 'start' })
-    initializedScrollRef.current = true
-  }, [initialMonth, minMonth, monthCount, monthVirtualizer])
-
-  useLayoutEffect(() => {
-    const requested = focusDateRequestRef.current
-    if (!requested) return
-    keepDateVisible(requested)
-    focusDateRequestRef.current = null
-  }, [keepDateVisible])
+  useEffect(() => {
+    onMonthChange?.(currentMonth)
+  }, [currentMonth, onMonthChange])
 
   return {
     id: runtimeId,
@@ -157,26 +95,21 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     selectionSnapshot: { mode: 'range', value: rawSelection.value },
     weekdays,
     keyboardNavigation,
-    isScrolling,
+    minDay,
     minMonth,
     maxMonth,
     monthCount,
-    monthVirtualizer,
-    monthRefs,
-    scrollRef,
+    maxDay,
     focusedDate,
     today,
     currentMonth,
+    setCurrentMonth,
     displayMode,
     setDisplayMode,
-    scrollToMonth,
     timeEditTarget,
     openTimeView,
     selection,
+    isDateDisabled: rawSelection.isDisabled,
     setFocusedDate,
-    keepDateVisible,
-    getDateViewportPlacement,
-    handleScroll,
-    handleKeyDown,
   }
 }

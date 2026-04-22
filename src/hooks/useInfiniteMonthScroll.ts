@@ -89,9 +89,10 @@ export interface InfiniteMonthScrollRuntime {
   monthRefs: RefObject<Map<string, HTMLElement>>
   scrollRef: RefObject<HTMLDivElement | null>
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
+  scrollToMonth: (target: Temporal.PlainYearMonth, align?: 'start' | 'center' | 'end' | 'auto') => void
   expandForTargetMonth: (target: Temporal.PlainYearMonth) => void
   keepMonthVisible: (month: Temporal.PlainYearMonth) => void
-  keepDateVisible: (date: Temporal.PlainDate) => void
+  scrollToDate: (date: Temporal.PlainDate) => void
   getDateViewportPlacement: (date: Temporal.PlainDate) => DateViewportPlacement
 }
 
@@ -161,12 +162,19 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     [monthCount, monthVirtualizer],
   )
 
-  const expandForTargetMonth = useCallback(
-    (target: Temporal.PlainYearMonth) => {
+  const scrollToMonth = useCallback(
+    (target: Temporal.PlainYearMonth, align: 'start' | 'center' | 'end' | 'auto' = 'auto') => {
       if (compareMonth(target, minMonth) < 0 || compareMonth(target, maxMonth) > 0) return
-      scrollToMonthIndex(monthIndexFromMin(minMonth, target), 'auto')
+      scrollToMonthIndex(monthIndexFromMin(minMonth, target), align)
     },
     [maxMonth, minMonth, scrollToMonthIndex],
+  )
+
+  const expandForTargetMonth = useCallback(
+    (target: Temporal.PlainYearMonth) => {
+      scrollToMonth(target, 'auto')
+    },
+    [scrollToMonth],
   )
 
   const keepMonthVisible = useCallback(
@@ -215,7 +223,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     [getMonthStartOffset, maxMonth, minMonth, rowHeightPx, weekStartsOn],
   )
 
-  const keepDateVisible = useCallback(
+  const scrollToDate = useCallback(
     (date: Temporal.PlainDate) => {
       const scrollEl = scrollRef.current
       if (!scrollEl) return
@@ -274,9 +282,10 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     monthRefs,
     scrollRef,
     handleScroll,
+    scrollToMonth,
     expandForTargetMonth,
     keepMonthVisible,
-    keepDateVisible,
+    scrollToDate,
     getDateViewportPlacement,
   }
 }

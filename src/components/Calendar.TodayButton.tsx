@@ -1,8 +1,7 @@
-import type { Temporal } from '@js-temporal/polyfill'
 import type { RefObject } from 'react'
-import { useCallback, useLayoutEffect, useState } from 'react'
-import { useCalendarContext } from './Calendar.context'
+import { useCallback } from 'react'
 import type { DateViewportPlacement } from './Calendar.types'
+import { useCalendarContext } from './Calendar.context'
 import { todayWordLabel } from './Calendar.utils'
 
 /** react-infinite-calendar `Today/CHEVRON` 와 유사한 소형 쉐브론 */
@@ -25,59 +24,33 @@ function TodayChevron({ direction }: { direction: 'up' | 'down' }) {
   )
 }
 
-interface CalendarTodayButtonActiveProps {
-  label: string
-  today: Temporal.PlainDate
-  setFocusedDate: (d: Temporal.PlainDate) => void
-  keepDateVisible: (d: Temporal.PlainDate) => void
-  getDateViewportPlacement: (d: Temporal.PlainDate) => DateViewportPlacement
+export interface CalendarTodayButtonProps {
+  scrollToDate: (date: import('@js-temporal/polyfill').Temporal.PlainDate) => void
   scrollRef: RefObject<HTMLDivElement | null>
-  keyboardNavigation: boolean
+  placement: DateViewportPlacement | null
 }
 
-/** `displayMode === 'days'` 이고 오늘이 선택 가능할 때만 마운트 — effect 초반 reset setState 불필요 */
-function CalendarTodayButtonActive({
-  label,
-  today,
-  setFocusedDate,
-  keepDateVisible,
-  getDateViewportPlacement,
+/**
+ * react-infinite-calendar Today 행: 오늘이 뷰 밖이면만 표시, 스크롤 방향에 따라 쉐브론 방향.
+ * TodayButton 은 단일 인스턴스이므로 자체 context 소비를 허용한다.
+ */
+export function CalendarTodayButton({
+  scrollToDate,
   scrollRef,
-  keyboardNavigation,
-}: CalendarTodayButtonActiveProps) {
-  const [placement, setPlacement] = useState<DateViewportPlacement | null>(null)
-
-  useLayoutEffect(() => {
-    const scrollEl = scrollRef.current
-    if (!scrollEl) return
-
-    const update = () => {
-      setPlacement(getDateViewportPlacement(today))
-    }
-
-    update()
-    scrollEl.addEventListener('scroll', update, { passive: true })
-    let ro: ResizeObserver | undefined
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(update)
-      ro.observe(scrollEl)
-    }
-
-    return () => {
-      scrollEl.removeEventListener('scroll', update)
-      ro?.disconnect()
-    }
-  }, [getDateViewportPlacement, scrollRef, today])
+  placement,
+}: CalendarTodayButtonProps) {
+  const { displayMode, today, locale, setFocusedDate, keyboardNavigation } = useCalendarContext()
+  const label = todayWordLabel(locale)
 
   const onClick = useCallback(() => {
     setFocusedDate(today)
     requestAnimationFrame(() => {
-      keepDateVisible(today)
+      scrollToDate(today)
       if (keyboardNavigation) scrollRef.current?.focus({ preventScroll: true })
     })
-  }, [keepDateVisible, keyboardNavigation, scrollRef, setFocusedDate, today])
+  }, [keyboardNavigation, scrollRef, scrollToDate, setFocusedDate, today])
 
-  if (placement === null || placement === 'visible') return null
+  if (displayMode !== 'days' || placement === null || placement === 'visible') return null
 
   return (
     <div className="calendar__todayBar">
@@ -88,40 +61,5 @@ function CalendarTodayButtonActive({
         </span>
       </button>
     </div>
-  )
-}
-
-/**
- * react-infinite-calendar Today 행: 오늘이 뷰 밖이면만 표시, 스크롤 방향에 따라 쉐브론 방향.
- * @see https://github.com/clauderic/react-infinite-calendar/blob/master/src/Today/Today.scss
- */
-export function CalendarTodayButton() {
-  const {
-    displayMode,
-    locale,
-    today,
-    selection,
-    setFocusedDate,
-    keepDateVisible,
-    getDateViewportPlacement,
-    scrollRef,
-    keyboardNavigation,
-  } = useCalendarContext()
-
-  const label = todayWordLabel(locale)
-  const disabled = selection.isDisabled(today)
-
-  if (displayMode !== 'days' || disabled) return null
-
-  return (
-    <CalendarTodayButtonActive
-      label={label}
-      today={today}
-      setFocusedDate={setFocusedDate}
-      keepDateVisible={keepDateVisible}
-      getDateViewportPlacement={getDateViewportPlacement}
-      scrollRef={scrollRef}
-      keyboardNavigation={keyboardNavigation}
-    />
   )
 }

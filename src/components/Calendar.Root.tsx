@@ -1,10 +1,10 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useRef } from 'react'
 import type { CalendarMultipleProps, CalendarProps, CalendarRangeProps, CalendarSingleProps } from '../core/api.types'
 import { useCalendarMultipleRuntime } from '../hooks/useCalendarMultipleRuntime'
 import { useCalendarRangeRuntime } from '../hooks/useCalendarRangeRuntime'
 import { useCalendarSingleRuntime } from '../hooks/useCalendarSingleRuntime'
-import { CalendarContext } from './Calendar.context'
-import type { CalendarRuntime } from './Calendar.types'
+import { CalendarContext, CalendarViewportHandleContext } from './Calendar.context'
+import type { CalendarRuntime, CalendarViewportHandle } from './Calendar.types'
 
 interface CalendarRootBaseProps {
   children: ReactNode
@@ -23,12 +23,15 @@ function CalendarRuntimeRoot({
   children,
   runtime,
 }: CalendarRuntimeRootProps & { runtime: CalendarRuntime }) {
+  const viewportHandle = useRef<CalendarViewportHandle | null>(null)
   const rootClass = ['calendar', `calendar--mode-${runtime.mode}`, className].filter(Boolean).join(' ')
   return (
     <CalendarContext.Provider value={runtime}>
-      <div id={id} className={rootClass}>
-        {children}
-      </div>
+      <CalendarViewportHandleContext.Provider value={viewportHandle}>
+        <div id={id} className={rootClass}>
+          {children}
+        </div>
+      </CalendarViewportHandleContext.Provider>
     </CalendarContext.Provider>
   )
 }

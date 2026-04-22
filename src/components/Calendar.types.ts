@@ -1,6 +1,4 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import type { Virtualizer } from '@tanstack/react-virtual'
-import type { KeyboardEvent, RefObject, UIEvent } from 'react'
 import type { CalendarMessages, CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
 import type { WeekStartsOn } from '../core/monthGrid'
 
@@ -30,16 +28,16 @@ export type CalendarTimeEditTarget = 'primary' | 'rangeStart' | 'rangeEnd'
 /** 스크롤 뷰포트 대비 특정 일자 행 위치(react-infinite-calendar Today 쉐브론과 동일 개념) */
 export type DateViewportPlacement = 'visible' | 'above' | 'below'
 
+export interface CalendarViewportHandle {
+  scrollToMonth: (target: Temporal.PlainYearMonth) => void
+  scrollToDate: (date: Temporal.PlainDate) => void
+}
+
 export interface CalendarSelectionRuntime {
-  isSelected: (date: Temporal.PlainDate) => boolean
-  isDisabled: (date: Temporal.PlainDate) => boolean
   selectDate: (date: Temporal.PlainDate, source?: 'click' | 'keyboard') => void
   setSelectedTime?: (hour: number, minute: number) => void
   setRangeTime?: (edge: 'start' | 'end', hour: number, minute: number) => void
   previewDate?: (date: Temporal.PlainDate, source?: 'hover' | 'keyboard') => void
-  isInPreviewRange?: (date: Temporal.PlainDate) => boolean
-  isRangeStart?: (date: Temporal.PlainDate) => boolean
-  isRangeEnd?: (date: Temporal.PlainDate) => boolean
 }
 
 export interface CalendarRuntime {
@@ -56,34 +54,28 @@ export interface CalendarRuntime {
   selectionSnapshot: CalendarSelectionSnapshot
   weekdays: string[]
   keyboardNavigation: boolean
-  isScrolling: boolean
+  minDay: Temporal.PlainDate
   minMonth: Temporal.PlainYearMonth
   maxMonth: Temporal.PlainYearMonth
   monthCount: number
-  monthVirtualizer: Virtualizer<HTMLDivElement, Element>
-  monthRefs: RefObject<Map<string, HTMLElement>>
-  scrollRef: RefObject<HTMLDivElement | null>
+  maxDay: Temporal.PlainDate
   focusedDate: Temporal.PlainDate
   today: Temporal.PlainDate
-  /** 현재 뷰포트 중앙에 있는 월 — 헤더/월 피커 하이라이트의 소스 */
+  /** 현재 뷰포트 중앙에 있는 월 — Header / MonthPicker fallback 소스 */
   currentMonth: Temporal.PlainYearMonth
+  /** DatePicker 가 scroll 결과를 runtime state 에 반영하는 내부 setter */
+  setCurrentMonth: (month: Temporal.PlainYearMonth) => void
   /** 보조 뷰 전환 상태 (days/months/time) */
   displayMode: CalendarDisplayMode
   setDisplayMode: (mode: CalendarDisplayMode) => void
-  /** 주어진 월로 본문 스크롤 (월 피커에서 사용) */
-  scrollToMonth: (target: Temporal.PlainYearMonth) => void
   /** 현재 `'time'` 뷰가 편집 중인 대상. `displayMode !== 'time'` 이면 `null` */
   timeEditTarget: CalendarTimeEditTarget | null
   /** TimeInput 의 hour/minute 셀 클릭 등으로 `'time'` 뷰를 여는 경로 */
   openTimeView: (target: CalendarTimeEditTarget) => void
   selection: CalendarSelectionRuntime
+  /** 렌더 및 외부 가드용 날짜 비활성 판정 */
+  isDateDisabled: (date: Temporal.PlainDate) => boolean
   setFocusedDate: (next: Temporal.PlainDate) => void
-  /** 그리드 스크롤만 해당 날짜 행이 보이도록 조정 (포커스 날짜 변경 후 호출) */
-  keepDateVisible: (date: Temporal.PlainDate) => void
-  /** 일 그리드 스크롤 영역 기준 해당 날짜 행이 보이는지·어느 쪽에 있는지 */
-  getDateViewportPlacement: (date: Temporal.PlainDate) => DateViewportPlacement
-  handleScroll: (event: UIEvent<HTMLDivElement>) => void
-  handleKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
   /** multiple: 헤더·시간 편집 대상이 되는 대표 일자 (선택 목록에 있는 날만 허용) */
   setMultiplePrimaryPlainDate?: (date: Temporal.PlainDate) => void
 }

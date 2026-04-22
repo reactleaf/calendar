@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { CalendarMessages, DateValue } from '../core/api.types'
 import { toPlainDate, toSelectionValue } from '../core/calendarDate'
-import { useCalendarContext } from './Calendar.context'
+import { useCalendarContext, useCalendarViewportHandle } from './Calendar.context'
 import { CalendarTimeInput } from './Calendar.TimeInput'
 import type { CalendarSelectionSnapshot } from './Calendar.types'
 
@@ -105,6 +105,7 @@ function resolveEditorDateTime(value: DateValue | null) {
 }
 
 export function CalendarHeader({ className, children }: CalendarHeaderProps) {
+  const viewportHandle = useCalendarViewportHandle()
   const {
     locale,
     messages,
@@ -118,7 +119,6 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     displayMode,
     setDisplayMode,
     setFocusedDate,
-    keepDateVisible,
     setMultiplePrimaryPlainDate,
   } = useCalendarContext()
   const [multipleListOpen, setMultipleListOpen] = useState(false)
@@ -397,7 +397,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
                           const day = toPlainDate(v)
                           setMultiplePrimaryPlainDate?.(day)
                           setFocusedDate(day)
-                          keepDateVisible(day)
+                          viewportHandle.current?.scrollToDate(day)
                           if (displayMode !== 'days') setDisplayMode('days')
                         }}
                       >
