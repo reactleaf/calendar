@@ -1,8 +1,8 @@
 import type { RefObject } from 'react'
 import { useCallback } from 'react'
-import type { DateViewportPlacement } from './Calendar.types'
-import { useCalendarContext } from './Calendar.context'
-import { todayWordLabel } from './Calendar.utils'
+import type { DateViewportPlacement } from '../Calendar.types'
+import { useCalendarContext } from '../Calendar.context'
+import { todayWordLabel } from '../Calendar.utils'
 
 /** react-infinite-calendar `Today/CHEVRON` 와 유사한 소형 쉐브론 */
 function TodayChevron({ direction }: { direction: 'up' | 'down' }) {

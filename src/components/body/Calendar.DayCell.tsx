@@ -2,7 +2,7 @@ import type { Temporal } from '@js-temporal/polyfill'
 import { clsx } from 'clsx'
 import type { MouseEvent } from 'react'
 import { memo } from 'react'
-import type { CalendarMode } from '../core/api.types'
+import type { CalendarMode } from '../../core/api.types'
 
 export interface CalendarDayCellProps {
   mode: CalendarMode
@@ -12,8 +12,8 @@ export interface CalendarDayCellProps {
   /** `Intl.RelativeTimeFormat(...).format(0,'day')` — 선택 셀 상단에 월 대신 표시 */
   todayLabelShort: string
   /**
-   * grid 당 stable prefix (DatePicker 의 `useId()`). 각 셀 `<button>` 은
-   * `${idPrefix}-day-${dayKey}` 형태의 id 를 가지며, DatePicker 의
+   * grid 당 stable prefix (DatePickerView 의 `useId()`). 각 셀 `<button>` 은
+   * `${idPrefix}-day-${dayKey}` 형태의 id 를 가지며, DatePickerView 의
    * `aria-activedescendant` 타겟이 된다.
    */
   idPrefix: string

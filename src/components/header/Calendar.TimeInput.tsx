@@ -1,19 +1,15 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import { useEffect, useRef, useState } from 'react'
-import { useCalendarContext } from './Calendar.context'
-import type { CalendarTimeEditTarget } from './Calendar.types'
+import { useCalendarContext } from '../Calendar.context'
+import type { CalendarTimeEditTarget } from '../Calendar.types'
 
 /**
  * 헤더의 시·분 표시/입력 컴포넌트.
  *
- * 과거 버전은 wheel·scroll 가속/rAF commit/draft state 등 큰 덩어리를 품고 있었다.
- * 스크롤 기반 값 조절은 `'time'` 보조 뷰(`CalendarTimeSelectView`)로 옮겨갔고,
- * 여기서는 아래 **두 가지**만 남긴다.
- *
  *  1) 숫자 직접 타이핑: hour/minute 셀을 클릭하면 해당 part 가 `<input>` 으로 전환,
  *     focus + select 되어 바로 숫자 입력이 가능하다. Enter/Esc/Blur 로 commit.
- *  2) Time view 진입: 위 클릭과 **동시에** `openTimeView(timeEditTarget)` 를 호출해
- *     보조 뷰로 전환한다. 타이핑도 되고, 그리드 선택도 되는 이중 진입점이다.
+ *  2) TimePickerView 진입: 위 클릭과 **동시에** `openTimeView(timeEditTarget)` 를 호출해
+ *     보조 뷰로 전환한다. 타이핑도 되고, 마우스로 시간 입력을 지원한다.
  *
  * 시·분 정규화는 `onTimeChange` 바깥의 `setSelectedTime / setRangeTime`
  * 내부에서 처리되므로, 여기서는 단순 파싱만 한다.

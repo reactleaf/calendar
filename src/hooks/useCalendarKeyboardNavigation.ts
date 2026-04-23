@@ -17,7 +17,7 @@ interface UseCalendarKeyboardNavigationArgs {
 }
 
 /**
- * 키보드 내비게이션은 DatePicker 렌더 경로와 분리하되,
+ * 키보드 내비게이션은 DatePickerView 렌더 경로와 분리하되,
  * 실제 핸들러 identity 는 안정적으로 유지한다.
  */
 export function useCalendarKeyboardNavigation({

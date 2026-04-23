@@ -12,7 +12,7 @@
 - 공개 API에서 **`minuteStep` prop 제거** (2026-04): 분 스텝은 시간 보조 뷰 UI(예: 5분 단위 표시 토글)로만 다루고, 캘린더 루트 props에는 두지 않는다.
 - 선택 모드 공개 API는 `mode` 기반 variant로 통일한다: `single | multiple | range`.
 - 핵심 상태 로직은 headless hook으로 분리한다: `useCalendarState`, `useSingleSelection`, `useMultipleSelection`, `useRangeSelection`, `useCalendarKeyboard` (+ 모드별 런타임 hook `useCalendarSingleRuntime` / `useCalendarMultipleRuntime` / `useCalendarRangeRuntime`, 보조 뷰 상태 hook `useCalendarSecondaryView`).
-- UI 확장 지점은 compound 컴포넌트로 제공한다: `Calendar.Root`, `Calendar.Header`, `Calendar.Weekdays`, `Calendar.SingleMode` / `Calendar.MultipleMode` / `Calendar.RangeMode`, `Calendar.MonthPicker`, `Calendar.TimeSelectView` (+ 편의 facade `Calendar`).
+- UI 확장 지점은 compound 컴포넌트로 제공한다: `Calendar.Root`, `Calendar.Header`, `Calendar.Weekdays`, `Calendar.SingleMode` / `Calendar.MultipleMode` / `Calendar.RangeMode`, `Calendar.MonthPicker`, `Calendar.TimePicker` (+ 편의 facade `Calendar`).
 - 구 API(HOC)는 제공하지 않는다.
 - 본문 영역 치수는 토큰으로 고정: `--calendar-body-height`, `--calendar-weekdays-height`, `--calendar-secondary-body-height`. days / month / time 뷰 간 전환 시 카드 외곽 높이가 변하지 않는다.
 
@@ -65,7 +65,7 @@
 6. ✅ 보조 뷰 시스템 — `useCalendarSecondaryView` (`displayMode: 'days' | 'months' | 'time'` + `timeEditTarget: 'primary' | 'rangeStart' | 'rangeEnd'`) 로 상태 일원화. 각 Mode 컴포넌트가 `displayMode` 로 분기 렌더
 7. ✅ `Calendar.MonthPicker` — 6×2 월 그리드, 연도 헤더 단축 표기, 선택된 월(없으면 현재 viewport 월) 을 스크롤 중앙 정렬, 원형 accent pip
 8. ✅ `Calendar.TimeInput` — 과거의 wheel/scroll/rAF commit 로직을 걷어내고 **두 경로만**: 클릭 시 숫자 직접 타이핑(input 치환 + focus/select) + 동시에 `openTimeView(target)` 로 time 보조 뷰 전환. hover/active/focus-within 스타일은 part 단위 scope + accent 배경 대비를 살린 반투명 토큰으로 정리
-9. ✅ `Calendar.TimeSelectView` + `Calendar.TimeScrollPicker` — 세로 스크롤 + 무한 loop (REPEAT×N 복제 + silent jump) + **클릭 commit** 분리. active pip 은 아이템 자체에 붙어 스크롤과 함께 이동 (중앙 고정 pip 은 의도적으로 사용 안 함). scroll-snap 없이 자유 스크롤 + 관성. 뷰포트 중앙 오프셋은 런타임 계산이라 프레임 높이가 유연하게 남는 세로 공간 전체로 확장됨
+9. ✅ `Calendar.TimePicker` + `Calendar.TimeScrollPicker` — 세로 스크롤 + 무한 loop (REPEAT×N 복제 + silent jump) + **클릭 commit** 분리. active pip 은 아이템 자체에 붙어 스크롤과 함께 이동 (중앙 고정 pip 은 의도적으로 사용 안 함). scroll-snap 없이 자유 스크롤 + 관성. 뷰포트 중앙 오프셋은 런타임 계산이라 프레임 높이가 유연하게 남는 세로 공간 전체로 확장됨
 10. ✅ Minute granularity 는 **뷰 필터** — 체크박스 레이블은 "5분 단위로 보기"(기본 체크). 진입 시 선택된 minute 이 5의 배수가 아니면 자동 해제해 현재 값이 가려지지 않게 한다. 체크 시 `values` 목록에 현재 값이 없으면 active pip 표시는 사라지되 내부 값은 유지 (= 커밋 아님)
 11. ✅ `includeTime` 은 single/multiple/range 모두에서 동작. range 는 start/end 두 쌍의 H/M 피커를 좌우로 배치
 

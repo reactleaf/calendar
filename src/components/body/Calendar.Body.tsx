@@ -1,4 +1,4 @@
-import type { CalendarProps } from '../core'
+import type { CalendarProps } from '../../core'
 import { CalendarMultipleMode } from './Calendar.MultipleMode'
 import { CalendarRangeMode } from './Calendar.RangeMode'
 import { CalendarSingleMode } from './Calendar.SingleMode'

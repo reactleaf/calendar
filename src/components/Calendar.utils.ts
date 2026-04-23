@@ -58,8 +58,19 @@ export function monthsInclusiveCount(minMonth: Temporal.PlainYearMonth, maxMonth
   return (maxMonth.year - minMonth.year) * 12 + (maxMonth.month - minMonth.month) + 1
 }
 
+/**
+ * `Temporal.PlainYearMonth.add({ months })` 대신 숫자 산술로 목표 연/월을 계산한다.
+ * 가상화 경로처럼 동일 기준 월에서 대량 호출될 때 polyfill 오버헤드를 줄이기 위한 fast path.
+ */
+export function plainYearMonthAt(baseYear: number, baseMonth: number, offsetMonths: number): Temporal.PlainYearMonth {
+  const totalMonths = baseYear * 12 + (baseMonth - 1) + offsetMonths
+  const year = Math.floor(totalMonths / 12)
+  const month = totalMonths - year * 12 + 1
+  return Temporal.PlainYearMonth.from({ year, month })
+}
+
 export function monthAtOffset(minMonth: Temporal.PlainYearMonth, index: number): Temporal.PlainYearMonth {
-  return minMonth.add({ months: index })
+  return plainYearMonthAt(minMonth.year, minMonth.month, index)
 }
 
 export function monthIndexFromMin(minMonth: Temporal.PlainYearMonth, month: Temporal.PlainYearMonth): number {

@@ -32,10 +32,18 @@ function pickerItem(
   return btn
 }
 
-/** 섹션 내 특정 축(hour/minute) 피커의 "고유" 값 개수. 복제본(REPEAT)이 있으므로 Set 으로 de-dup. */
-function uniqueAxisValueCount(container: HTMLElement, section: string, axis: 'hour' | 'minute'): number {
-  const list = container.querySelector<HTMLElement>(`[data-time-section="${section}"] [data-time-axis="${axis}"]`)
-  if (!list) throw new Error(`${axis} listbox not found in section ${section}`)
+/**
+ * `aria-label={`${ariaLabelPrefix} 선택`}` listbox(스크롤 열)의 고유 옵션 값 개수.
+ * 복제본(REPEAT)이 있으므로 Set 으로 de-dup.
+ */
+function uniqueListboxValueCount(
+  container: HTMLElement,
+  section: 'primary' | 'rangeStart' | 'rangeEnd',
+  listboxAccessibleName: string,
+): number {
+  const sectionEl = container.querySelector<HTMLElement>(`[data-time-section="${section}"]`)
+  if (!sectionEl) throw new Error(`section "${section}" not found`)
+  const list = within(sectionEl).getByRole('listbox', { name: listboxAccessibleName })
   const buttons = list.querySelectorAll<HTMLElement>('button.calendar__timeScrollItem')
   return new Set(Array.from(buttons).map((b) => b.getAttribute('data-time-value'))).size
 }
@@ -115,11 +123,11 @@ describe('Calendar includeTime', () => {
 
     const toggle = getByLabelText('5분 단위로 보기') as HTMLInputElement
     expect(toggle.checked).toBe(true)
-    expect(uniqueAxisValueCount(container, 'primary', 'minute')).toBe(12)
+    expect(uniqueListboxValueCount(container, 'primary', 'minute 선택')).toBe(12)
 
     fireEvent.click(toggle)
     expect(toggle.checked).toBe(false)
-    expect(uniqueAxisValueCount(container, 'primary', 'minute')).toBe(60)
+    expect(uniqueListboxValueCount(container, 'primary', 'minute 선택')).toBe(60)
   })
 
   it('"5분 단위로 보기" 토글은 뷰 필터 — 체크해도 선택값은 유지되고, 값이 노출 목록에 없으면 active 표시가 사라진다', async () => {
@@ -147,9 +155,8 @@ describe('Calendar includeTime', () => {
     fireEvent.click(getByLabelText('to hour value'))
 
     // 진입 시 값이 5 배수가 아니므로 "5분 단위로 보기"는 자동 해제(fine) — 33 에 active 존재
-    const endMinuteList = container.querySelector<HTMLElement>(
-      '[data-time-section="rangeEnd"] [data-time-axis="minute"]',
-    )!
+    const rangeEndSection = container.querySelector<HTMLElement>('[data-time-section="rangeEnd"]')!
+    const endMinuteList = within(rangeEndSection).getByRole('listbox', { name: 'to minute 선택' })
     expect(endMinuteList.querySelector('button.calendar__timeScrollItem.is-active[data-time-value="33"]')).toBeTruthy()
 
     // 사용자가 "5분 단위로 보기"를 체크 → coarse 필터 적용
@@ -162,13 +169,11 @@ describe('Calendar includeTime', () => {
     expect(onSelectSpy).not.toHaveBeenCalled()
 
     // 노출 목록에 33 이 없으므로 어느 slot 도 active 표시되지 않아야 한다 (뷰 필터)
-    const endMinuteListAfter = container.querySelector<HTMLElement>(
-      '[data-time-section="rangeEnd"] [data-time-axis="minute"]',
-    )!
+    const endMinuteListAfter = within(rangeEndSection).getByRole('listbox', { name: 'to minute 선택' })
     expect(endMinuteListAfter.querySelectorAll('button.calendar__timeScrollItem.is-active').length).toBe(0)
 
     // 반면, 종료 시(hour=13)는 hour 목록에 그대로 있으므로 active 는 유지된다
-    const endHourList = container.querySelector<HTMLElement>('[data-time-section="rangeEnd"] [data-time-axis="hour"]')!
+    const endHourList = within(rangeEndSection).getByRole('listbox', { name: 'to hour 선택' })
     expect(endHourList.querySelector('button.calendar__timeScrollItem.is-active[data-time-value="13"]')).toBeTruthy()
   })
 
@@ -186,7 +191,7 @@ describe('Calendar includeTime', () => {
     const toggle = getByLabelText('5분 단위로 보기') as HTMLInputElement
     expect(toggle.checked).toBe(false)
     // fine 뷰이므로 분 피커에 60 개의 고유 값이 렌더된다.
-    expect(uniqueAxisValueCount(container, 'rangeEnd', 'minute')).toBe(60)
+    expect(uniqueListboxValueCount(container, 'rangeEnd', 'to minute 선택')).toBe(60)
   })
 
   it('range 모드에서 time view 는 시작/종료 두 섹션을 보여주고, 각 섹션은 독립적으로 편집된다', async () => {

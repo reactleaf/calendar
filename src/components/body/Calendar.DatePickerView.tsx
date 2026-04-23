@@ -2,20 +2,20 @@ import { Temporal } from '@js-temporal/polyfill'
 import { clsx } from 'clsx'
 import type { UIEvent } from 'react'
 import { forwardRef, memo, useCallback, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { CalendarMessages, CalendarMode } from '../core/api.types'
-import type { WeekStartsOn } from '../core/monthGrid'
-import { useCalendarKeyboardNavigation } from '../hooks/useCalendarKeyboardNavigation'
-import { useInfiniteMonthScroll } from '../hooks/useInfiniteMonthScroll'
-import { useSuppressMonthOverlayOnReturnToDays } from '../hooks/useSuppressMonthOverlayOnReturnToDays'
-import { useCalendarContext } from './Calendar.context'
-import { buildMonthRowRenderInfo, calculateCellState } from './Calendar.DatePicker.utils'
+import type { CalendarMessages, CalendarMode } from '../../core/api.types'
+import type { WeekStartsOn } from '../../core/monthGrid'
+import { useCalendarKeyboardNavigation } from '../../hooks/useCalendarKeyboardNavigation'
+import { useInfiniteMonthScroll } from '../../hooks/useInfiniteMonthScroll'
+import { useSuppressMonthOverlayOnReturnToDays } from '../../hooks/useSuppressMonthOverlayOnReturnToDays'
+import { useCalendarContext } from '../Calendar.context'
+import { buildMonthRowRenderInfo, calculateCellState } from './Calendar.DatePickerView.utils'
 import { CalendarDayCell } from './Calendar.DayCell'
 import { CalendarTodayButton } from './Calendar.TodayButton'
-import type { CalendarDisplayMode, CalendarViewportHandle, DateViewportPlacement } from './Calendar.types'
-import { monthAtOffset, monthLabel, monthRows, monthShortLabel } from './Calendar.utils'
+import type { CalendarDisplayMode, CalendarViewportHandle, DateViewportPlacement } from '../Calendar.types'
+import { monthLabel, monthRows, monthShortLabel, plainYearMonthAt } from '../Calendar.utils'
 import { CalendarWeekdays } from './Calendar.Weekdays'
 
-interface CalendarDatePickerProps {
+interface CalendarDatePickerViewProps {
   mode: CalendarMode
   locale: string
   weekStartsOn: WeekStartsOn
@@ -45,7 +45,7 @@ interface CalendarMonthRowProps {
   index: number
 }
 
-const CalendarDatePicker = forwardRef<CalendarViewportHandle, CalendarDatePickerProps>(function CalendarDatePicker({
+const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePickerViewProps>(function CalendarDatePickerView({
   mode,
   locale,
   weekStartsOn,
@@ -64,8 +64,10 @@ const CalendarDatePicker = forwardRef<CalendarViewportHandle, CalendarDatePicker
   selectDate,
   previewDate,
   isDateDisabled,
-}: CalendarDatePickerProps, ref) {
+}: CalendarDatePickerViewProps, ref) {
   const { today } = useCalendarContext()
+  const minMonthYear = minMonth.year
+  const minMonthMonth = minMonth.month
   const overlaySuppressUntilRef = useRef(0)
   const [viewportRevision, setViewportRevision] = useState(0)
   const [todayPlacement, setTodayPlacement] = useState<DateViewportPlacement | null>(null)
@@ -179,7 +181,7 @@ const CalendarDatePicker = forwardRef<CalendarViewportHandle, CalendarDatePicker
       >
         <div className="calendar__virtualMonths" style={{ height: totalSize, position: 'relative', width: '100%' }}>
           {virtualItems.map((vi) => {
-            const month = monthAtOffset(minMonth, vi.index)
+            const month = plainYearMonthAt(minMonthYear, minMonthMonth, vi.index)
             const hasPrevious = vi.index > 0
 
             return (
@@ -297,4 +299,4 @@ function CalendarMonthRow({ month, idPrefix, onDateHover, onDateClick, isDateDis
   )
 }
 
-export default memo(CalendarDatePicker)
+export default memo(CalendarDatePickerView)

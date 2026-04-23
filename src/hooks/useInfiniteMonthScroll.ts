@@ -9,11 +9,11 @@ import {
   DEFAULT_CALENDAR_ROW_HEIGHT_PX,
   compareMonth,
   estimateMonthBlockHeightPx,
-  monthAtOffset,
   monthIndexFromMin,
   monthKey,
   monthRows,
   monthsInclusiveCount,
+  plainYearMonthAt,
   weekdayLabels,
 } from '../components/Calendar.utils'
 
@@ -66,14 +66,15 @@ function readCalendarRowHeightPx(scrollElement: HTMLDivElement | null): number {
 }
 
 function sumEstimatedMonthHeightsBefore(
-  minMonth: Temporal.PlainYearMonth,
+  minMonthYear: number,
+  minMonthMonth: number,
   endIndex: number,
   weekStartsOn: WeekStartsOn,
   rowHeightPx: number,
 ): number {
   let acc = 0
   for (let i = 0; i < endIndex; i += 1) {
-    acc += estimateMonthBlockHeightPx(monthAtOffset(minMonth, i), i, weekStartsOn, rowHeightPx)
+    acc += estimateMonthBlockHeightPx(plainYearMonthAt(minMonthYear, minMonthMonth, i), i, weekStartsOn, rowHeightPx)
   }
   return acc
 }
@@ -98,19 +99,22 @@ export interface InfiniteMonthScrollRuntime {
 
 export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): InfiniteMonthScrollRuntime {
   const { locale, weekStartsOn, initialMonth, minMonth, maxMonth, onMonthChange, overlaySuppressUntilRef } = args
+  const minMonthYear = minMonth.year
+  const minMonthMonth = minMonth.month
 
   const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
   const [rowHeightPx, setRowHeightPx] = useState(DEFAULT_CALENDAR_ROW_HEIGHT_PX)
   const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
   const initialOffset = useMemo(() => {
     const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
-    const offset = sumEstimatedMonthHeightsBefore(minMonth, clamped, weekStartsOn, rowHeightPx)
+    const offset = sumEstimatedMonthHeightsBefore(minMonthYear, minMonthMonth, clamped, weekStartsOn, rowHeightPx)
     return Math.max(0, offset - 12)
-  }, [initialMonthIndex, minMonth, monthCount, rowHeightPx, weekStartsOn])
+  }, [initialMonthIndex, minMonthMonth, minMonthYear, monthCount, rowHeightPx, weekStartsOn])
 
   const estimateSize = useCallback(
-    (index: number) => estimateMonthBlockHeightPx(monthAtOffset(minMonth, index), index, weekStartsOn, rowHeightPx),
-    [minMonth, rowHeightPx, weekStartsOn],
+    (index: number) =>
+      estimateMonthBlockHeightPx(plainYearMonthAt(minMonthYear, minMonthMonth, index), index, weekStartsOn, rowHeightPx),
+    [minMonthMonth, minMonthYear, rowHeightPx, weekStartsOn],
   )
 
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
@@ -143,7 +147,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
     initialOffset,
     estimateSize,
     overscan: 4,
-    getItemKey: (index) => monthKey(monthAtOffset(minMonth, index)),
+    getItemKey: (index) => monthKey(plainYearMonthAt(minMonthYear, minMonthMonth, index)),
     observeElementRect,
   })
 
@@ -191,9 +195,9 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (virtualItem) return virtualItem.start
       const offset = v.getOffsetForIndex(monthIndex, 'start')
       if (offset) return offset[0]
-      return sumEstimatedMonthHeightsBefore(minMonth, monthIndex, weekStartsOn, rowHeightPx)
+      return sumEstimatedMonthHeightsBefore(minMonthYear, minMonthMonth, monthIndex, weekStartsOn, rowHeightPx)
     },
-    [minMonth, rowHeightPx, weekStartsOn],
+    [minMonthMonth, minMonthYear, rowHeightPx, weekStartsOn],
   )
 
   const getDateViewportPlacement = useCallback(
@@ -264,11 +268,11 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       const centerOffset = scrollTop + clientHeight / 2
       const item = v.getVirtualItemForOffset(centerOffset)
       if (item) {
-        const next = monthAtOffset(minMonth, item.index)
+        const next = plainYearMonthAt(minMonthYear, minMonthMonth, item.index)
         setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(next, prev) !== 0 ? next : prev))
       }
     },
-    [minMonth, overlaySuppressUntilRef],
+    [minMonthMonth, minMonthYear, overlaySuppressUntilRef],
   )
 
   return {

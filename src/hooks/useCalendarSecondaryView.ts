@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import type { CalendarDisplayMode, CalendarTimeEditTarget } from '../components/Calendar.types'
 
 /**
- * Secondary view(보조 뷰) 상태 + DatePicker 로 전달할 scroll request 를 관리하는 훅.
+ * Secondary view(보조 뷰) 상태 + DatePickerView 로 전달할 scroll request 를 관리하는 훅.
  *
  * single / multiple / range runtime 훅 세 곳에서 동일 로직이 필요해 분리했다.
  * `'months'`, `'time'` 양쪽 보조 뷰를 전부 여기서 관리한다.

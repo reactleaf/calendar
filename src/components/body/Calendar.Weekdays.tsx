@@ -1,4 +1,4 @@
-import { useCalendarContext } from './Calendar.context'
+import { useCalendarContext } from '../Calendar.context'
 
 /**
  * 요일 헤더. `displayMode === 'days'` 일 때만 노출된다.

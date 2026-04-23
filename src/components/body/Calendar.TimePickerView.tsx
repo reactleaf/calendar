@@ -1,12 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { toPlainDate, toSelectionValue } from '../core/calendarDate'
-import type { DateValue } from '../core/api.types'
-import { useCalendarContext } from './Calendar.context'
-import type { CalendarRuntime } from './Calendar.types'
-import { CalendarTimeScrollPicker } from './Calendar.TimeScrollPicker'
-import type { CalendarTimeEditTarget } from './Calendar.types'
+import { toPlainDate, toSelectionValue } from '../../core/calendarDate'
+import type { DateValue } from '../../core/api.types'
+import { useCalendarContext } from '../Calendar.context'
+import type { CalendarRuntime } from '../Calendar.types'
+import { CalendarScrollPicker } from './Calendar.ScrollPicker'
+import type { CalendarTimeEditTarget } from '../Calendar.types'
 
 /**
  * 시간 선택 보조 뷰(`displayMode === 'time'`).
@@ -16,7 +16,7 @@ import type { CalendarTimeEditTarget } from './Calendar.types'
  *  - single / multiple : 한 쌍의 피커 (hour · minute)
  *  - range            : 두 쌍 (시작 / 종료) 각각에 hour · minute 피커
  *
- * 각 피커는 `CalendarTimeScrollPicker` — iOS 풍 세로 스크롤 + snap + 클릭 commit.
+ * 각 피커는 `CalendarScrollPicker` — iOS 풍 세로 스크롤 + snap + 클릭 commit.
  * 시각 언어(중앙 원형 pip)는 day cell / month picker 와 일관.
  *
  * 복귀 경로
@@ -101,7 +101,7 @@ function needsFineGranularity(sections: SectionTime[]): boolean {
   return sections.some((s) => s.value !== null && s.value.minute % 5 !== 0)
 }
 
-export function CalendarTimeSelectView() {
+export function CalendarTimePickerView() {
   const { mode, selection, displayMode, setDisplayMode, timeEditTarget, selectionSnapshot, rangeHeaderValue } =
     useCalendarContext()
 
@@ -243,14 +243,13 @@ export function CalendarTimeSelectView() {
                   <div className="calendar__timeSelectSectionEmpty">—</div>
                 ) : (
                   <div className="calendar__timeSelectPickers">
-                    <CalendarTimeScrollPicker
+                    <CalendarScrollPicker
                       values={hourOptions}
                       currentValue={section.value?.hour ?? null}
                       pad={2}
                       onPick={(h) => commitHour(section.target, section.value, h)}
                       ariaLabelPrefix={section.ariaHour}
                       columnLabel="H"
-                      axis="hour"
                     />
                     {/*
                       granularity 가 바뀌면 minute picker 의 `values` 길이가 12↔60 으로 달라지는데,
@@ -260,7 +259,7 @@ export function CalendarTimeSelectView() {
                       **현재 시간값을 중앙 slot 에 재정렬**한다. 값 자체는 context 상에서 그대로
                       유지되므로 commit 은 발생하지 않는다.
                     */}
-                    <CalendarTimeScrollPicker
+                    <CalendarScrollPicker
                       key={`minute-${minuteStepUi}`}
                       values={minuteOptions}
                       currentValue={section.value?.minute ?? null}
@@ -268,7 +267,6 @@ export function CalendarTimeSelectView() {
                       onPick={(m) => commitMinute(section.target, section.value, m)}
                       ariaLabelPrefix={section.ariaMinute}
                       columnLabel="M"
-                      axis="minute"
                     />
                   </div>
                 )}

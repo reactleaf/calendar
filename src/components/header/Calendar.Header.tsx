@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode } from 'react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { CalendarMessages, DateValue } from '../core/api.types'
-import { toPlainDate, toSelectionValue } from '../core/calendarDate'
-import { useCalendarContext, useCalendarViewportHandle } from './Calendar.context'
+import type { CalendarMessages, DateValue } from '../../core/api.types'
+import { toPlainDate, toSelectionValue } from '../../core/calendarDate'
+import { useCalendarContext, useCalendarViewportHandle } from '../Calendar.context'
 import { CalendarTimeInput } from './Calendar.TimeInput'
-import type { CalendarSelectionSnapshot } from './Calendar.types'
+import type { CalendarSelectionSnapshot } from '../Calendar.types'
 
 interface CalendarHeaderProps {
   className?: string

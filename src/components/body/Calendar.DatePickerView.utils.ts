@@ -1,8 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
-import { toPlainDate } from '../core/calendarDate'
+import type { CalendarMode, CalendarRangeValue, DateValue } from '../../core/api.types'
+import { toPlainDate } from '../../core/calendarDate'
 import type { CalendarDayCellState } from './Calendar.DayCell'
-import type { CalendarSelectionSnapshot } from './Calendar.types'
+import type { CalendarSelectionSnapshot } from '../Calendar.types'
 
 export interface RangeRenderInfo {
   committedStartKey: string | null

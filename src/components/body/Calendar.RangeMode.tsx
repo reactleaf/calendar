@@ -1,9 +1,9 @@
 import type { Temporal } from '@js-temporal/polyfill'
 import { startTransition, useCallback } from 'react'
-import { useCalendarContext, useCalendarViewportHandle } from './Calendar.context'
-import CalendarDatePicker from './Calendar.DatePicker'
-import { CalendarMonthPicker } from './Calendar.MonthPicker'
-import { CalendarTimeSelectView } from './Calendar.TimeSelectView'
+import { useCalendarContext, useCalendarViewportHandle } from '../Calendar.context'
+import CalendarDatePickerView from './Calendar.DatePickerView'
+import { CalendarMonthPickerView } from './Calendar.MonthPickerView'
+import { CalendarTimePickerView } from './Calendar.TimePickerView'
 
 export function CalendarRangeMode() {
   const runtime = useCalendarContext()
@@ -40,7 +40,7 @@ export function CalendarRangeMode() {
 
   return (
     <>
-      <CalendarDatePicker
+      <CalendarDatePickerView
         ref={viewportHandle}
         mode={mode}
         locale={locale}
@@ -61,8 +61,8 @@ export function CalendarRangeMode() {
         previewDate={previewDate}
         isDateDisabled={isDateDisabled}
       />
-      {displayMode === 'months' ? <CalendarMonthPicker /> : null}
-      {displayMode === 'time' ? <CalendarTimeSelectView /> : null}
+      {displayMode === 'months' ? <CalendarMonthPickerView /> : null}
+      {displayMode === 'time' ? <CalendarTimePickerView /> : null}
     </>
   )
 }

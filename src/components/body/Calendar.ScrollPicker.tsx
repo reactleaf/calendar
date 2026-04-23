@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef } from 'react'
 
 /**
- * 세로 스크롤 방식의 시간 단위 피커 (hour 또는 minute 단일 축).
+ * 세로 스크롤 방식의 정수 슬롯 피커(단일 열, 무한 루프). 시간 UI에서 시·분 등에 사용한다.
  *
  * 동작 원칙 (v2)
  *  - 값 리스트를 `REPEAT` 회 복제해 렌더하고, 스크롤이 경계 근처에 닿으면 동일한 slot 위치로
@@ -23,24 +23,22 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
  *
  * a11y / 테스트
  *  - 각 아이템: `role="option"`, `aria-label={`${ariaLabelPrefix} ${value}`}`, `data-time-value`
- *  - 스크롤 컨테이너: `role="listbox"`, `aria-label={`${ariaLabelPrefix} 선택`}`, `data-time-axis`
+ *  - 스크롤 컨테이너: `role="listbox"`, `id`(useId), `aria-label={`${ariaLabelPrefix} 선택`}`
  *  - 복제본이 존재하므로 aria-label 이 동일한 option 이 `REPEAT` 개 있을 수 있음. 검색 시
  *    `getAllByRole` 또는 unique 값 기반 Set 으로 카운트할 것.
  */
-interface CalendarTimeScrollPickerProps {
+interface CalendarScrollPickerProps {
   /** 노출할 값 목록. 이미 step 이 적용된 오름차순 정수 배열. */
   values: number[]
   /** 현재 선택된 값. 리스트에 없는 값이면 가장 가까운 값이 active. */
   currentValue: number | null
-  /** 자리수 패딩 (hour/minute 모두 2) */
+  /** 자리수 패딩 (예: 시·분 2자리) */
   pad: number
   onPick: (next: number) => void
   /** a11y prefix — 예: "from hour", "hour" */
   ariaLabelPrefix: string
   /** 섹션 내부 시각 라벨 (예: "H", "M") */
   columnLabel: string
-  /** 테스트/스타일 쿼리용 축 식별자 */
-  axis: 'hour' | 'minute'
 }
 
 const ITEM_HEIGHT_REM = 2
@@ -65,15 +63,15 @@ function nearestIndex(values: number[], value: number | null): number {
   return best
 }
 
-export function CalendarTimeScrollPicker({
+export function CalendarScrollPicker({
   values,
   currentValue,
   pad,
   onPick,
   ariaLabelPrefix,
   columnLabel,
-  axis,
-}: CalendarTimeScrollPickerProps) {
+}: CalendarScrollPickerProps) {
+  const listboxId = useId()
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const itemHeightPxRef = useRef<number>(0)
   /** 프로그램에 의한 scrollTop 설정 중에는 `handleScroll` 의 경계 로직을 건너뛴다. */
@@ -153,7 +151,7 @@ export function CalendarTimeScrollPicker({
    *
    * **왜 viewport-aware 한 경계가 필요한가**
    *   frame 을 `flex: 1` 로 확장한 이후 `visibleRows` 가 동적으로 커졌고, 특히
-   *   N 이 작은 축(hour=24)에서 예전의 `currentIdx` 기반 상수 경계(`2.5N`)는
+   *   N 이 작은 열(예: 24슬롯)에서 예전의 `currentIdx` 기반 상수 경계(`2.5N`)는
    *   `maxScrollTop = 3N - visibleRows` 보다 커져 **하단 jump 가 영원히 트리거되지 않는** 문제가 있었다.
    *   또한 경계를 정직하게 "중앙 사이클 테두리(`N / 2N`)"로만 두면, `visibleRows > N - visibleRows`
    *   인 축에서 jump 후 바로 반대 경계를 침범해 ping-pong 이 생긴다.
@@ -245,12 +243,12 @@ export function CalendarTimeScrollPicker({
           스크롤에 따라 함께 움직여야 사용자의 멘탈 모델과 일치한다. (아래 item pip 참고)
         */}
         <div
+          id={listboxId}
           ref={scrollRef}
           className="calendar__timeScrollPickerScroll"
           onScroll={handleScroll}
           role="listbox"
           aria-label={`${ariaLabelPrefix} 선택`}
-          data-time-axis={axis}
         >
           {items.map(({ value, originalIdx, absIdx, key }) => {
             const isActive = hasActive && originalIdx === exactActiveIdx

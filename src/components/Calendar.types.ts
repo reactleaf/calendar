@@ -61,9 +61,9 @@ export interface CalendarRuntime {
   maxDay: Temporal.PlainDate
   focusedDate: Temporal.PlainDate
   today: Temporal.PlainDate
-  /** 현재 뷰포트 중앙에 있는 월 — Header / MonthPicker fallback 소스 */
+  /** 현재 뷰포트 중앙에 있는 월 — Header / MonthPickerView fallback 소스 */
   currentMonth: Temporal.PlainYearMonth
-  /** DatePicker 가 scroll 결과를 runtime state 에 반영하는 내부 setter */
+  /** DatePickerView 가 scroll 결과를 runtime state 에 반영하는 내부 setter */
   setCurrentMonth: (month: Temporal.PlainYearMonth) => void
   /** 보조 뷰 전환 상태 (days/months/time) */
   displayMode: CalendarDisplayMode
