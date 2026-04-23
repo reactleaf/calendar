@@ -35,9 +35,11 @@ function formatMultipleListLabel(value: DateValue, locale: string, includeTime: 
   return base
 }
 
-function rangeHeaderGrid(snapshot: Extract<CalendarSelectionSnapshot, { mode: 'range' }>, locale: string) {
-  const startDay = snapshot.value.start ? toPlainDate(snapshot.value.start) : null
-  const endDay = snapshot.value.end ? toPlainDate(snapshot.value.end) : null
+function rangeHeaderGrid(
+  startDay: Temporal.PlainDate | null,
+  endDay: Temporal.PlainDate | null,
+  locale: string,
+) {
   return {
     fromYear: startDay ? String(startDay.year) : '',
     toYear: endDay ? String(endDay.year) : '',
@@ -56,27 +58,20 @@ function labelsFromSnapshot(
 
   switch (snapshot.mode) {
     case 'single': {
-      const v = snapshot.value
-      const selectedDay = v ? toPlainDate(v) : null
+      const selectedDay = snapshot.plain.value
       headerYear = selectedDay ? String(selectedDay.year) : null
       headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.blank
       break
     }
     case 'multiple': {
-      const sorted = [...snapshot.values].sort((a, b) => Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)))
-      const primaryPlain = snapshot.primaryPlainDate
-      const primaryValue =
-        primaryPlain !== null ? snapshot.values.find((v) => toPlainDate(v).equals(primaryPlain)) : null
-      const selectedValue = primaryValue ?? sorted[sorted.length - 1] ?? null
-      const selectedDay = selectedValue ? toPlainDate(selectedValue) : null
+      const selectedDay = snapshot.plain.primary ?? snapshot.plain.values.at(-1) ?? null
       headerYear = selectedDay ? String(selectedDay.year) : null
       headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.blank
       break
     }
     case 'range': {
-      const { start, end } = snapshot.value
-      const startDay = start ? toPlainDate(start) : null
-      const endDay = end ? toPlainDate(end) : null
+      const startDay = snapshot.plain.start
+      const endDay = snapshot.plain.end
       headerYear =
         startDay && endDay
           ? startDay.year === endDay.year
@@ -216,19 +211,28 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   const singleTimeValue = selectionSnapshot.mode === 'single' ? resolveEditorDateTime(selectionSnapshot.value) : null
   const multipleLatestTime = useMemo(() => {
     if (selectionSnapshot.mode !== 'multiple') return null
-    const sorted = [...selectionSnapshot.values].sort((a, b) =>
-      Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
-    )
-    const primaryPlain = selectionSnapshot.primaryPlainDate
-    const primary =
-      primaryPlain !== null ? selectionSnapshot.values.find((v) => toPlainDate(v).equals(primaryPlain)) : null
-    const value = primary ?? sorted[sorted.length - 1] ?? null
+    const entries = selectionSnapshot.values.map((value, index) => ({
+      value,
+      plain: selectionSnapshot.plain.values[index] ?? toPlainDate(value),
+    }))
+    entries.sort((a, b) => Temporal.PlainDate.compare(a.plain, b.plain))
+    const primaryIndex =
+      selectionSnapshot.plain.primary === null
+        ? -1
+        : selectionSnapshot.plain.values.findIndex((value) => value.equals(selectionSnapshot.plain.primary!))
+    const value = (primaryIndex >= 0 ? selectionSnapshot.values[primaryIndex] : null) ?? entries.at(-1)?.value ?? null
     return resolveEditorDateTime(value)
   }, [selectionSnapshot])
 
   const multipleSortedValues = useMemo(() => {
     if (selectionSnapshot.mode !== 'multiple') return []
-    return [...selectionSnapshot.values].sort((a, b) => Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)))
+    return selectionSnapshot.values
+      .map((value, index) => ({
+        value,
+        plain: selectionSnapshot.plain.values[index] ?? toPlainDate(value),
+      }))
+      .sort((a, b) => Temporal.PlainDate.compare(a.plain, b.plain))
+      .map((entry) => entry.value)
   }, [selectionSnapshot])
 
   const rangeHeaderSource =
@@ -238,8 +242,10 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
 
   const rangeGrid = useMemo(() => {
     if (mode !== 'range' || selectionSnapshot.mode !== 'range' || !rangeHeaderSource) return null
-    return rangeHeaderGrid({ mode: 'range', value: rangeHeaderSource }, locale)
-  }, [locale, mode, rangeHeaderSource, selectionSnapshot.mode])
+    const startDay = rangeHeaderSource.start ? toPlainDate(rangeHeaderSource.start) : selectionSnapshot.plain.start
+    const endDay = rangeHeaderSource.end ? toPlainDate(rangeHeaderSource.end) : selectionSnapshot.plain.end
+    return rangeHeaderGrid(startDay, endDay, locale)
+  }, [locale, mode, rangeHeaderSource, selectionSnapshot])
 
   if (children)
     return (

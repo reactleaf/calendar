@@ -3,9 +3,29 @@ import type { CalendarMessages, CalendarMode, CalendarRangeValue, DateValue } fr
 import type { WeekStartsOn } from '../core/monthGrid'
 
 export type CalendarSelectionSnapshot =
-  | { mode: 'single'; value: DateValue | null }
-  | { mode: 'multiple'; values: DateValue[]; primaryPlainDate: Temporal.PlainDate | null }
-  | { mode: 'range'; value: CalendarRangeValue }
+  | {
+      mode: 'single'
+      value: DateValue | null
+      plain: Readonly<{
+        value: Temporal.PlainDate | null
+      }>
+    }
+  | {
+      mode: 'multiple'
+      values: DateValue[]
+      plain: Readonly<{
+        values: readonly Temporal.PlainDate[]
+        primary: Temporal.PlainDate | null
+      }>
+    }
+  | {
+      mode: 'range'
+      value: CalendarRangeValue
+      plain: Readonly<{
+        start: Temporal.PlainDate | null
+        end: Temporal.PlainDate | null
+      }>
+    }
 
 /**
  * 보조 뷰(secondary view) 식별자.

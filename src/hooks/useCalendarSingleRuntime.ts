@@ -89,7 +89,11 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     weekStartsOn,
     messages,
     includeTime,
-    selectionSnapshot: { mode: 'single', value: selection.value },
+    selectionSnapshot: {
+      mode: 'single',
+      value: selection.value,
+      plain: { value: selectedPlain },
+    },
     weekdays,
     keyboardNavigation,
     minDay,

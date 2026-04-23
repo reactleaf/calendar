@@ -57,7 +57,8 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     onSelect,
     maxSelections,
   })
-  const { isSelected, isDisabled, toggleDate, setTimeForPlainDate, value: selectedValues } = rawSelection
+  const { isSelected, isDisabled, toggleDate, setTimeForPlainDate } = rawSelection
+  const selectedPlainValues = useMemo(() => rawSelection.value.map((value) => toPlainDate(value)), [rawSelection.value])
 
   const [primaryPlainDate, setPrimaryPlainDate] = useState<Temporal.PlainDate | null>(() =>
     maxPlainAmong(rawSelection.value),
@@ -65,11 +66,11 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
 
   const selectionPlainKey = useMemo(
     () =>
-      rawSelection.value
-        .map((v) => dayStamp(toPlainDate(v)))
+      selectedPlainValues
+        .map((value) => dayStamp(value))
         .sort()
         .join('|'),
-    [rawSelection.value],
+    [selectedPlainValues],
   )
 
   useLayoutEffect(() => {
@@ -78,17 +79,17 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
       return
     }
     setPrimaryPlainDate((prev) => {
-      if (prev !== null && rawSelection.value.some((v) => toPlainDate(v).equals(prev))) return prev
+      if (prev !== null && selectedPlainValues.some((value) => value.equals(prev))) return prev
       return maxPlainAmong(rawSelection.value)
     })
-  }, [selectionPlainKey, rawSelection.value])
+  }, [rawSelection.value, selectedPlainValues, selectionPlainKey])
 
   const setMultiplePrimaryPlainDate = useCallback(
     (date: Temporal.PlainDate) => {
-      if (!selectedValues.some((v) => toPlainDate(v).equals(date))) return
+      if (!selectedPlainValues.some((value) => value.equals(date))) return
       setPrimaryPlainDate(date)
     },
-    [selectedValues],
+    [selectedPlainValues],
   )
 
   const today = useMemo(() => Temporal.Now.plainDateISO(), [])
@@ -182,7 +183,14 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     weekStartsOn,
     messages,
     includeTime,
-    selectionSnapshot: { mode: 'multiple', values: rawSelection.value, primaryPlainDate },
+    selectionSnapshot: {
+      mode: 'multiple',
+      values: rawSelection.value,
+      plain: {
+        values: selectedPlainValues,
+        primary: primaryPlainDate,
+      },
+    },
     weekdays,
     keyboardNavigation,
     minDay,

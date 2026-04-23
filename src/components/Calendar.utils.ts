@@ -182,20 +182,17 @@ export function getInitialMonth(
 
   switch (selectionSnapshot.mode) {
     case 'single': {
-      const initialDate = selectionSnapshot.value ?? today
-      const clamped = clampDate(initialDate, minDate, maxDate)
-      return toPlainDate(clamped).toPlainYearMonth()
+      const initialDate = selectionSnapshot.plain.value ?? today
+      return clampDate(initialDate, minDate, maxDate).toPlainYearMonth()
     }
     case 'multiple': {
-      const initialDate = selectionSnapshot.values[0] ?? today
-      const clamped = clampDate(initialDate, minDate, maxDate)
-      return toPlainDate(clamped).toPlainYearMonth()
+      const initialDate = selectionSnapshot.plain.values[0] ?? today
+      return clampDate(initialDate, minDate, maxDate).toPlainYearMonth()
     }
 
     case 'range': {
-      const initialDate = selectionSnapshot.value.end ?? today
-      const clamped = clampDate(initialDate, minDate, maxDate)
-      return toPlainDate(clamped).toPlainYearMonth()
+      const initialDate = selectionSnapshot.plain.end ?? today
+      return clampDate(initialDate, minDate, maxDate).toPlainYearMonth()
     }
 
     default:

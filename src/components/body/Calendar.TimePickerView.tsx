@@ -76,13 +76,18 @@ function computeSections(
   let dt: Temporal.PlainDateTime | null = null
   if (selectionSnapshot.mode === 'single') dt = resolveEditorDateTime(selectionSnapshot.value)
   else if (selectionSnapshot.mode === 'multiple') {
-    const sorted = [...selectionSnapshot.values].sort((a, b) =>
-      Temporal.PlainDate.compare(toPlainDate(a), toPlainDate(b)),
+    const entries = selectionSnapshot.values.map((value, index) => ({
+      value,
+      plain: selectionSnapshot.plain.values[index] ?? toPlainDate(value),
+    }))
+    entries.sort((a, b) => Temporal.PlainDate.compare(a.plain, b.plain))
+    const primaryIndex =
+      selectionSnapshot.plain.primary === null
+        ? -1
+        : selectionSnapshot.plain.values.findIndex((value) => value.equals(selectionSnapshot.plain.primary!))
+    dt = resolveEditorDateTime(
+      (primaryIndex >= 0 ? selectionSnapshot.values[primaryIndex] : null) ?? entries.at(-1)?.value ?? null,
     )
-    const primaryPlain = selectionSnapshot.primaryPlainDate
-    const primary =
-      primaryPlain !== null ? selectionSnapshot.values.find((v) => toPlainDate(v).equals(primaryPlain)) : null
-    dt = resolveEditorDateTime(primary ?? sorted[sorted.length - 1] ?? null)
   }
   return [
     {

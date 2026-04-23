@@ -48,6 +48,13 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
   )
   const today = useMemo(() => Temporal.Now.plainDateISO(), [])
   const selectedPlain = rawSelection.value.start ? toPlainDate(rawSelection.value.start) : null
+  const rangePlain = useMemo(
+    () => ({
+      start: rawSelection.value.start ? toPlainDate(rawSelection.value.start) : null,
+      end: rawSelection.value.end ? toPlainDate(rawSelection.value.end) : null,
+    }),
+    [rawSelection.value.end, rawSelection.value.start],
+  )
   const minDay = useMemo(() => (minDate ? toPlainDate(minDate) : DEFAULT_MIN_DATE), [minDate])
   const maxDay = useMemo(() => (maxDate ? toPlainDate(maxDate) : DEFAULT_MAX_DATE), [maxDate])
   const initialDate = clampDate(selectedPlain ?? today, minDay, maxDay)
@@ -92,7 +99,11 @@ export function useCalendarRangeRuntime(props: CalendarRangeProps): CalendarRunt
     includeTime,
     rangeHeaderValue: rawSelection.preview ?? rawSelection.value,
     rangeHeaderPreviewActive: rawSelection.preview != null,
-    selectionSnapshot: { mode: 'range', value: rawSelection.value },
+    selectionSnapshot: {
+      mode: 'range',
+      value: rawSelection.value,
+      plain: rangePlain,
+    },
     weekdays,
     keyboardNavigation,
     minDay,

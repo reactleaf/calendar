@@ -1,7 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { toPlainDate } from '../../core/calendarDate'
 import { useCalendarContext, useCalendarViewportHandle } from '../Calendar.context'
 import { compareMonth, monthShortLabel } from '../Calendar.utils'
 
@@ -53,9 +52,8 @@ export function CalendarMonthPickerView() {
    */
   const { selectedMonthKeys, primarySelectedMonth } = useMemo(() => {
     const keys = new Set<string>()
-    const pushDate = (raw: unknown) => {
-      if (raw === null || raw === undefined) return null
-      const date = toPlainDate(raw as never)
+    const pushDate = (date: Temporal.PlainDate | null) => {
+      if (date === null) return null
       const ym = date.toPlainYearMonth()
       keys.add(`${ym.year}-${ym.month}`)
       return ym
@@ -63,15 +61,15 @@ export function CalendarMonthPickerView() {
 
     let primary: Temporal.PlainYearMonth | null = null
     if (selectionSnapshot.mode === 'single') {
-      primary = pushDate(selectionSnapshot.value) ?? null
+      primary = pushDate(selectionSnapshot.plain.value) ?? null
     } else if (selectionSnapshot.mode === 'multiple') {
-      for (const v of selectionSnapshot.values) {
+      for (const v of selectionSnapshot.plain.values) {
         const ym = pushDate(v)
         if (primary === null && ym !== null) primary = ym
       }
     } else {
-      const startYm = pushDate(selectionSnapshot.value.start)
-      const endYm = pushDate(selectionSnapshot.value.end)
+      const startYm = pushDate(selectionSnapshot.plain.start)
+      const endYm = pushDate(selectionSnapshot.plain.end)
       primary = startYm ?? endYm
     }
     return { selectedMonthKeys: keys, primarySelectedMonth: primary }

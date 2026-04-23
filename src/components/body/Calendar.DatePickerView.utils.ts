@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { CalendarMode, CalendarRangeValue, DateValue } from '../../core/api.types'
+import type { CalendarMode, CalendarRangeValue } from '../../core/api.types'
 import { toPlainDate } from '../../core/calendarDate'
 import type { CalendarDayCellState } from './Calendar.DayCell'
 import type { CalendarSelectionSnapshot } from '../Calendar.types'
@@ -25,8 +25,8 @@ export interface MonthRowRenderInfo {
 
 export type CalendarDayComputedState = Omit<CalendarDayCellState, 'isDisabled' | 'cellIndex'>
 
-function toValueDayKey(value: DateValue | null | undefined): string | null {
-  return value ? toPlainDate(value).toString() : null
+function toPlainDayKey(value: Temporal.PlainDate | null | undefined): string | null {
+  return value ? value.toString() : null
 }
 
 function orderDayKeys(a: string | null, b: string | null): [string | null, string | null] {
@@ -42,11 +42,11 @@ function buildRangeRenderInfo(
 ): RangeRenderInfo | null {
   if (mode !== 'range' || selectionSnapshot.mode !== 'range') return null
 
-  const committedStartKey = toValueDayKey(selectionSnapshot.value.start)
-  const committedEndKey = toValueDayKey(selectionSnapshot.value.end)
+  const committedStartKey = toPlainDayKey(selectionSnapshot.plain.start)
+  const committedEndKey = toPlainDayKey(selectionSnapshot.plain.end)
   const [committedLo, committedHi] = orderDayKeys(committedStartKey, committedEndKey)
-  const renderStartKey = toValueDayKey(rangeHeaderValue?.start)
-  const renderEndKey = toValueDayKey(rangeHeaderValue?.end)
+  const renderStartKey = rangeHeaderValue?.start ? toPlainDate(rangeHeaderValue.start).toString() : committedStartKey
+  const renderEndKey = rangeHeaderValue?.end ? toPlainDate(rangeHeaderValue.end).toString() : committedEndKey
   const previewActive = rangeHeaderPreviewActive === true
   const [previewLo, previewHi] = previewActive ? orderDayKeys(renderStartKey, renderEndKey) : [null, null]
 
@@ -70,14 +70,14 @@ export function buildMonthRowRenderInfo(
   rangeHeaderPreviewActive: boolean | undefined,
 ): MonthRowRenderInfo {
   return {
-    singleSelectedDayKey: selectionSnapshot.mode === 'single' ? toValueDayKey(selectionSnapshot.value) : null,
+    singleSelectedDayKey: selectionSnapshot.mode === 'single' ? toPlainDayKey(selectionSnapshot.plain.value) : null,
     multiplePrimaryDayKey:
-      selectionSnapshot.mode === 'multiple' && selectionSnapshot.primaryPlainDate !== null
-        ? selectionSnapshot.primaryPlainDate.toString()
+      selectionSnapshot.mode === 'multiple' && selectionSnapshot.plain.primary !== null
+        ? selectionSnapshot.plain.primary.toString()
         : null,
     multipleSelectedDayKeys:
       selectionSnapshot.mode === 'multiple'
-        ? new Set(selectionSnapshot.values.map((value) => toPlainDate(value).toString()))
+        ? new Set(selectionSnapshot.plain.values.map((value) => value.toString()))
         : null,
     range: buildRangeRenderInfo(mode, selectionSnapshot, rangeHeaderValue, rangeHeaderPreviewActive),
   }

@@ -12,6 +12,7 @@
 - 공개 API에서 **`minuteStep` prop 제거** (2026-04): 분 스텝은 시간 보조 뷰 UI(예: 5분 단위 표시 토글)로만 다루고, 캘린더 루트 props에는 두지 않는다.
 - 선택 모드 공개 API는 `mode` 기반 variant로 통일한다: `single | multiple | range`.
 - 핵심 상태 로직은 headless hook으로 분리한다: `useCalendarState`, `useSingleSelection`, `useMultipleSelection`, `useRangeSelection`, `useCalendarKeyboard` (+ 모드별 런타임 hook `useCalendarSingleRuntime` / `useCalendarMultipleRuntime` / `useCalendarRangeRuntime`, 보조 뷰 상태 hook `useCalendarSecondaryView`).
+- runtime snapshot 은 raw `DateValue` 외에 읽기 전용 `PlainDate` 파생 필드(`selectionSnapshot.plain`)를 함께 제공한다. 렌더 계층은 가능하면 이 plain 필드를 소비한다.
 - UI 확장 지점은 compound 컴포넌트로 제공한다: `Calendar.Root`, `Calendar.Header`, `Calendar.Weekdays`, `Calendar.SingleMode` / `Calendar.MultipleMode` / `Calendar.RangeMode`, `Calendar.MonthPicker`, `Calendar.TimePicker` (+ 편의 facade `Calendar`).
 - 구 API(HOC)는 제공하지 않는다.
 - 본문 영역 치수는 토큰으로 고정: `--calendar-body-height`, `--calendar-weekdays-height`, `--calendar-secondary-body-height`. days / month / time 뷰 간 전환 시 카드 외곽 높이가 변하지 않는다.
@@ -53,6 +54,7 @@
 4. ✅ `useRangeSelection` (+ `preview` / `onRangePreview`, `setRangeTime(edge)`)
 5. ✅ `useCalendarKeyboard` — 화살표 + `Enter`/`Space` 최소 집합 (`Home`/`End`/`PageUp`/`PageDown` 미지원으로 확정)
 6. ✅ 모드별 runtime hook — `useCalendarSingleRuntime` / `useCalendarMultipleRuntime` / `useCalendarRangeRuntime` (compound가 소비)
+   - `selectionSnapshot.plain` 을 함께 채워 render 계층의 `toPlainDate()` 의존을 줄임
 7. ✅ hook 테스트 (`useSingleSelection.test.tsx`, `useMultipleSelection.test.tsx`, `useRangeSelection.test.tsx`)
 
 ### Phase 4. UI Layer (Compound) ✅
@@ -68,6 +70,7 @@
 9. ✅ `Calendar.TimePicker` + `Calendar.TimeScrollPicker` — 세로 스크롤 + 무한 loop (REPEAT×N 복제 + silent jump) + **클릭 commit** 분리. active pip 은 아이템 자체에 붙어 스크롤과 함께 이동 (중앙 고정 pip 은 의도적으로 사용 안 함). scroll-snap 없이 자유 스크롤 + 관성. 뷰포트 중앙 오프셋은 런타임 계산이라 프레임 높이가 유연하게 남는 세로 공간 전체로 확장됨
 10. ✅ Minute granularity 는 **뷰 필터** — 체크박스 레이블은 "5분 단위로 보기"(기본 체크). 진입 시 선택된 minute 이 5의 배수가 아니면 자동 해제해 현재 값이 가려지지 않게 한다. 체크 시 `values` 목록에 현재 값이 없으면 active pip 표시는 사라지되 내부 값은 유지 (= 커밋 아님)
 11. ✅ `includeTime` 은 single/multiple/range 모두에서 동작. range 는 start/end 두 쌍의 H/M 피커를 좌우로 배치
+12. ✅ `Header` / `DatePicker` / `MonthPicker` / `TimePicker` 는 가능한 범위에서 `selectionSnapshot.plain` 기반으로 렌더
 
 ### Phase 5. Accessibility & Interaction Hardening 🚧
 
@@ -99,6 +102,7 @@
 4. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 계약 + 새 ARIA 계약(`role="grid"` / `aria-activedescendant` / `aria-selected`) 반영
 5. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
 6. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
+7. `toPlainDate()` 정리 2단계: `useMultipleSelection` / `useRangeSelection` 내부 비교/토글 경로를 plain 중심으로 재구성
 
 ## Risks & Mitigations
 
