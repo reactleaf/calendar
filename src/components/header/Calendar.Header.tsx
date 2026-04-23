@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { CalendarMessages, CalendarRangeValue, DateValue } from '../../core/api.types'
 import { toPlainDate, toSelectionValue } from '../../core/calendarDate'
 import { useCalendarContext, useCalendarViewportHandle } from '../Calendar.context'
+import { formatPlainDateLong, formatPlainDateShort, formatPlainTime } from '../Calendar.utils'
 import type {
   CalendarDisplayMode,
   CalendarSelectionRuntime,
@@ -37,12 +38,12 @@ interface HeaderModeCommonProps {
 }
 
 function formatDay(day: Temporal.PlainDate, locale: string) {
-  return day.toLocaleString(locale, { month: 'short', day: 'numeric' })
+  return formatPlainDateShort(day, locale)
 }
 
 function formatRangeColumnDate(day: Temporal.PlainDate | null, locale: string) {
   if (!day) return '—'
-  return day.toLocaleString(locale, { month: 'long', day: 'numeric' })
+  return formatPlainDateLong(day, locale)
 }
 
 function formatCountMessage(template: string, count: number) {
@@ -53,7 +54,7 @@ function formatMultipleListLabel(value: DateValue, locale: string, includeTime: 
   const day = toPlainDate(value)
   const base = formatDay(day, locale)
   if (includeTime && value instanceof Temporal.PlainDateTime) {
-    const t = value.toLocaleString(locale, { hour: 'numeric', minute: '2-digit' })
+    const t = formatPlainTime(value, locale)
     return `${base} · ${t}`
   }
   return base

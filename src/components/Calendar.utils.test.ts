@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_CALENDAR_ROW_HEIGHT_PX,
   estimateMonthBlockHeightPx,
+  formatPlainDateLong,
+  formatPlainDateShort,
+  formatPlainTime,
+  monthLabel,
   monthRowCount,
   monthRows,
+  monthShortLabel,
   weekdayLabels,
 } from './Calendar.utils'
 
@@ -14,6 +19,27 @@ describe('weekdayLabels', () => {
     const monFirst = weekdayLabels('en-US', 1)
     expect(monFirst[0]).toBe(sunFirst[1])
     expect(monFirst[6]).toBe(sunFirst[0])
+  })
+})
+
+describe('locale format helpers', () => {
+  const locales = ['ko-KR', 'en-US', 'ja-JP', 'ja-JP-u-ca-japanese', 'th-TH-u-ca-buddhist', 'ar-EG']
+  const day = Temporal.PlainDate.from({ year: 2026, month: 4, day: 23 })
+  const month = Temporal.PlainYearMonth.from({ year: 2026, month: 4 })
+  const time = day.toPlainDateTime({ hour: 15, minute: 33 })
+
+  it('keeps previous Temporal locale output while avoiding repeated Temporal formatting', () => {
+    for (const locale of locales) {
+      expect(formatPlainDateShort(day, locale)).toBe(day.toLocaleString(locale, { month: 'short', day: 'numeric' }))
+      expect(formatPlainDateLong(day, locale)).toBe(day.toLocaleString(locale, { month: 'long', day: 'numeric' }))
+      expect(formatPlainTime(time, locale)).toBe(time.toLocaleString(locale, { hour: 'numeric', minute: '2-digit' }))
+
+      const firstDayOfMonth = month.toPlainDate({ day: 1 })
+      expect(monthShortLabel(month, locale)).toBe(firstDayOfMonth.toLocaleString(locale, { month: 'short' }))
+      expect(monthLabel(month, locale)).toBe(
+        firstDayOfMonth.toLocaleString(locale, { month: 'long', year: 'numeric' }),
+      )
+    }
   })
 })
 

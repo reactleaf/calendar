@@ -258,7 +258,7 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       const { scrollTop, clientHeight } = el
       const suppressUntil = overlaySuppressUntilRef?.current ?? 0
       if (Date.now() >= suppressUntil) {
-        setIsScrolling(true)
+        setIsScrolling((prev) => (prev ? prev : true))
         if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
         scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 180)
       }

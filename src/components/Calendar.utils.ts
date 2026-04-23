@@ -27,12 +27,116 @@ export function plainDateFromDayStamp(stamp: number): Temporal.PlainDate {
   return Temporal.PlainDate.from({ year, month, day })
 }
 
+const weekdayFormatters = new Map<string, Intl.DateTimeFormat>()
+const shortPlainDateFormatters = new Map<string, Intl.DateTimeFormat>()
+const longPlainDateFormatters = new Map<string, Intl.DateTimeFormat>()
+const timeFormatters = new Map<string, Intl.DateTimeFormat>()
+const longMonthFormatters = new Map<string, Intl.DateTimeFormat>()
+const shortMonthFormatters = new Map<string, Intl.DateTimeFormat>()
+const todayWordLabels = new Map<string, string>()
+
+function dateFromPlainParts(year: number, month: number, day: number): Date {
+  const date = new Date(0)
+  date.setFullYear(year, month - 1, day)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+function dateFromPlainTime(hour: number, minute: number): Date {
+  const date = new Date(0)
+  date.setFullYear(2000, 0, 1)
+  date.setHours(hour, minute, 0, 0)
+  return date
+}
+
+function getWeekdayFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = weekdayFormatters.get(locale)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' })
+    weekdayFormatters.set(locale, formatter)
+  }
+  return formatter
+}
+
+function getShortPlainDateFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = shortPlainDateFormatters.get(locale)
+  if (!formatter) {
+    formatter = createMatchingPlainDateFormatter(
+      locale,
+      { month: 'short', day: 'numeric' },
+      [{ month: 'numeric', day: 'numeric' }],
+      Temporal.PlainDate.from({ year: 2026, month: 4, day: 23 }),
+    )
+    shortPlainDateFormatters.set(locale, formatter)
+  }
+  return formatter
+}
+
+function getLongPlainDateFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = longPlainDateFormatters.get(locale)
+  if (!formatter) {
+    formatter = createMatchingPlainDateFormatter(
+      locale,
+      { month: 'long', day: 'numeric' },
+      [{ month: 'numeric', day: 'numeric' }],
+      Temporal.PlainDate.from({ year: 2026, month: 4, day: 23 }),
+    )
+    longPlainDateFormatters.set(locale, formatter)
+  }
+  return formatter
+}
+
+function getTimeFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = timeFormatters.get(locale)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' })
+    timeFormatters.set(locale, formatter)
+  }
+  return formatter
+}
+
+function getLongMonthFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = longMonthFormatters.get(locale)
+  if (!formatter) {
+    formatter = createMatchingPlainDateFormatter(
+      locale,
+      { month: 'long', year: 'numeric' },
+      [{ month: 'numeric', year: 'numeric' }],
+      Temporal.PlainDate.from({ year: 2026, month: 4, day: 1 }),
+    )
+    longMonthFormatters.set(locale, formatter)
+  }
+  return formatter
+}
+
+function getShortMonthFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = shortMonthFormatters.get(locale)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { month: 'short' })
+    shortMonthFormatters.set(locale, formatter)
+  }
+  return formatter
+}
+
+function createMatchingPlainDateFormatter(
+  locale: string,
+  temporalOptions: Intl.DateTimeFormatOptions,
+  fallbackOptions: Intl.DateTimeFormatOptions[],
+  sample: Temporal.PlainDate,
+): Intl.DateTimeFormat {
+  const expected = sample.toLocaleString(locale, temporalOptions)
+  const candidates = [temporalOptions, ...fallbackOptions]
+  for (const options of candidates) {
+    const formatter = new Intl.DateTimeFormat(locale, options)
+    if (formatter.format(dateFromPlainParts(sample.year, sample.month, sample.day)) === expected) return formatter
+  }
+  return new Intl.DateTimeFormat(locale, temporalOptions)
+}
+
 /** @param weekStartsOn — 0=일 … 6=토. 열 순서와 동일하게 라벨을 회전한다. */
 export function weekdayLabels(locale: string, weekStartsOn: WeekStartsOn = 0): string[] {
-  const sunday = Temporal.PlainDate.from({ year: 2026, month: 1, day: 4 })
-  const base = Array.from({ length: 7 }, (_, i) =>
-    String(sunday.add({ days: i }).toLocaleString(locale, { weekday: 'short' })),
-  )
+  const formatter = getWeekdayFormatter(locale)
+  const base = Array.from({ length: 7 }, (_, i) => formatter.format(dateFromPlainParts(2026, 1, 4 + i)))
   return Array.from({ length: 7 }, (_, i) => base[(weekStartsOn + i) % 7]!)
 }
 
@@ -152,23 +256,35 @@ export function monthRows(month: Temporal.PlainYearMonth, weekStartsOn: WeekStar
 }
 
 export function monthLabel(month: Temporal.PlainYearMonth, locale: string): string {
-  return Temporal.PlainDate.from({ year: month.year, month: month.month, day: 1 }).toLocaleString(locale, {
-    month: 'long',
-    year: 'numeric',
-  })
+  return getLongMonthFormatter(locale).format(dateFromPlainParts(month.year, month.month, 1))
 }
 
 export function monthShortLabel(month: Temporal.PlainYearMonth, locale: string): string {
-  return Temporal.PlainDate.from({ year: month.year, month: month.month, day: 1 }).toLocaleString(locale, {
-    month: 'short',
-  })
+  return getShortMonthFormatter(locale).format(dateFromPlainParts(month.year, month.month, 1))
+}
+
+export function formatPlainDateShort(date: Temporal.PlainDate, locale: string): string {
+  return getShortPlainDateFormatter(locale).format(dateFromPlainParts(date.year, date.month, date.day))
+}
+
+export function formatPlainDateLong(date: Temporal.PlainDate, locale: string): string {
+  return getLongPlainDateFormatter(locale).format(dateFromPlainParts(date.year, date.month, date.day))
+}
+
+export function formatPlainTime(value: Temporal.PlainDateTime, locale: string): string {
+  return getTimeFormatter(locale).format(dateFromPlainTime(value.hour, value.minute))
 }
 
 /** `react-infinite-calendar` 의 `todayLabel.short` 에 해당 — 선택 셀 상단에 월 대신 표시 */
 export function todayWordLabel(locale: string): string {
+  const cached = todayWordLabels.get(locale)
+  if (cached) return cached
   try {
-    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day')
+    const label = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day')
+    todayWordLabels.set(locale, label)
+    return label
   } catch {
+    todayWordLabels.set(locale, 'Today')
     return 'Today'
   }
 }

@@ -69,7 +69,8 @@ const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePi
   const minMonthYear = minMonth.year
   const minMonthMonth = minMonth.month
   const overlaySuppressUntilRef = useRef(0)
-  const [viewportRevision, setViewportRevision] = useState(0)
+  const todayPlacementFrameRef = useRef(0)
+  const todayPlacementRef = useRef<DateViewportPlacement | null>(null)
   const [todayPlacement, setTodayPlacement] = useState<DateViewportPlacement | null>(null)
   const {
     monthVirtualizer,
@@ -127,38 +128,45 @@ const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePi
     [scrollToDate, scrollToMonth],
   )
 
+  const updateTodayPlacement = useCallback(() => {
+    const next = getDateViewportPlacement(today)
+    if (todayPlacementRef.current === next) return
+    todayPlacementRef.current = next
+    setTodayPlacement(next)
+  }, [getDateViewportPlacement, today])
+
+  const scheduleTodayPlacementUpdate = useCallback(() => {
+    if (todayPlacementFrameRef.current !== 0) return
+    todayPlacementFrameRef.current = requestAnimationFrame(() => {
+      todayPlacementFrameRef.current = 0
+      updateTodayPlacement()
+    })
+  }, [updateTodayPlacement])
+
   useLayoutEffect(() => {
     const scrollEl = scrollRef.current
     if (!scrollEl) return
-    let frame = 0
 
-    const update = () => {
-      setTodayPlacement(getDateViewportPlacement(today))
-    }
-    const scheduleUpdate = () => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(update)
-    }
-
-    update()
+    updateTodayPlacement()
     let ro: ResizeObserver | undefined
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(scheduleUpdate)
+      ro = new ResizeObserver(scheduleTodayPlacementUpdate)
       ro.observe(scrollEl)
     }
 
     return () => {
-      cancelAnimationFrame(frame)
+      cancelAnimationFrame(todayPlacementFrameRef.current)
+      todayPlacementFrameRef.current = 0
       ro?.disconnect()
     }
-  }, [getDateViewportPlacement, scrollRef, today, viewportRevision])
+  }, [scheduleTodayPlacementUpdate, scrollRef, updateTodayPlacement])
 
   const handleScrollEvent = useCallback(
     (event: UIEvent<HTMLDivElement>) => {
       handleScroll(event)
-      setViewportRevision((prev) => prev + 1)
+      scheduleTodayPlacementUpdate()
     },
-    [handleScroll],
+    [handleScroll, scheduleTodayPlacementUpdate],
   )
 
   return (
