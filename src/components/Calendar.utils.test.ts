@@ -44,6 +44,15 @@ describe('locale format helpers', () => {
 })
 
 describe('monthRowCount', () => {
+  it('returns YYYY-MM-DD date strings for month rows', () => {
+    expect(monthRows(Temporal.PlainYearMonth.from({ year: 2026, month: 4 }), 0)[0]).toEqual([
+      '2026-04-01',
+      '2026-04-02',
+      '2026-04-03',
+      '2026-04-04',
+    ])
+  })
+
   it('matches monthRows length for every month in a wide year range', () => {
     for (const weekStartsOn of [0, 1] as const) {
       for (let y = 1980; y <= 2050; y += 1) {

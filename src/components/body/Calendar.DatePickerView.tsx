@@ -40,7 +40,7 @@ interface CalendarMonthRowProps {
   month: Temporal.PlainYearMonth
   idPrefix: string
   onDateHover: (date: Temporal.PlainDate) => void
-  onDateClick: (date: Temporal.PlainDate) => void
+  onDateClick: (date: string) => void
   isDateDisabled: (date: Temporal.PlainDate) => boolean
   index: number
 }
@@ -110,8 +110,8 @@ const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePi
   })
 
   const handleDateClick = useCallback(
-    (date: Temporal.PlainDate) => {
-      onDateClick(date)
+    (date: string) => {
+      onDateClick(Temporal.PlainDate.from(date))
       queueMicrotask(() => {
         if (keyboardNavigation) scrollRef.current?.focus({ preventScroll: true })
       })
@@ -234,12 +234,28 @@ function CalendarMonthRow({ month, idPrefix, onDateHover, onDateClick, isDateDis
     rangeHeaderPreviewActive,
   } = useCalendarContext()
 
-  const rows = useMemo(() => monthRows(month, weekStartsOn), [month.year, month.month, weekStartsOn])
+  const monthYear = month.year
+  const monthNumber = month.month
+  const rows = useMemo(
+    () => monthRows(Temporal.PlainYearMonth.from({ year: monthYear, month: monthNumber }), weekStartsOn),
+    [monthNumber, monthYear, weekStartsOn],
+  )
   const lastHoveredDateRef = useRef<string | null>(null)
   const monthShort = monthShortLabel(month, locale)
   const monthHeading = monthLabel(month, locale)
-  const focusedDayKey = focusedDate.toString()
+  const focusedDateString = focusedDate.toString()
+  const todayDate = today.toString()
+  const todayYear = today.year
   const renderInfo = buildMonthRowRenderInfo(mode, selectionSnapshot, rangeHeaderValue, rangeHeaderPreviewActive)
+  const disabledDates = useMemo(() => {
+    const map = new Map<string, boolean>()
+    for (const row of rows) {
+      for (const date of row) {
+        map.set(date, isDateDisabled(Temporal.PlainDate.from(date)))
+      }
+    }
+    return map
+  }, [isDateDisabled, rows])
   const firstPartial = rows[0] ? rows[0].length !== 7 : false
   const fullLastRow = (rows[rows.length - 1]?.length ?? 0) === 7
 
@@ -276,17 +292,26 @@ function CalendarMonthRow({ month, idPrefix, onDateHover, onDateClick, isDateDis
             aria-label={`${monthShort} week ${rowIndex + 1}`}
           >
             {row.map((date, cellIndex) => {
-              const state = calculateCellState(mode, date, today, focusedDayKey, renderInfo)
+              const state = calculateCellState(mode, date, renderInfo)
 
               return (
                 <CalendarDayCell
-                  key={state.dayKey}
+                  key={date}
                   mode={mode}
                   date={date}
                   monthShort={monthShort}
-                  state={{ ...state, isDisabled: isDateDisabled(date), cellIndex }}
                   todayLabelShort={messages.todayLabel}
                   idPrefix={idPrefix}
+                  focusedDate={focusedDateString}
+                  todayDate={todayDate}
+                  todayYear={todayYear}
+                  isSelected={state.isSelected}
+                  isDisabled={disabledDates.get(date) === true}
+                  isRangeStartDate={state.isRangeStartDate}
+                  isRangeEndDate={state.isRangeEndDate}
+                  isInPreview={state.isInPreview}
+                  isMultiplePrimaryEdit={state.isMultiplePrimaryEdit}
+                  cellIndex={cellIndex}
                   onDayClick={onDateClick}
                 />
               )

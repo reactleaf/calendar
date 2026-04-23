@@ -27,6 +27,10 @@ export function plainDateFromDayStamp(stamp: number): Temporal.PlainDate {
   return Temporal.PlainDate.from({ year, month, day })
 }
 
+export function dateString(year: number, month: number, day: number): string {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
 const weekdayFormatters = new Map<string, Intl.DateTimeFormat>()
 const shortPlainDateFormatters = new Map<string, Intl.DateTimeFormat>()
 const longPlainDateFormatters = new Map<string, Intl.DateTimeFormat>()
@@ -232,10 +236,10 @@ export function buildMonthWindow(
   return out
 }
 
-export function monthRows(month: Temporal.PlainYearMonth, weekStartsOn: WeekStartsOn = 0): Temporal.PlainDate[][] {
+export function monthRows(month: Temporal.PlainYearMonth, weekStartsOn: WeekStartsOn = 0): string[][] {
   const first = month.toPlainDate({ day: 1 })
   const lead = (first.dayOfWeek - weekStartToIsoDay(weekStartsOn) + 7) % 7
-  const rows: Temporal.PlainDate[][] = []
+  const rows: string[][] = []
 
   let day = 1
   let rowLen = lead === 0 ? 7 : 7 - lead
@@ -243,9 +247,9 @@ export function monthRows(month: Temporal.PlainYearMonth, weekStartsOn: WeekStar
   while (day <= month.daysInMonth) {
     const remaining = month.daysInMonth - day + 1
     rowLen = Math.min(rowLen, remaining)
-    const row: Temporal.PlainDate[] = []
+    const row: string[] = []
     for (let i = 0; i < rowLen; i += 1) {
-      row.push(Temporal.PlainDate.from({ year: month.year, month: month.month, day: day + i }))
+      row.push(dateString(month.year, month.month, day + i))
     }
     rows.push(row)
     day += rowLen

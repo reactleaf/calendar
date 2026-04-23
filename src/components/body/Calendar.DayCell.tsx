@@ -1,4 +1,3 @@
-import type { Temporal } from '@js-temporal/polyfill'
 import { clsx } from 'clsx'
 import type { MouseEvent } from 'react'
 import { memo } from 'react'
@@ -6,39 +5,31 @@ import type { CalendarMode } from '../../core/api.types'
 
 export interface CalendarDayCellProps {
   mode: CalendarMode
-  date: Temporal.PlainDate
+  date: string
   monthShort: string
-  state: CalendarDayCellState
   /** `Intl.RelativeTimeFormat(...).format(0,'day')` — 선택 셀 상단에 월 대신 표시 */
   todayLabelShort: string
   /**
    * grid 당 stable prefix (DatePickerView 의 `useId()`). 각 셀 `<button>` 은
-   * `${idPrefix}-day-${dayKey}` 형태의 id 를 가지며, DatePickerView 의
+   * `${idPrefix}-day-${date}` 형태의 id 를 가지며, DatePickerView 의
    * `aria-activedescendant` 타겟이 된다.
    */
   idPrefix: string
   legacyDayStamp?: number
-  onDayClick: (date: Temporal.PlainDate) => void
-  /** range 프리뷰는 month rows `mouseover` 위임으로 처리 — 미전달 시 리스너 없음 */
-  onDayMouseEnter?: (event: MouseEvent<HTMLButtonElement>) => void
-}
-
-export interface CalendarDayCellState {
-  dayKey: string
-  isFocused: boolean
+  focusedDate: string
+  todayDate: string
+  todayYear: number
   isSelected: boolean
   isDisabled: boolean
-  isToday: boolean
   isRangeStartDate: boolean
   isRangeEndDate: boolean
   isInPreview: boolean
   /** multiple: 헤더·시간 편집 중인 대표 일 — 그리드에서 추가 강조 */
   isMultiplePrimaryEdit?: boolean
-  isFirstOfMonth: boolean
-  showYear: boolean
-  year: number
-  dayOfMonth: number
   cellIndex: number
+  onDayClick: (date: string) => void
+  /** range 프리뷰는 month rows `mouseover` 위임으로 처리 — 미전달 시 리스너 없음 */
+  onDayMouseEnter?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
 function buildDayClass(
@@ -117,29 +108,28 @@ export const CalendarDayCell = memo(function CalendarDayCell({
   mode,
   date,
   monthShort,
-  state,
   todayLabelShort,
   idPrefix,
   legacyDayStamp,
+  focusedDate,
+  todayDate,
+  todayYear,
+  isSelected,
+  isDisabled,
+  isRangeStartDate,
+  isRangeEndDate,
+  isInPreview,
+  isMultiplePrimaryEdit = false,
+  cellIndex,
   onDayClick,
   onDayMouseEnter,
 }: CalendarDayCellProps) {
-  const {
-    dayKey,
-    isFocused,
-    isSelected,
-    isDisabled,
-    isToday,
-    isRangeStartDate,
-    isRangeEndDate,
-    isInPreview,
-    isMultiplePrimaryEdit = false,
-    isFirstOfMonth,
-    showYear,
-    year,
-    dayOfMonth,
-    cellIndex,
-  } = state
+  const year = Number(date.slice(0, 4))
+  const dayOfMonth = Number(date.slice(8, 10))
+  const isFocused = date === focusedDate
+  const isToday = date === todayDate
+  const isFirstOfMonth = dayOfMonth === 1
+  const showYear = isFirstOfMonth && year !== todayYear
   const selectionLayerActive = isSelected || (mode === 'range' && isInPreview)
   const dayClass = buildDayClass(
     mode,
@@ -169,13 +159,13 @@ export const CalendarDayCell = memo(function CalendarDayCell({
     <li className={clsx('calendar__dayItem', cellIndex === 0 && 'is-first')} role="gridcell">
       <button
         type="button"
-        id={`${idPrefix}-day-${dayKey}`}
+        id={`${idPrefix}-day-${date}`}
         className={dayClass}
         disabled={isDisabled}
         tabIndex={-1}
         aria-selected={isSelected}
         data-day-stamp={legacyDayStamp !== undefined ? String(legacyDayStamp) : undefined}
-        data-date={date.toString()}
+        data-date={date}
         {...(isToday ? { 'aria-current': 'date' as const } : {})}
         onMouseDown={handleMouseDown}
         {...(onDayMouseEnter ? { onMouseEnter: onDayMouseEnter } : {})}

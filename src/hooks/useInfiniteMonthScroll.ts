@@ -208,10 +208,11 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (compareMonth(month, minMonth) < 0 || compareMonth(month, maxMonth) > 0) return 'visible'
 
       const monthIndex = monthIndexFromMin(minMonth, month)
+      const targetDate = date.toString()
       const rows = monthRows(month, weekStartsOn)
       const rowIndex = Math.max(
         0,
-        rows.findIndex((row) => row.some((day) => day.day === date.day)),
+        rows.findIndex((row) => row.includes(targetDate)),
       )
 
       const rowTop = getMonthStartOffset(monthIndex) + rowIndex * rowHeightPx
@@ -235,10 +236,11 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       if (compareMonth(month, minMonth) < 0 || compareMonth(month, maxMonth) > 0) return
 
       const monthIndex = monthIndexFromMin(minMonth, month)
+      const targetDate = date.toString()
       const rows = monthRows(month, weekStartsOn)
       const rowIndex = Math.max(
         0,
-        rows.findIndex((row) => row.some((day) => day.day === date.day)),
+        rows.findIndex((row) => row.includes(targetDate)),
       )
 
       const rowTop = getMonthStartOffset(monthIndex) + rowIndex * rowHeightPx

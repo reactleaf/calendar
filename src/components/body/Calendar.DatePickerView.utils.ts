@@ -1,31 +1,36 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { CalendarMode, CalendarRangeValue } from '../../core/api.types'
 import { toPlainDate } from '../../core/calendarDate'
-import type { CalendarDayCellState } from './Calendar.DayCell'
 import type { CalendarSelectionSnapshot } from '../Calendar.types'
 
 export interface RangeRenderInfo {
-  committedStartKey: string | null
-  committedEndKey: string | null
+  committedStartDate: string | null
+  committedEndDate: string | null
   committedLo: string | null
   committedHi: string | null
-  renderStartKey: string | null
-  renderEndKey: string | null
+  renderStartDate: string | null
+  renderEndDate: string | null
   previewLo: string | null
   previewHi: string | null
   previewActive: boolean
 }
 
 export interface MonthRowRenderInfo {
-  singleSelectedDayKey: string | null
-  multiplePrimaryDayKey: string | null
-  multipleSelectedDayKeys: Set<string> | null
+  singleSelectedDate: string | null
+  multiplePrimaryDate: string | null
+  multipleSelectedDates: Set<string> | null
   range: RangeRenderInfo | null
 }
 
-export type CalendarDayComputedState = Omit<CalendarDayCellState, 'isDisabled' | 'cellIndex'>
+export interface CalendarDaySelectionState {
+  isSelected: boolean
+  isRangeStartDate: boolean
+  isRangeEndDate: boolean
+  isInPreview: boolean
+  isMultiplePrimaryEdit: boolean
+}
 
-function toPlainDayKey(value: Temporal.PlainDate | null | undefined): string | null {
+function toDateString(value: Temporal.PlainDate | null | undefined): string | null {
   return value ? value.toString() : null
 }
 
@@ -42,21 +47,21 @@ function buildRangeRenderInfo(
 ): RangeRenderInfo | null {
   if (mode !== 'range' || selectionSnapshot.mode !== 'range') return null
 
-  const committedStartKey = toPlainDayKey(selectionSnapshot.plain.start)
-  const committedEndKey = toPlainDayKey(selectionSnapshot.plain.end)
-  const [committedLo, committedHi] = orderDayKeys(committedStartKey, committedEndKey)
-  const renderStartKey = rangeHeaderValue?.start ? toPlainDate(rangeHeaderValue.start).toString() : committedStartKey
-  const renderEndKey = rangeHeaderValue?.end ? toPlainDate(rangeHeaderValue.end).toString() : committedEndKey
+  const committedStartDate = toDateString(selectionSnapshot.plain.start)
+  const committedEndDate = toDateString(selectionSnapshot.plain.end)
+  const [committedLo, committedHi] = orderDayKeys(committedStartDate, committedEndDate)
+  const renderStartDate = rangeHeaderValue?.start ? toPlainDate(rangeHeaderValue.start).toString() : committedStartDate
+  const renderEndDate = rangeHeaderValue?.end ? toPlainDate(rangeHeaderValue.end).toString() : committedEndDate
   const previewActive = rangeHeaderPreviewActive === true
-  const [previewLo, previewHi] = previewActive ? orderDayKeys(renderStartKey, renderEndKey) : [null, null]
+  const [previewLo, previewHi] = previewActive ? orderDayKeys(renderStartDate, renderEndDate) : [null, null]
 
   return {
-    committedStartKey,
-    committedEndKey,
+    committedStartDate,
+    committedEndDate,
     committedLo,
     committedHi,
-    renderStartKey,
-    renderEndKey,
+    renderStartDate,
+    renderEndDate,
     previewLo,
     previewHi,
     previewActive,
@@ -70,12 +75,12 @@ export function buildMonthRowRenderInfo(
   rangeHeaderPreviewActive: boolean | undefined,
 ): MonthRowRenderInfo {
   return {
-    singleSelectedDayKey: selectionSnapshot.mode === 'single' ? toPlainDayKey(selectionSnapshot.plain.value) : null,
-    multiplePrimaryDayKey:
+    singleSelectedDate: selectionSnapshot.mode === 'single' ? toDateString(selectionSnapshot.plain.value) : null,
+    multiplePrimaryDate:
       selectionSnapshot.mode === 'multiple' && selectionSnapshot.plain.primary !== null
         ? selectionSnapshot.plain.primary.toString()
         : null,
-    multipleSelectedDayKeys:
+    multipleSelectedDates:
       selectionSnapshot.mode === 'multiple'
         ? new Set(selectionSnapshot.plain.values.map((value) => value.toString()))
         : null,
@@ -83,62 +88,50 @@ export function buildMonthRowRenderInfo(
   }
 }
 
-function isSelectedDay(mode: CalendarMode, dayKey: string, info: MonthRowRenderInfo): boolean {
-  if (mode === 'single') return info.singleSelectedDayKey === dayKey
-  if (mode === 'multiple') return info.multipleSelectedDayKeys?.has(dayKey) ?? false
+function isSelectedDate(mode: CalendarMode, date: string, info: MonthRowRenderInfo): boolean {
+  if (mode === 'single') return info.singleSelectedDate === date
+  if (mode === 'multiple') return info.multipleSelectedDates?.has(date) ?? false
   return (
     info.range !== null &&
     info.range.previewActive !== true &&
     info.range.committedLo !== null &&
     info.range.committedHi !== null &&
-    dayKey >= info.range.committedLo &&
-    dayKey <= info.range.committedHi
+    date >= info.range.committedLo &&
+    date <= info.range.committedHi
   )
 }
 
-function isRangeStartDay(mode: CalendarMode, dayKey: string, info: MonthRowRenderInfo): boolean {
+function isRangeStartDate(mode: CalendarMode, date: string, info: MonthRowRenderInfo): boolean {
   if (mode !== 'range' || info.range === null) return false
-  return dayKey === (info.range.previewActive ? info.range.renderStartKey : info.range.committedStartKey)
+  return date === (info.range.previewActive ? info.range.renderStartDate : info.range.committedStartDate)
 }
 
-function isRangeEndDay(mode: CalendarMode, dayKey: string, info: MonthRowRenderInfo): boolean {
+function isRangeEndDate(mode: CalendarMode, date: string, info: MonthRowRenderInfo): boolean {
   if (mode !== 'range' || info.range === null) return false
-  return dayKey === (info.range.previewActive ? info.range.renderEndKey : info.range.committedEndKey)
+  return date === (info.range.previewActive ? info.range.renderEndDate : info.range.committedEndDate)
 }
 
-function isPreviewDay(mode: CalendarMode, dayKey: string, info: MonthRowRenderInfo): boolean {
+function isPreviewDate(mode: CalendarMode, date: string, info: MonthRowRenderInfo): boolean {
   return (
     mode === 'range' &&
     info.range !== null &&
     info.range.previewLo !== null &&
     info.range.previewHi !== null &&
-    dayKey >= info.range.previewLo &&
-    dayKey <= info.range.previewHi
+    date >= info.range.previewLo &&
+    date <= info.range.previewHi
   )
 }
 
 export function calculateCellState(
   mode: CalendarMode,
-  date: Temporal.PlainDate,
-  today: Temporal.PlainDate,
-  focusedDayKey: string,
+  date: string,
   info: MonthRowRenderInfo,
-): CalendarDayComputedState {
-  const dayKey = date.toString()
-  const isFirstOfMonth = date.day === 1
-
+): CalendarDaySelectionState {
   return {
-    dayKey,
-    isFocused: dayKey === focusedDayKey,
-    isSelected: isSelectedDay(mode, dayKey, info),
-    isToday: dayKey === today.toString(),
-    isRangeStartDate: isRangeStartDay(mode, dayKey, info),
-    isRangeEndDate: isRangeEndDay(mode, dayKey, info),
-    isInPreview: isPreviewDay(mode, dayKey, info),
-    isMultiplePrimaryEdit: mode === 'multiple' && info.multiplePrimaryDayKey === dayKey,
-    isFirstOfMonth,
-    showYear: isFirstOfMonth && date.year !== today.year,
-    year: date.year,
-    dayOfMonth: date.day,
+    isSelected: isSelectedDate(mode, date, info),
+    isRangeStartDate: isRangeStartDate(mode, date, info),
+    isRangeEndDate: isRangeEndDate(mode, date, info),
+    isInPreview: isPreviewDate(mode, date, info),
+    isMultiplePrimaryEdit: mode === 'multiple' && info.multiplePrimaryDate === date,
   }
 }
