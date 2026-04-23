@@ -8,7 +8,7 @@ export const CalendarViewportHandleContext = createContext<RefObject<CalendarVie
 export function useCalendarContext(): CalendarRuntime {
   const ctx = useContext(CalendarContext)
   if (!ctx) {
-    throw new Error('Calendar compound component must be used within Calendar.Root')
+    throw new Error('Calendar internal component must be used within Calendar.Root')
   }
   return ctx
 }
@@ -16,7 +16,7 @@ export function useCalendarContext(): CalendarRuntime {
 export function useCalendarViewportHandle(): RefObject<CalendarViewportHandle | null> {
   const ctx = useContext(CalendarViewportHandleContext)
   if (!ctx) {
-    throw new Error('Calendar viewport handle must be used within Calendar.Root')
+    throw new Error('Calendar internal viewport handle must be used within Calendar.Root')
   }
   return ctx
 }
