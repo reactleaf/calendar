@@ -47,6 +47,7 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
   const isControlled = valueProp !== undefined
   const [inner, setInner] = useState<DateValue[]>(() => defaultValue)
   const value = isControlled ? valueProp : inner
+  const plainValues = useMemo(() => value.map((v) => toPlainDate(v)), [value])
 
   const constraints = useMemo(
     () => disableConstraintsFromOptions({ minDate, maxDate, isDateDisabled }),
@@ -55,7 +56,13 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
 
   const isDisabled = useCallback((d: DateValue) => isDateBlockedByConstraints(d, constraints), [constraints])
 
-  const isSelected = useCallback((d: DateValue) => value.some((v) => toPlainDate(v).equals(toPlainDate(d))), [value])
+  const isSelected = useCallback(
+    (d: DateValue) => {
+      const plain = toPlainDate(d)
+      return plainValues.some((value) => value.equals(plain))
+    },
+    [plainValues],
+  )
 
   const commit = useCallback(
     (next: DateValue[]) => {
@@ -69,16 +76,15 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
     (date: DateValue, source?: 'click' | 'keyboard'): ToggleMultipleDateResult => {
       void source
       if (isDisabled(date)) return { changed: false, added: null, nextValues: value }
-      const pickedPlain = toPlainDate(toSelectionValue(date, includeTime))
-      const currentPlain = value.map((v) => toPlainDate(toSelectionValue(v, includeTime)))
-      const wasSelected = currentPlain.some((d) => d.equals(pickedPlain))
-      const toggled = toggleMultipleSelection(currentPlain, pickedPlain, maxSelections)
+      const pickedPlain = toPlainDate(date)
+      const wasSelected = plainValues.some((d) => d.equals(pickedPlain))
+      const toggled = toggleMultipleSelection(plainValues, pickedPlain, maxSelections)
       if (!toggled.changed) return { changed: false, added: null, nextValues: value }
       const next = toggled.next.map((d) => toSelectionValue(d, includeTime))
       commit(next)
       return { changed: true, added: !wasSelected, nextValues: next }
     },
-    [commit, includeTime, isDisabled, maxSelections, value],
+    [commit, includeTime, isDisabled, maxSelections, plainValues, value],
   )
 
   const clear = useCallback(() => commit([]), [commit])
@@ -86,12 +92,12 @@ export function useMultipleSelection(options: UseMultipleSelectionOptions): UseM
   const setTimeForPlainDate = useCallback(
     (plain: Temporal.PlainDate, hour: number, minute: number) => {
       if (!includeTime || value.length === 0) return
-      const idx = value.findIndex((v) => toPlainDate(v).equals(plain))
+      const idx = plainValues.findIndex((value) => value.equals(plain))
       if (idx === -1) return
       const next = value.map((v, i) => (i === idx ? withTime(v, hour, minute) : v))
       commit(next)
     },
-    [commit, includeTime, value],
+    [commit, includeTime, plainValues, value],
   )
 
   return { value, isSelected, isDisabled, toggleDate, setTimeForPlainDate, clear }

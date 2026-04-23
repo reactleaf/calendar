@@ -1,5 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { toPlainDate, type PlainDay } from '../calendarDate'
 
 export type RangePointerState = { kind: 'idle' } | { kind: 'anchored'; anchor: Temporal.PlainDate }
 
@@ -14,21 +13,22 @@ export function sortRangeEndpoints(a: Temporal.PlainDate, b: Temporal.PlainDate)
 
 export function rangePointerDown(
   state: RangePointerState,
-  date: PlainDay,
+  date: Temporal.PlainDate,
 ): { next: RangePointerState; committed: CommittedRange | null } {
-  const day = toPlainDate(date)
-
   if (state.kind === 'idle') {
-    return { next: { kind: 'anchored', anchor: day }, committed: null }
+    return { next: { kind: 'anchored', anchor: date }, committed: null }
   }
 
   return {
     next: { kind: 'idle' },
-    committed: sortRangeEndpoints(state.anchor, day),
+    committed: sortRangeEndpoints(state.anchor, date),
   }
 }
 
-export function rangePointerPreview(state: RangePointerState, hover: PlainDay | null): CommittedRange | null {
+export function rangePointerPreview(
+  state: RangePointerState,
+  hover: Temporal.PlainDate | null,
+): CommittedRange | null {
   if (state.kind !== 'anchored' || hover === null) return null
-  return sortRangeEndpoints(state.anchor, toPlainDate(hover))
+  return sortRangeEndpoints(state.anchor, hover)
 }

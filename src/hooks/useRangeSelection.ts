@@ -1,6 +1,7 @@
+import type { Temporal } from '@js-temporal/polyfill'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CalendarRangeValue, DateValue } from '../core/api.types'
-import { calendarDayStamp, toPlainDate, toSelectionValue, withTime, type PlainDay } from '../core/calendarDate'
+import { toPlainDate, toSelectionValue, withTime } from '../core/calendarDate'
 import { disableConstraintsFromOptions, isDateDisabled as isDateBlockedByConstraints } from '../core/constraints'
 import { isDayInInclusiveRange } from '../core/rangeHighlight'
 import {
@@ -58,7 +59,7 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
 
   const [pointer, setPointer] = useState<RangePointerState>({ kind: 'idle' })
   const pointerRef = useRef<RangePointerState>(pointer)
-  const [hoverDate, setHoverDate] = useState<PlainDay | null>(null)
+  const [hoverDate, setHoverDate] = useState<Temporal.PlainDate | null>(null)
 
   const controlledCommittedKey = isControlled
     ? `${valueProp?.start?.toString() ?? ''}|${valueProp?.end?.toString() ?? ''}`
@@ -67,6 +68,13 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
   const constraints = useMemo(() => disableConstraintsFromOptions({ minDate, maxDate }), [maxDate, minDate])
 
   const isDisabled = useCallback((d: DateValue) => isDateBlockedByConstraints(d, constraints), [constraints])
+  const committedPlain = useMemo(
+    () => ({
+      start: committed.start ? toPlainDate(committed.start) : null,
+      end: committed.end ? toPlainDate(committed.end) : null,
+    }),
+    [committed.end, committed.start],
+  )
 
   const previewPlain = useMemo(() => {
     if (pointer.kind !== 'anchored') return null
@@ -110,45 +118,47 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
   const isSelected = useCallback(
     (date: DateValue) => {
       if (pointer.kind === 'anchored') return false
-      if (committed.start === null || committed.end === null) return false
-      return isDayInInclusiveRange(date, committed.start, committed.end)
+      if (committedPlain.start === null || committedPlain.end === null) return false
+      return isDayInInclusiveRange(toPlainDate(date), committedPlain.start, committedPlain.end)
     },
-    [committed.end, committed.start, pointer.kind],
+    [committedPlain.end, committedPlain.start, pointer.kind],
   )
 
   const isInPreviewRange = useCallback(
     (date: DateValue) => {
-      if (!preview?.start || !preview?.end) return false
-      return isDayInInclusiveRange(date, preview.start, preview.end)
+      if (!previewPlain?.start || !previewPlain?.end) return false
+      return isDayInInclusiveRange(toPlainDate(date), previewPlain.start, previewPlain.end)
     },
-    [preview],
+    [previewPlain],
   )
 
   const isRangeStart = useCallback(
     (date: DateValue) => {
-      if (pointer.kind === 'anchored' && preview?.start != null && preview?.end != null) {
-        return calendarDayStamp(date) === calendarDayStamp(preview.start)
+      const plain = toPlainDate(date)
+      if (pointer.kind === 'anchored' && previewPlain?.start != null && previewPlain?.end != null) {
+        return plain.equals(previewPlain.start)
       }
-      return committed.start !== null && calendarDayStamp(date) === calendarDayStamp(committed.start)
+      return committedPlain.start !== null && plain.equals(committedPlain.start)
     },
-    [committed.start, pointer.kind, preview],
+    [committedPlain.start, pointer.kind, previewPlain],
   )
 
   const isRangeEnd = useCallback(
     (date: DateValue) => {
-      if (pointer.kind === 'anchored' && preview?.start != null && preview?.end != null) {
-        return calendarDayStamp(date) === calendarDayStamp(preview.end)
+      const plain = toPlainDate(date)
+      if (pointer.kind === 'anchored' && previewPlain?.start != null && previewPlain?.end != null) {
+        return plain.equals(previewPlain.end)
       }
-      return committed.end !== null && calendarDayStamp(date) === calendarDayStamp(committed.end)
+      return committedPlain.end !== null && plain.equals(committedPlain.end)
     },
-    [committed.end, pointer.kind, preview],
+    [committedPlain.end, pointer.kind, previewPlain],
   )
 
   const selectDate = useCallback(
     (date: DateValue, source?: 'click' | 'keyboard') => {
       void source
       if (isDisabled(date)) return
-      const dayPlain = toPlainDate(toSelectionValue(date, includeTime))
+      const dayPlain = toPlainDate(date)
       const prev = pointerRef.current
       const { next, committed: done } = rangePointerDown(prev, dayPlain)
       setPointer(next)
@@ -171,9 +181,9 @@ export function useRangeSelection(options: UseRangeSelectionOptions): UseRangeSe
     (date: DateValue, source?: 'hover' | 'keyboard') => {
       void source
       if (isDisabled(date)) return
-      setHoverDate(toPlainDate(toSelectionValue(date, includeTime)))
+      setHoverDate(toPlainDate(date))
     },
-    [includeTime, isDisabled],
+    [isDisabled],
   )
 
   const clear = useCallback(() => {
