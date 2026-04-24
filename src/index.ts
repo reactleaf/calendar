@@ -13,6 +13,5 @@ export type {
   CalendarSingleProps,
   DateValue,
   MonthValue,
-  WeekStartsOn
+  WeekStartsOn,
 } from './core/api.types'
-
