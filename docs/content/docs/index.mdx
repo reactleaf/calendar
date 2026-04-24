@@ -1,11 +1,11 @@
 ---
 title: Introduction
 description: >-
-  Virtualized calendar with single, multiple, and range selection—Temporal dates,
+  Calendar with single, multiple, and range selection—Temporal dates,
   optional time editing, and keyboard-friendly interaction.
 ---
 
-**`@reactleaf/calendar`** is a date and optional-time picker for React. It targets the same product niche as [react-infinite-calendar](https://github.com/clauderic/react-infinite-calendar), but the implementation is new: React 19, a virtualized month list, and **`@js-temporal/polyfill`** for values.
+**`@reactleaf/calendar`** is a date and optional-time picker for React. It targets the same product niche as [react-infinite-calendar](https://github.com/clauderic/react-infinite-calendar), but the implementation is new: built for React 19, with **`@js-temporal/polyfill`** for values.
 
 ## Compared with react-infinite-calendar
 
@@ -14,7 +14,7 @@ Spiritual successor, not a drop-in replacement:
 - **Values**: Props expect **`Temporal.PlainDate`** or **`Temporal.PlainDateTime`** only—not `Date` or raw ISO strings. Parse strings at your app boundary with **`Temporal.PlainDate.from(...)`** / **`Temporal.PlainDateTime.from(...)`** (or your own conversion into those types).
 - **Time**: Optional **`includeTime`** adds header time fields, direct hour/minute input, and a dedicated **time subview** (scroll picker). Date-only flows stay on plain dates; time is minute-precision wall time, not IANA time zones.
 - **Modes**: First-class **`single`**, **`multiple`**, and **`range`** on one component (`mode` discriminant).
-- **Layout**: Month list is **virtualized**; the card height is stabilized with CSS tokens so switching between day, month, and time views does not resize the shell.
+- **Stable shell**: The card height is stabilized with CSS tokens so switching between day, month, and time views does not resize the shell, even as the infinite-scroll month list grows.
 - **Accessibility**: Grid-oriented ARIA for the day body, localized labels via `locale` + overridable **`messages`**.
 
 ## Features

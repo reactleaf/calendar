@@ -6,7 +6,7 @@ export function meta(_props: Route.MetaArgs) {
     { title: '@reactleaf/calendar' },
     {
       name: 'description',
-      content: 'A modern rewrite of react-infinite-calendar — virtualized calendar for React with Temporal.',
+      content: 'A modern rewrite of react-infinite-calendar — calendar for React with Temporal.',
     },
   ]
 }

@@ -24,8 +24,8 @@ export function HomePage() {
         </p>
         <h1 className="home-page__title">@reactleaf/calendar</h1>
         <p className="home-page__lede">
-          Virtualized month list, single / multiple / range selection, optional time editing, and Temporal-based
-          dates—built for accessible, keyboard-friendly date picking in modern apps.
+          Single / multiple / range selection, optional time editing, and Temporal-based dates—built for accessible,
+          keyboard-friendly date picking in modern apps.
         </p>
         <nav className="home-page__nav" aria-label="Site">
           <Link className="home-page__navLink home-page__navLink--primary" to={docsPath}>

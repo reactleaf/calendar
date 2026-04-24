@@ -20,11 +20,10 @@ These apply to **every** `mode`. Mode sections below add fields on top of this t
 | `weekStartsOn`        | `0`–`6`                             | `0` = Sunday … `6` = Saturday. Default **`0`** (same convention as react-infinite-calendar).                                                     |
 | `messages`            | `Partial<CalendarMessages>`         | Header and ARIA strings; merged with English defaults. See **`CalendarMessages`** below.                                                         |
 | `formatters`          | `CalendarFormatters`                | Optional functions for date/time display labels. See **`CalendarFormatters`** below.                                                             |
-| `minDate`             | `DateValue`                         | Inclusive lower bound; also limits which months appear in the virtual list.                                                                      |
+| `minDate`             | `DateValue`                         | Inclusive lower bound; also caps the infinite-scroll month list.                                                                                 |
 | `maxDate`             | `DateValue`                         | Inclusive upper bound; same as above.                                                                                                            |
 | `keyboardNavigation`  | `boolean`                           | When **`true`** (default), Arrow keys move focus in the day grid; Enter/Space commits the focused day. Set **`false`** to disable that behavior. |
 | `includeTime`         | `boolean`                           | When set, enables time editing in the header and the time subview where applicable.                                                              |
-| `onMonthChange`       | `(monthStart: MonthValue) => void`  | Fires when the month aligned to the viewport changes (virtual scroll).                                                                           |
 | `onFocusedDateChange` | `(date: DateValue \| null) => void` | Called when the **focused** day in the grid changes (keyboard moves focus, clamping, or programmatic updates).                                   |
 
 `DateValue` = `Temporal.PlainDate | Temporal.PlainDateTime`.  
