@@ -35,8 +35,8 @@ export interface CalendarTodayButtonProps {
  * TodayButton 은 단일 인스턴스이므로 자체 context 소비를 허용한다.
  */
 export function CalendarTodayButton({ scrollToDate, scrollRef, placement }: CalendarTodayButtonProps) {
-  const { displayMode, today, locale, setFocusedDate, keyboardNavigation } = useCalendarContext()
-  const label = todayWordLabel(locale)
+  const { displayMode, today, locale, formatters, setFocusedDate, keyboardNavigation } = useCalendarContext()
+  const label = formatters?.todayLabel?.(today, { locale }) ?? todayWordLabel(locale)
 
   const onClick = useCallback(() => {
     setFocusedDate(today)

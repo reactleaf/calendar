@@ -1,0 +1,34 @@
+---
+title: Locale and week start
+description: Change date formatting and the first day of the week.
+---
+
+Use `locale` for `Intl` formatting, `weekStartsOn` for the grid layout, and `formatters` when displayed date labels should use product-specific copy.
+
+<LocaleWeekStartExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { useState } from 'react'
+import type { CalendarFormatters, DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+const padTimePart = (value: number) => String(value).padStart(2, '0')
+
+const japaneseFormatters: CalendarFormatters = {
+  year: (year) => `${year}年`,
+  month: (month) => `${month}月`,
+  monthYear: (month) => `${month.year}年 ${month.month}月`,
+  date: (day) => `${day.year}年 ${day.month}月 ${day.day}日`,
+  dateTime: (value) =>
+    `${value.year}年 ${value.month}月 ${value.day}日 ${padTimePart(value.hour)}:${padTimePart(value.minute)}`,
+  todayLabel: () => '今日',
+}
+
+export function Example() {
+  const [date, setDate] = useState<DateValue | null>(Temporal.PlainDate.from('2026-04-15'))
+
+  return <Calendar mode="single" locale="ja-JP" formatters={japaneseFormatters} value={date} onSelect={setDate} />
+}
+```

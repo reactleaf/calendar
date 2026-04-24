@@ -13,6 +13,7 @@ export function CalendarMultipleMode() {
     locale,
     weekStartsOn,
     messages,
+    formatters,
     keyboardNavigation,
     minDay,
     maxDay,
@@ -43,6 +44,7 @@ export function CalendarMultipleMode() {
         locale={locale}
         weekStartsOn={weekStartsOn}
         messages={messages}
+        formatters={formatters}
         keyboardNavigation={keyboardNavigation}
         minDay={minDay}
         maxDay={maxDay}

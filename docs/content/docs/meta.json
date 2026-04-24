@@ -1,4 +1,18 @@
 {
   "title": "Documentation",
-  "pages": ["index", "props", "---Examples---", "examples/single", "examples/multiple", "examples/range"]
+  "pages": [
+    "index",
+    "props",
+    "---Examples---",
+    "examples/single",
+    "examples/multiple",
+    "examples/range",
+    "examples/single-time",
+    "examples/range-time",
+    "examples/multiple-max-selections",
+    "examples/disabled-dates",
+    "examples/min-max-dates",
+    "examples/locale-week-start",
+    "examples/messages-formatters"
+  ]
 }

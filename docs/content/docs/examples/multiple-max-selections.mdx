@@ -1,0 +1,24 @@
+---
+title: Multiple with max selections
+description: Cap how many dates can be selected.
+---
+
+`maxSelections` applies only to `mode="multiple"`. Once the cap is reached, selecting another unselected day is ignored; already selected days can still be toggled off.
+
+<MultipleMaxSelectionsExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+const initialDates: DateValue[] = [Temporal.PlainDate.from('2026-04-07'), Temporal.PlainDate.from('2026-04-09')]
+
+export function Example() {
+  const [dates, setDates] = useState<DateValue[]>(initialDates)
+
+  return <Calendar mode="multiple" maxSelections={3} value={dates} onSelect={setDates} />
+}
+```

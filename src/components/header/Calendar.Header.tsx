@@ -1,10 +1,16 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ReactNode, RefObject } from 'react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { CalendarMessages, CalendarRangeValue, DateValue } from '../../core/api.types'
+import type {
+  CalendarFormatContext,
+  CalendarFormatters,
+  CalendarMessages,
+  CalendarRangeValue,
+  DateValue,
+} from '../../core/api.types'
 import { toPlainDate, toSelectionValue } from '../../core/calendarDate'
 import { useCalendarContext, useCalendarViewportHandle } from '../Calendar.context'
-import { formatPlainDateLong, formatPlainDateShort, formatPlainTime } from '../Calendar.utils'
+import { formatPlainDateShort, formatPlainTime } from '../Calendar.utils'
 import type {
   CalendarDisplayMode,
   CalendarSelectionRuntime,
@@ -21,6 +27,7 @@ interface CalendarHeaderProps {
 interface HeaderModeCommonProps {
   locale: string
   messages: CalendarMessages
+  formatters?: CalendarFormatters
   includeTime?: boolean
   selection: CalendarSelectionRuntime
   currentMonth: Temporal.PlainYearMonth
@@ -37,43 +44,56 @@ interface HeaderModeCommonProps {
   openDaysView: () => void
 }
 
-function formatDay(day: Temporal.PlainDate, locale: string) {
-  return formatPlainDateShort(day, locale)
+function formatDay(day: Temporal.PlainDate, ctx: CalendarFormatContext, formatters?: CalendarFormatters) {
+  return formatters?.date?.(day, ctx) ?? formatPlainDateShort(day, ctx.locale)
 }
 
-function formatRangeColumnDate(day: Temporal.PlainDate | null, locale: string) {
-  if (!day) return '—'
-  return formatPlainDateLong(day, locale)
+function formatDateTime(value: Temporal.PlainDateTime, ctx: CalendarFormatContext, formatters?: CalendarFormatters) {
+  return (
+    formatters?.dateTime?.(value, ctx) ??
+    `${formatDay(value.toPlainDate(), ctx, formatters)} · ${formatPlainTime(value, ctx.locale)}`
+  )
 }
 
 function formatCountMessage(template: string, count: number) {
   return template.replaceAll('{count}', String(count))
 }
 
-function formatMultipleListLabel(value: DateValue, locale: string, includeTime: boolean) {
+function formatMultipleListLabel(
+  value: DateValue,
+  ctx: CalendarFormatContext,
+  includeTime: boolean,
+  formatters?: CalendarFormatters,
+) {
   const day = toPlainDate(value)
-  const base = formatDay(day, locale)
   if (includeTime && value instanceof Temporal.PlainDateTime) {
-    const t = formatPlainTime(value, locale)
-    return `${base} · ${t}`
+    return formatDateTime(value, ctx, formatters)
   }
-  return base
+  return formatDay(day, ctx, formatters)
 }
 
-function rangeHeaderGrid(startDay: Temporal.PlainDate | null, endDay: Temporal.PlainDate | null, locale: string) {
+function rangeHeaderGrid(
+  startDay: Temporal.PlainDate | null,
+  endDay: Temporal.PlainDate | null,
+  ctx: CalendarFormatContext,
+  messages: CalendarMessages,
+  formatters?: CalendarFormatters,
+) {
   return {
     fromYear: startDay ? String(startDay.year) : '',
     toYear: endDay ? String(endDay.year) : '',
-    fromDate: formatRangeColumnDate(startDay, locale),
-    toDate: formatRangeColumnDate(endDay, locale),
+    fromDate: startDay ? formatDay(startDay, ctx, formatters) : messages.rangeFromPlaceholder,
+    toDate: endDay ? formatDay(endDay, ctx, formatters) : messages.rangeToPlaceholder,
   }
 }
 
 function labelsFromSnapshot(
   locale: string,
   messages: CalendarMessages,
+  formatters: CalendarFormatters | undefined,
   snapshot: CalendarSelectionSnapshot,
 ): { headerYear: string | null; headerDate: string } {
+  const ctx = { locale }
   let headerYear: string | null = null
   let headerDate = ''
 
@@ -81,13 +101,13 @@ function labelsFromSnapshot(
     case 'single': {
       const selectedDay = snapshot.plain.value
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.blank
+      headerDate = selectedDay ? formatDay(selectedDay, ctx, formatters) : messages.blank
       break
     }
     case 'multiple': {
       const selectedDay = snapshot.plain.primary ?? snapshot.plain.values.at(-1) ?? null
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, locale) : messages.blank
+      headerDate = selectedDay ? formatDay(selectedDay, ctx, formatters) : messages.blank
       break
     }
     case 'range': {
@@ -103,9 +123,9 @@ function labelsFromSnapshot(
             : null
       headerDate =
         startDay && endDay
-          ? `${formatDay(startDay, locale)} - ${formatDay(endDay, locale)}`
+          ? `${formatDay(startDay, ctx, formatters)} - ${formatDay(endDay, ctx, formatters)}`
           : startDay
-            ? formatDay(startDay, locale)
+            ? formatDay(startDay, ctx, formatters)
             : messages.blank
       break
     }
@@ -196,6 +216,7 @@ function CalendarHeaderMultiple({
   selection,
   locale,
   messages,
+  formatters,
   includeTime,
   currentMonth,
   displayMode,
@@ -342,7 +363,7 @@ function CalendarHeaderMultiple({
                           if (displayMode !== 'days') setDisplayMode('days')
                         }}
                       >
-                        {formatMultipleListLabel(value, locale, showTimeRow)}
+                        {formatMultipleListLabel(value, { locale }, showTimeRow, formatters)}
                       </button>
                     </li>
                   ))}
@@ -387,6 +408,7 @@ function CalendarHeaderRange({
   selection,
   locale,
   messages,
+  formatters,
   includeTime,
   showTimeRow,
   monthPickerOpen,
@@ -404,8 +426,8 @@ function CalendarHeaderRange({
   const rangeGrid = useMemo(() => {
     const startDay = rangeHeaderSource.start ? toPlainDate(rangeHeaderSource.start) : selectionSnapshot.plain.start
     const endDay = rangeHeaderSource.end ? toPlainDate(rangeHeaderSource.end) : selectionSnapshot.plain.end
-    return rangeHeaderGrid(startDay, endDay, locale)
-  }, [locale, rangeHeaderSource, selectionSnapshot])
+    return rangeHeaderGrid(startDay, endDay, { locale }, messages, formatters)
+  }, [formatters, locale, messages, rangeHeaderSource, selectionSnapshot])
 
   return (
     <div className="calendar__headerRange">
@@ -494,6 +516,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   const {
     locale,
     messages,
+    formatters,
     mode,
     includeTime,
     selectionSnapshot,
@@ -526,8 +549,8 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   const monthPickerOpen = displayMode === 'months'
   const daysViewOpen = displayMode === 'days'
   const { headerYear, headerDate } = useMemo(
-    () => labelsFromSnapshot(locale, messages, selectionSnapshot),
-    [locale, messages, selectionSnapshot],
+    () => labelsFromSnapshot(locale, messages, formatters, selectionSnapshot),
+    [formatters, locale, messages, selectionSnapshot],
   )
   const selectionEmpty = useMemo(() => isHeaderSelectionEmpty(mode, selectionSnapshot), [mode, selectionSnapshot])
   const showTimeRow = includeTime === true && !selectionEmpty
@@ -567,6 +590,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
   const commonProps: HeaderModeCommonProps = {
     locale,
     messages,
+    formatters,
     includeTime,
     selection,
     currentMonth,

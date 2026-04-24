@@ -19,6 +19,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     locale: localeProp,
     weekStartsOn: weekStartsOnProp,
     messages: messagesProp,
+    formatters,
     minDate,
     maxDate,
     isDateDisabled,
@@ -89,6 +90,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     locale,
     weekStartsOn,
     messages,
+    formatters,
     includeTime,
     selectionSnapshot: {
       mode: 'single',

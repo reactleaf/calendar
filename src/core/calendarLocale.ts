@@ -9,6 +9,8 @@ export const DEFAULT_CALENDAR_MESSAGES: CalendarMessages = {
   todayLabel: 'Today',
   rangeFromPrefix: 'from ',
   rangeToPrefix: 'to ',
+  rangeFromPlaceholder: '—',
+  rangeToPlaceholder: '—',
   ariaOpenMonthPicker: 'Open month picker',
   ariaOpenDayGrid: 'Show day calendar',
   ariaCalendarGrid: 'Infinite scroll calendar',

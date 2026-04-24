@@ -1,0 +1,26 @@
+---
+title: Range with time
+description: Add includeTime to range mode.
+---
+
+`includeTime` gives each range endpoint its own time editor. The range shape stays `{ start, end }`; each endpoint may be a `Temporal.PlainDateTime`.
+
+<RangeTimeExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { useState } from 'react'
+import type { CalendarRangeValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+const initialRange: CalendarRangeValue = {
+  start: Temporal.PlainDateTime.from('2026-04-15T10:00'),
+  end: Temporal.PlainDateTime.from('2026-04-18T18:00'),
+}
+
+export function Example() {
+  const [range, setRange] = useState<CalendarRangeValue>(initialRange)
+  return <Calendar mode="range" includeTime value={range} onSelect={setRange} />
+}
+```

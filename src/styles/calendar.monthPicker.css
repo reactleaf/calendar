@@ -41,6 +41,12 @@
   padding: 0.25rem 0.75rem;
 }
 
+.calendar__monthPickerRow + .calendar__monthPickerRow {
+  border-top: 1px solid var(--calendar-color-border, var(--border, #e9e9e9));
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}
+
 /* 연도 라벨: 작고 muted. 현재 연도만 accent 색으로 강조 (크기는 동일). */
 .calendar__monthPickerYear {
   font-size: 14px;

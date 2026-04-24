@@ -3,6 +3,7 @@ export { default as Calendar } from './Calendar'
 export type {
   CalendarBaseProps,
   CalendarDayDisablingProps,
+  CalendarFormatters,
   CalendarMessages,
   CalendarMode,
   CalendarMultipleProps,
@@ -12,5 +13,6 @@ export type {
   CalendarSingleProps,
   DateValue,
   MonthValue,
-  WeekStartsOn,
+  WeekStartsOn
 } from './core/api.types'
+

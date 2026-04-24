@@ -30,6 +30,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     locale: localeProp,
     weekStartsOn: weekStartsOnProp,
     messages: messagesProp,
+    formatters,
     minDate,
     maxDate,
     isDateDisabled,
@@ -177,6 +178,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
     locale,
     weekStartsOn,
     messages,
+    formatters,
     includeTime,
     selectionSnapshot: {
       mode: 'multiple',

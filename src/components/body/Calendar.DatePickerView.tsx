@@ -12,7 +12,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { CalendarMessages, CalendarMode } from '../../core/api.types'
+import type { CalendarFormatters, CalendarMessages, CalendarMode } from '../../core/api.types'
 import type { WeekStartsOn } from '../../core/monthGrid'
 import { useCalendarKeyboardNavigation } from '../../hooks/useCalendarKeyboardNavigation'
 import { useInfiniteMonthScroll } from '../../hooks/useInfiniteMonthScroll'
@@ -30,6 +30,7 @@ interface CalendarDatePickerViewProps {
   locale: string
   weekStartsOn: WeekStartsOn
   messages: CalendarMessages
+  formatters?: CalendarFormatters
   keyboardNavigation: boolean
   minDay: Temporal.PlainDate
   maxDay: Temporal.PlainDate
@@ -49,6 +50,7 @@ interface CalendarDatePickerViewProps {
 interface CalendarMonthRowProps {
   month: Temporal.PlainYearMonth
   idPrefix: string
+  formatters?: CalendarFormatters
   onDateHover: (date: Temporal.PlainDate) => void
   onDateClick: (date: string) => void
   isDateDisabled: (date: Temporal.PlainDate) => boolean
@@ -62,6 +64,7 @@ const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePi
       locale,
       weekStartsOn,
       messages,
+      formatters,
       keyboardNavigation,
       minDay,
       maxDay,
@@ -259,6 +262,7 @@ const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePi
                   <CalendarMonthRow
                     month={month}
                     idPrefix={idPrefix}
+                    formatters={formatters}
                     onDateHover={onDateHover}
                     onDateClick={handleDateClick}
                     isDateDisabled={isDateDisabled}
@@ -274,7 +278,15 @@ const CalendarDatePickerView = forwardRef<CalendarViewportHandle, CalendarDatePi
   },
 )
 
-function CalendarMonthRow({ month, idPrefix, onDateHover, onDateClick, isDateDisabled, index }: CalendarMonthRowProps) {
+function CalendarMonthRow({
+  month,
+  idPrefix,
+  formatters,
+  onDateHover,
+  onDateClick,
+  isDateDisabled,
+  index,
+}: CalendarMonthRowProps) {
   const {
     mode,
     locale,
@@ -295,7 +307,8 @@ function CalendarMonthRow({ month, idPrefix, onDateHover, onDateClick, isDateDis
   )
   const lastHoveredDateRef = useRef<string | null>(null)
   const monthShort = monthShortLabel(month, locale)
-  const monthHeading = monthLabel(month, locale)
+  const monthHeading = formatters?.monthYear?.(month, { locale }) ?? monthLabel(month, locale)
+  const todayLabelShort = formatters?.todayLabel?.(today, { locale }) ?? messages.todayLabel
   const focusedDateString = focusedDate.toString()
   const todayDate = today.toString()
   const todayYear = today.year
@@ -353,7 +366,7 @@ function CalendarMonthRow({ month, idPrefix, onDateHover, onDateClick, isDateDis
                   mode={mode}
                   date={date}
                   monthShort={monthShort}
-                  todayLabelShort={messages.todayLabel}
+                  todayLabelShort={todayLabelShort}
                   idPrefix={idPrefix}
                   focusedDate={focusedDateString}
                   todayDate={todayDate}

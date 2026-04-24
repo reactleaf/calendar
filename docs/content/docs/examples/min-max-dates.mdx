@@ -1,0 +1,25 @@
+---
+title: Min and max dates
+description: Limit the visible and selectable calendar range.
+---
+
+`minDate` and `maxDate` are inclusive. They constrain selectable days and also limit the virtual month list.
+
+<MinMaxDatesExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+const minDate = Temporal.PlainDate.from('2026-04-08')
+const maxDate = Temporal.PlainDate.from('2026-10-22')
+
+export function Example() {
+  const [date, setDate] = useState<DateValue | null>(Temporal.PlainDate.from('2026-04-15'))
+
+  return <Calendar mode="single" value={date} onSelect={setDate} minDate={minDate} maxDate={maxDate} />
+}
+```

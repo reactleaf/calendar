@@ -1,0 +1,27 @@
+---
+title: Disabled dates
+description: Disable individual dates inside the allowed range.
+---
+
+`isDateDisabled` marks individual days as unavailable. It is available in `single` and `multiple` modes.
+
+<DisabledDatesExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { useCallback, useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+const blocked = new Set(['2026-04-10', '2026-04-17'])
+
+export function Example() {
+  const [date, setDate] = useState<DateValue | null>(Temporal.PlainDate.from('2026-04-08'))
+  const isDateDisabled = useCallback((day: Temporal.PlainDate) => {
+    return day.dayOfWeek >= 6 || blocked.has(day.toString())
+  }, [])
+
+  return <Calendar mode="single" value={date} onSelect={setDate} isDateDisabled={isDateDisabled} />
+}
+```

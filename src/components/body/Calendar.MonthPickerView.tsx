@@ -23,7 +23,7 @@ import { compareMonth, monthShortLabel } from '../Calendar.utils'
  */
 export function CalendarMonthPickerView() {
   const viewportHandle = useCalendarViewportHandle()
-  const { locale, minMonth, maxMonth, currentMonth, displayMode, setDisplayMode, selectionSnapshot } =
+  const { locale, formatters, minMonth, maxMonth, currentMonth, displayMode, setDisplayMode, selectionSnapshot } =
     useCalendarContext()
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -38,10 +38,13 @@ export function CalendarMonthPickerView() {
   /** 각 연도별 12개 월 라벨. locale 변경 시만 재계산. */
   const monthLabels = useMemo(
     () =>
-      Array.from({ length: 12 }, (_, i) =>
-        monthShortLabel(Temporal.PlainYearMonth.from({ year: 2000, month: i + 1 }), locale),
+      Array.from(
+        { length: 12 },
+        (_, i) =>
+          formatters?.month?.(i + 1, { locale }) ??
+          monthShortLabel(Temporal.PlainYearMonth.from({ year: 2000, month: i + 1 }), locale),
       ),
-    [locale],
+    [formatters, locale],
   )
 
   /**
@@ -143,7 +146,7 @@ export function CalendarMonthPickerView() {
               className={`calendar__monthPickerRow${isSelectedYear ? ' is-current' : ''}`}
               data-year={year}
             >
-              <div className="calendar__monthPickerYear">{year}</div>
+              <div className="calendar__monthPickerYear">{formatters?.year?.(year, { locale }) ?? year}</div>
               <ol className="calendar__monthPickerMonths">
                 {monthLabels.map((label, idx) => {
                   const monthNumber = idx + 1

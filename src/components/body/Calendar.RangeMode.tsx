@@ -13,6 +13,7 @@ export function CalendarRangeMode() {
     locale,
     weekStartsOn,
     messages,
+    formatters,
     keyboardNavigation,
     minDay,
     maxDay,
@@ -46,6 +47,7 @@ export function CalendarRangeMode() {
         locale={locale}
         weekStartsOn={weekStartsOn}
         messages={messages}
+        formatters={formatters}
         keyboardNavigation={keyboardNavigation}
         minDay={minDay}
         maxDay={maxDay}

@@ -22,8 +22,6 @@
   position: relative;
   box-sizing: border-box;
   width: min(100%, 22rem);
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 12px;
   background: var(--calendar-color-bg, #fff);
   color: var(--calendar-color-fg, #111);
   overflow: hidden;

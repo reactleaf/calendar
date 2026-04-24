@@ -1,0 +1,22 @@
+---
+title: Single with time
+description: Add includeTime to single mode.
+---
+
+`includeTime` keeps the same single-date selection model, but enables hour and minute editing. The selected value may become a `Temporal.PlainDateTime`.
+
+<SingleTimeExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { useState } from 'react'
+import type { DateValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+export function Example() {
+  const [date, setDate] = useState<DateValue | null>(Temporal.PlainDateTime.from('2026-04-15T09:30'))
+
+  return <Calendar mode="single" includeTime value={date} onSelect={setDate} />
+}
+```

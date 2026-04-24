@@ -20,3 +20,28 @@ export function Example() {
   return <Calendar mode="range" value={range} onSelect={setRange} />
 }
 ```
+
+## Preview callback
+
+Use `onRangePreview` when the provisional range should drive external UI while the user is still choosing the end date. The committed `value` stays separate from the preview value.
+
+```tsx
+import { useState } from 'react'
+import type { CalendarRangeValue } from '@reactleaf/calendar'
+import { Calendar } from '@reactleaf/calendar'
+import '@reactleaf/calendar/index.css'
+
+const empty: CalendarRangeValue = { start: null, end: null }
+
+export function Example() {
+  const [range, setRange] = useState<CalendarRangeValue>(empty)
+  const [preview, setPreview] = useState<CalendarRangeValue | null>(null)
+
+  return (
+    <>
+      <Calendar mode="range" value={range} onSelect={setRange} onRangePreview={setPreview} />
+      <output>{preview ? `${preview.start} → ${preview.end}` : 'No preview'}</output>
+    </>
+  )
+}
+```

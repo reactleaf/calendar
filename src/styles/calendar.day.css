@@ -4,7 +4,8 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   outline: none;
-  padding: 0;
+  box-sizing: border-box;
+  padding: 0 0 var(--calendar-today-bar-height);
   contain: layout paint;
   overflow-anchor: none;
 }

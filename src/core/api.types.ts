@@ -23,6 +23,8 @@ export interface CalendarMessages {
   todayLabel: string
   rangeFromPrefix: string
   rangeToPrefix: string
+  rangeFromPlaceholder: string
+  rangeToPlaceholder: string
 
   ariaOpenMonthPicker: string
   ariaOpenDayGrid: string
@@ -31,6 +33,25 @@ export interface CalendarMessages {
   ariaOpenMultipleSelectedList: string
   /** multiple: 열린 선택 목록 영역(`role="region"`)의 접근 가능 이름 */
   ariaMultipleSelectedDatesPanel: string
+}
+
+export interface CalendarFormatContext {
+  locale: string
+}
+
+export interface CalendarFormatters {
+  /** Year label used in the month picker. */
+  year?: (year: number, ctx: CalendarFormatContext) => string
+  /** Month label used in the month picker. */
+  month?: (month: number, ctx: CalendarFormatContext) => string
+  /** Month-year label used by month row overlays. */
+  monthYear?: (month: Temporal.PlainYearMonth, ctx: CalendarFormatContext) => string
+  /** Date labels used in selected-date headers and range start/end columns. */
+  date?: (date: Temporal.PlainDate, ctx: CalendarFormatContext) => string
+  /** Date-time label used in the multiple-selection includeTime dropdown. */
+  dateTime?: (value: Temporal.PlainDateTime, ctx: CalendarFormatContext) => string
+  /** Floating today button label and selected-today day cell label. */
+  todayLabel?: (today: Temporal.PlainDate, ctx: CalendarFormatContext) => string
 }
 
 export interface CalendarBaseProps {
@@ -42,6 +63,8 @@ export interface CalendarBaseProps {
   weekStartsOn?: WeekStartsOn
   /** 헤더·접근성 문구. 생략 시 영어 기본값. */
   messages?: Partial<CalendarMessages>
+  /** 표시 문자열 커스터마이징. 생략 시 locale 기반 Intl formatter 사용. */
+  formatters?: CalendarFormatters
   minDate?: DateValue
   maxDate?: DateValue
   keyboardNavigation?: boolean

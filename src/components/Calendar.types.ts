@@ -1,5 +1,11 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import type { CalendarMessages, CalendarMode, CalendarRangeValue, DateValue } from '../core/api.types'
+import type {
+  CalendarFormatters,
+  CalendarMessages,
+  CalendarMode,
+  CalendarRangeValue,
+  DateValue,
+} from '../core/api.types'
 import type { WeekStartsOn } from '../core/monthGrid'
 
 export type CalendarSelectionSnapshot =
@@ -66,6 +72,7 @@ export interface CalendarRuntime {
   locale: string
   weekStartsOn: WeekStartsOn
   messages: CalendarMessages
+  formatters?: CalendarFormatters
   includeTime?: boolean
   /** range: 헤더 표시용 `preview ?? 확정 value` (싱글/멀티에서는 미사용) */
   rangeHeaderValue?: CalendarRangeValue
