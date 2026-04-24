@@ -25,6 +25,7 @@
     "typecheck": "tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "perf:scroll": "node scripts/measure-scroll-perf.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build:lib"
