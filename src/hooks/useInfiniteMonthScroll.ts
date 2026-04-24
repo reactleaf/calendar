@@ -1,10 +1,9 @@
 import type { Temporal } from '@js-temporal/polyfill'
-import type { Rect, Virtualizer } from '@tanstack/react-virtual'
-import { observeElementRect as observeElementRectImpl, useVirtualizer } from '@tanstack/react-virtual'
 import type { MutableRefObject, RefObject, UIEvent } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { DateViewportPlacement } from '../components/Calendar.types'
 import type { WeekStartsOn } from '../core/monthGrid'
+import { type Align, type ItemSizeGetter, SizeAndPositionManager } from '../core/sizeAndPositionManager'
 import {
   DEFAULT_CALENDAR_ROW_HEIGHT_PX,
   compareMonth,
@@ -16,6 +15,13 @@ import {
   plainYearMonthAt,
   weekdayLabels,
 } from '../components/Calendar.utils'
+
+const FAST_SCROLLING_CLASS = 'is-fast-scrolling'
+const FAST_SCROLL_PX_PER_EVENT = 10
+const FAST_SCROLL_CLEAR_MS = 100
+const MONTH_OVERSCAN = 4
+const TEST_VIEWPORT_HEIGHT = 440
+const TEST_VIEWPORT_WIDTH = 352
 
 interface UseInfiniteMonthScrollArgs {
   locale: string
@@ -35,17 +41,14 @@ function patchTestScrollViewport(scrollElement: Element | null) {
   if (import.meta.env.MODE !== 'test' || !scrollElement) return
   const el = scrollElement as HTMLElement
   try {
-    Object.defineProperty(el, 'offsetHeight', { configurable: true, value: 440 })
-    Object.defineProperty(el, 'offsetWidth', { configurable: true, value: 352 })
+    Object.defineProperty(el, 'offsetHeight', { configurable: true, value: TEST_VIEWPORT_HEIGHT })
+    Object.defineProperty(el, 'offsetWidth', { configurable: true, value: TEST_VIEWPORT_WIDTH })
+    Object.defineProperty(el, 'clientHeight', { configurable: true, value: TEST_VIEWPORT_HEIGHT })
+    Object.defineProperty(el, 'clientWidth', { configurable: true, value: TEST_VIEWPORT_WIDTH })
   } catch {
-    /* offset* may be non-configurable */
+    /* offset* / client* may be non-configurable */
   }
 }
-
-const observeElementRect = ((instance: Virtualizer<Element, Element>, cb: (rect: Rect) => void) => {
-  patchTestScrollViewport(instance.scrollElement)
-  return observeElementRectImpl(instance, cb)
-}) as typeof observeElementRectImpl
 
 function readCalendarRowHeightPx(scrollElement: HTMLDivElement | null): number {
   if (!scrollElement || typeof window === 'undefined') return DEFAULT_CALENDAR_ROW_HEIGHT_PX
@@ -79,18 +82,37 @@ function sumEstimatedMonthHeightsBefore(
   return acc
 }
 
+function setScrollTop(scrollEl: HTMLDivElement, top: number): void {
+  if (typeof scrollEl.scrollTo === 'function') {
+    scrollEl.scrollTo({ top })
+  }
+  scrollEl.scrollTop = top
+}
+
+export interface VirtualMonthItem {
+  index: number
+  start: number
+  size: number
+  key: string
+}
+
+export interface MonthVirtualizerShim {
+  getVirtualItems(): VirtualMonthItem[]
+  getTotalSize(): number
+}
+
 export interface InfiniteMonthScrollRuntime {
   weekdays: string[]
   minMonth: Temporal.PlainYearMonth
   maxMonth: Temporal.PlainYearMonth
   monthCount: number
-  monthVirtualizer: Virtualizer<HTMLDivElement, Element>
+  monthVirtualizer: MonthVirtualizerShim
   currentMonth: Temporal.PlainYearMonth
   isScrolling: boolean
   monthRefs: RefObject<Map<string, HTMLElement>>
   scrollRef: RefObject<HTMLDivElement | null>
   handleScroll: (event: UIEvent<HTMLDivElement>) => void
-  scrollToMonth: (target: Temporal.PlainYearMonth, align?: 'start' | 'center' | 'end' | 'auto') => void
+  scrollToMonth: (target: Temporal.PlainYearMonth, align?: Align) => void
   expandForTargetMonth: (target: Temporal.PlainYearMonth) => void
   keepMonthVisible: (month: Temporal.PlainYearMonth) => void
   scrollToDate: (date: Temporal.PlainDate) => void
@@ -104,72 +126,150 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
 
   const monthCount = useMemo(() => monthsInclusiveCount(minMonth, maxMonth), [minMonth, maxMonth])
   const [rowHeightPx, setRowHeightPx] = useState(DEFAULT_CALENDAR_ROW_HEIGHT_PX)
-  const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
-  const initialOffset = useMemo(() => {
-    const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
-    const offset = sumEstimatedMonthHeightsBefore(minMonthYear, minMonthMonth, clamped, weekStartsOn, rowHeightPx)
-    return Math.max(0, offset - 12)
-  }, [initialMonthIndex, minMonthMonth, minMonthYear, monthCount, rowHeightPx, weekStartsOn])
-
-  const estimateSize = useCallback(
-    (index: number) =>
-      estimateMonthBlockHeightPx(plainYearMonthAt(minMonthYear, minMonthMonth, index), index, weekStartsOn, rowHeightPx),
-    [minMonthMonth, minMonthYear, rowHeightPx, weekStartsOn],
-  )
-
+  const [viewportHeight, setViewportHeight] = useState(0)
+  const [scrollOffset, setScrollOffset] = useState(0)
   const [currentMonth, setCurrentMonth] = useState<Temporal.PlainYearMonth>(initialMonth)
-  /**
-   * 월 라벨 오버레이(`.calendar__scroll.is-scrolling` → `calendar.overlay.css`) 트리거.
-   * - 초기값 **`false`** — 첫 페인트에서 오버레이가 켜지지 않는다.
-   * - 과거에는 `true` 로 두고 마운트 시 `setTimeout(..., 800)` 으로 끄는 보정이 있었으나, `false` 시작으로
-   *   대체해 해당 `useEffect` 는 제거했다.
-   * - 사용자 스크롤 시 `handleScroll` 이 `true` 로 올리고 180ms 후 `false`. 보조 뷰 → `days` 복귀 직후에는
-   *   `overlaySuppressUntilRef` 로 이 타이머만 건너뛴다(`useSuppressMonthOverlayOnReturnToDays` 참고).
-   */
   const [isScrolling, setIsScrolling] = useState(false)
 
   const monthRefs = useRef<Map<string, HTMLElement>>(new Map())
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const didInitialScrollRef = useRef(false)
   const scrollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fastScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastScrollTopRef = useRef<number | null>(null)
 
-  useEffect(() => {
+  const initialMonthIndex = useMemo(() => monthIndexFromMin(minMonth, initialMonth), [initialMonth, minMonth])
+  const getInitialOffset = useCallback(
+    (height: number) => {
+      const clamped = Math.max(0, Math.min(monthCount - 1, initialMonthIndex))
+      const offset = sumEstimatedMonthHeightsBefore(minMonthYear, minMonthMonth, clamped, weekStartsOn, height)
+      return Math.max(0, offset - 12)
+    },
+    [initialMonthIndex, minMonthMonth, minMonthYear, monthCount, weekStartsOn],
+  )
+  const getInitialOffsetRef = useRef(getInitialOffset)
+  getInitialOffsetRef.current = getInitialOffset
+
+  const itemSizeGetter = useCallback<ItemSizeGetter>(
+    (index) =>
+      estimateMonthBlockHeightPx(
+        plainYearMonthAt(minMonthYear, minMonthMonth, index),
+        index,
+        weekStartsOn,
+        rowHeightPx,
+      ),
+    [minMonthMonth, minMonthYear, rowHeightPx, weekStartsOn],
+  )
+  const estimatedItemSize = useMemo(() => 6 * rowHeightPx, [rowHeightPx])
+  const sizeManager = useMemo(
+    () => new SizeAndPositionManager({ itemCount: monthCount, itemSizeGetter, estimatedItemSize }),
+    [estimatedItemSize, itemSizeGetter, monthCount],
+  )
+
+  useLayoutEffect(() => {
     const scrollEl = scrollRef.current
-    if (!scrollEl) return
-    const next = readCalendarRowHeightPx(scrollEl)
-    setRowHeightPx((prev) => (prev === next ? prev : next))
+    if (!scrollEl || didInitialScrollRef.current) return
+    didInitialScrollRef.current = true
+
+    patchTestScrollViewport(scrollEl)
+    const nextRowHeight = readCalendarRowHeightPx(scrollEl)
+    setRowHeightPx((prev) => (prev === nextRowHeight ? prev : nextRowHeight))
+
+    const initialOffset = getInitialOffsetRef.current(nextRowHeight)
+    setScrollTop(scrollEl, initialOffset)
+    lastScrollTopRef.current = initialOffset
+    setScrollOffset(initialOffset)
+    setViewportHeight(scrollEl.clientHeight)
+
+    let ro: ResizeObserver | undefined
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        const nextHeight = scrollEl.clientHeight
+        setViewportHeight((prev) => (prev === nextHeight ? prev : nextHeight))
+      })
+      ro.observe(scrollEl)
+    }
+
+    return () => {
+      ro?.disconnect()
+    }
   }, [])
-
-  const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
-
-  const monthVirtualizer = useVirtualizer({
-    count: monthCount,
-    getScrollElement: () => scrollRef.current,
-    initialOffset,
-    estimateSize,
-    overscan: 4,
-    getItemKey: (index) => monthKey(plainYearMonthAt(minMonthYear, minMonthMonth, index)),
-    observeElementRect,
-  })
-
-  const virtualizerRef = useRef(monthVirtualizer)
-  virtualizerRef.current = monthVirtualizer
 
   useEffect(() => {
     onMonthChange?.(currentMonth)
   }, [currentMonth, onMonthChange])
 
-  const scrollToMonthIndex = useCallback(
-    (index: number, align: 'start' | 'center' | 'end' | 'auto' = 'auto') => {
-      const clamped = Math.max(0, Math.min(monthCount - 1, index))
-      monthVirtualizer.scrollToIndex(clamped, { align })
-    },
-    [monthCount, monthVirtualizer],
+  useEffect(() => {
+    return () => {
+      if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
+      if (fastScrollTimerRef.current) clearTimeout(fastScrollTimerRef.current)
+    }
+  }, [])
+
+  const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
+
+  const virtualItems = useMemo<VirtualMonthItem[]>(() => {
+    if (viewportHeight <= 0 || monthCount === 0) return []
+    const range = sizeManager.getVisibleRange({
+      containerSize: viewportHeight,
+      offset: scrollOffset,
+      overscanCount: MONTH_OVERSCAN,
+    })
+    if (range.start < 0) return []
+
+    const items: VirtualMonthItem[] = []
+    for (let index = range.start; index <= range.stop; index += 1) {
+      const { offset, size } = sizeManager.getSizeAndPositionForIndex(index)
+      items.push({
+        index,
+        start: offset,
+        size,
+        key: monthKey(plainYearMonthAt(minMonthYear, minMonthMonth, index)),
+      })
+    }
+    return items
+  }, [minMonthMonth, minMonthYear, monthCount, scrollOffset, sizeManager, viewportHeight])
+
+  const monthVirtualizer = useMemo<MonthVirtualizerShim>(
+    () => ({
+      getVirtualItems: () => virtualItems,
+      getTotalSize: () => sizeManager.getTotalSize(),
+    }),
+    [sizeManager, virtualItems],
   )
 
+  const scrollToMonthIndex = useCallback(
+    (index: number, align: Align = 'auto') => {
+      const scrollEl = scrollRef.current
+      if (!scrollEl) return
+      const clamped = Math.max(0, Math.min(monthCount - 1, index))
+      const containerSize = scrollEl.clientHeight || TEST_VIEWPORT_HEIGHT
+      const nextScrollTop = sizeManager.getUpdatedOffsetForIndex({
+        align,
+        containerSize,
+        currentOffset: scrollEl.scrollTop,
+        targetIndex: clamped,
+      })
+      setScrollTop(scrollEl, nextScrollTop)
+      lastScrollTopRef.current = nextScrollTop
+      setScrollOffset(nextScrollTop)
+    },
+    [monthCount, sizeManager],
+  )
+
+  const scrollToOffset = useCallback((top: number) => {
+    const scrollEl = scrollRef.current
+    if (!scrollEl) return
+    setScrollTop(scrollEl, top)
+    lastScrollTopRef.current = top
+    setScrollOffset(top)
+  }, [])
+
   const scrollToMonth = useCallback(
-    (target: Temporal.PlainYearMonth, align: 'start' | 'center' | 'end' | 'auto' = 'auto') => {
+    (target: Temporal.PlainYearMonth, align: Align = 'auto') => {
       if (compareMonth(target, minMonth) < 0 || compareMonth(target, maxMonth) > 0) return
       scrollToMonthIndex(monthIndexFromMin(minMonth, target), align)
+      setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(target, prev) !== 0 ? target : prev))
     },
     [maxMonth, minMonth, scrollToMonthIndex],
   )
@@ -190,14 +290,9 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
 
   const getMonthStartOffset = useCallback(
     (monthIndex: number): number => {
-      const v = virtualizerRef.current
-      const virtualItem = v.getVirtualItems().find((item) => item.index === monthIndex)
-      if (virtualItem) return virtualItem.start
-      const offset = v.getOffsetForIndex(monthIndex, 'start')
-      if (offset) return offset[0]
-      return sumEstimatedMonthHeightsBefore(minMonthYear, minMonthMonth, monthIndex, weekStartsOn, rowHeightPx)
+      return sizeManager.getSizeAndPositionForIndex(monthIndex).offset
     },
-    [minMonthMonth, minMonthYear, rowHeightPx, weekStartsOn],
+    [sizeManager],
   )
 
   const getDateViewportPlacement = useCallback(
@@ -247,34 +342,53 @@ export function useInfiniteMonthScroll(args: UseInfiniteMonthScrollArgs): Infini
       const rowCenter = rowTop + rowHeightPx / 2
       const clientH = scrollEl.clientHeight
       const rawScrollTop = rowCenter - clientH / 2
-      const maxScrollTop = Math.max(0, monthVirtualizer.getTotalSize() - clientH)
+      const maxScrollTop = Math.max(0, sizeManager.getTotalSize() - clientH)
       const nextScrollTop = Math.max(0, Math.min(maxScrollTop, rawScrollTop))
-      monthVirtualizer.scrollToOffset(nextScrollTop)
+      scrollToOffset(nextScrollTop)
+      setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(month, prev) !== 0 ? month : prev))
     },
-    [getMonthStartOffset, maxMonth, minMonth, monthVirtualizer, rowHeightPx, weekStartsOn],
+    [getMonthStartOffset, maxMonth, minMonth, rowHeightPx, scrollToOffset, sizeManager, weekStartsOn],
   )
 
   const handleScroll = useCallback(
     (event: UIEvent<HTMLDivElement>) => {
       const el = event.currentTarget
       const { scrollTop, clientHeight } = el
+      setScrollOffset(scrollTop)
+
+      const prevTop = lastScrollTopRef.current
+      if (prevTop !== null && Math.abs(scrollTop - prevTop) >= FAST_SCROLL_PX_PER_EVENT) {
+        el.classList.add(FAST_SCROLLING_CLASS)
+        if (fastScrollTimerRef.current) clearTimeout(fastScrollTimerRef.current)
+        fastScrollTimerRef.current = setTimeout(() => {
+          scrollRef.current?.classList.remove(FAST_SCROLLING_CLASS)
+          fastScrollTimerRef.current = null
+        }, FAST_SCROLL_CLEAR_MS)
+      }
+      lastScrollTopRef.current = scrollTop
+
+      const centerOffset = scrollTop + clientHeight / 2
+      const range = sizeManager.getVisibleRange({
+        containerSize: Math.max(clientHeight, 1),
+        offset: centerOffset,
+        overscanCount: 0,
+      })
+      if (range.start >= 0) {
+        const next = plainYearMonthAt(minMonthYear, minMonthMonth, range.start)
+        setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(next, prev) !== 0 ? next : prev))
+      }
+
       const suppressUntil = overlaySuppressUntilRef?.current ?? 0
       if (Date.now() >= suppressUntil) {
         setIsScrolling((prev) => (prev ? prev : true))
         if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current)
-        scrollingTimerRef.current = setTimeout(() => setIsScrolling(false), 180)
-      }
-      /* 억제 중에도 뷰포트 중앙 월은 항상 갱신 */
-
-      const v = virtualizerRef.current
-      const centerOffset = scrollTop + clientHeight / 2
-      const item = v.getVirtualItemForOffset(centerOffset)
-      if (item) {
-        const next = plainYearMonthAt(minMonthYear, minMonthMonth, item.index)
-        setCurrentMonth((prev: Temporal.PlainYearMonth) => (compareMonth(next, prev) !== 0 ? next : prev))
+        scrollingTimerRef.current = setTimeout(() => {
+          setIsScrolling(false)
+          scrollingTimerRef.current = null
+        }, 180)
       }
     },
-    [minMonthMonth, minMonthYear, overlaySuppressUntilRef],
+    [minMonthMonth, minMonthYear, overlaySuppressUntilRef, sizeManager],
   )
 
   return {

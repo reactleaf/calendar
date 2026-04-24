@@ -5,6 +5,8 @@
   -webkit-overflow-scrolling: touch;
   outline: none;
   padding: 0;
+  contain: layout paint;
+  overflow-anchor: none;
 }
 
 .calendar__month {

@@ -8,6 +8,7 @@
   opacity: 0;
   background: color-mix(in srgb, var(--bg, #fff) 65%, transparent);
   transition: opacity 0.18s ease;
+  will-change: opacity;
 }
 
 .calendar__monthOverlayBlock > span {
@@ -31,4 +32,9 @@
 
 .calendar__scroll.is-scrolling .calendar__monthOverlayBlock {
   opacity: 1;
+}
+
+.calendar__scroll.is-fast-scrolling .calendar__day,
+.calendar__scroll.is-fast-scrolling .calendar__month--hasPrevious .calendar__monthRow.is-partial-first .calendar__day {
+  pointer-events: none;
 }

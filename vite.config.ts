@@ -2,13 +2,7 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 
-const external = [
-  'react',
-  'react-dom',
-  'react/jsx-runtime',
-  '@js-temporal/polyfill',
-  '@tanstack/react-virtual',
-] as const
+const external = ['react', 'react-dom', 'react/jsx-runtime', '@js-temporal/polyfill'] as const
 
 const libBuild = {
   emptyOutDir: true,

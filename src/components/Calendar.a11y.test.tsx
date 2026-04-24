@@ -14,7 +14,7 @@ import Calendar from '../Calendar'
  * - 날짜 셀 `<button>` 은 고유 id + `aria-selected`
  *
  * 실제 DOM focus 는 절대 개별 날짜 버튼으로 이동하지 않는다. 이 규약이 깨지면
- * 가상화(`@tanstack/react-virtual`) 언마운트와 충돌해 focus lost 가 발생할 수 있다.
+ * 가상화된 월 섹션 언마운트와 충돌해 focus lost 가 발생할 수 있다.
  */
 
 function getGrid(container: HTMLElement): HTMLElement {

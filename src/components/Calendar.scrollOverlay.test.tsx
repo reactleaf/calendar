@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import React from 'react'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import Calendar from '../Calendar'
 import { DEFAULT_CALENDAR_MESSAGES } from '../core/calendarLocale'
 
@@ -64,5 +64,45 @@ describe('Calendar month overlay (isScrolling)', () => {
 
     const scroll = getScroll(container)
     expect(scroll?.classList.contains('is-scrolling')).toBe(false)
+  })
+
+  it('이벤트 간 10px 이상 빠른 스크롤 중에는 day hover hit-test 를 100ms 동안 차단한다', async () => {
+    const { container } = render(
+      <Calendar
+        mode="range"
+        minDate={Temporal.PlainDate.from('2020-01-01')}
+        maxDate={Temporal.PlainDate.from('2030-12-31')}
+      />,
+    )
+
+    await waitForDayCells(container)
+    const scroll = getScroll(container)
+    expect(scroll).toBeTruthy()
+
+    vi.useFakeTimers()
+    try {
+      scroll!.scrollTop = 0
+      fireEvent.scroll(scroll!)
+      scroll!.scrollTop = 10
+      fireEvent.scroll(scroll!)
+
+      expect(scroll!.classList.contains('is-fast-scrolling')).toBe(true)
+
+      act(() => {
+        vi.advanceTimersByTime(99)
+      })
+      expect(scroll!.classList.contains('is-fast-scrolling')).toBe(true)
+
+      act(() => {
+        vi.advanceTimersByTime(1)
+      })
+      expect(scroll!.classList.contains('is-fast-scrolling')).toBe(false)
+
+      act(() => {
+        vi.runOnlyPendingTimers()
+      })
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

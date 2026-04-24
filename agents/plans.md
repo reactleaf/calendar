@@ -62,7 +62,7 @@
 1. ✅ 내부 compound-style 뼈대 — `Root` / `Header` / mode body / picker 계층 + public facade `Calendar`
 2. ✅ mode variant ↔ runtime hook 결합 (내부 `Root` 가 `runtime` 을 context 로 주입, `.calendar--mode-<mode>` 클래스 부여)
 3. ✅ 스타일 토큰/CSS 분할 — `src/styles/calendar.{base,header,time,day,range,overlay,monthPicker,timeSelect}.css`, `src/Calendar.css` 는 barrel 역할. selection / focused / hover / today / 월 피커 선택 / 시·분 active pip 까지 모두 `--calendar-range-pip` 반경의 원형 표현으로 통일
-4. ✅ 월 단위 가상 스크롤 — `useInfiniteMonthScroll` + `@tanstack/react-virtual`, overscan 지원
+4. ✅ 월 단위 가상 스크롤 — `useInfiniteMonthScroll` + 커스텀 virtualizer, overscan 지원
 5. ✅ 공통 헤더 톤 — 모든 모드가 accent 배경 + 흰 텍스트. 연도 라벨은 내부 month picker 로 **단방향** 전환, 날짜 라벨은 다시 days 그리드로 **단방향** 전환 (토글 아님)
 6. ✅ 보조 뷰 시스템 — `useCalendarSecondaryView` (`displayMode: 'days' | 'months' | 'time'` + `timeEditTarget: 'primary' | 'rangeStart' | 'rangeEnd'`) 로 상태 일원화. 각 Mode 컴포넌트가 `displayMode` 로 분기 렌더
 7. ✅ 내부 month picker — 6×2 월 그리드, 연도 헤더 단축 표기, 선택된 월(없으면 현재 viewport 월) 을 스크롤 중앙 정렬, 원형 accent pip
@@ -74,7 +74,7 @@
 
 ### Phase 5. Accessibility & Interaction Hardening 🚧
 
-1. ✅ WAI-ARIA calendar grid 패턴 (하이브리드) — `Calendar.DatePicker` 의 scroll container 에 `role="grid"` + `aria-activedescendant`, 주별 `<ul>` 에 `role="row"` + 월·주차 `aria-label`, `<li>` 에 `role="gridcell"`, `<button>` 에 stable `id` + `aria-selected`(← 기존 `aria-pressed` 교체). roving tabindex 는 의도적으로 채택하지 않음 — 가상화(`@tanstack/react-virtual`) 와 포커스 보유 셀 언마운트 충돌을 피하기 위함. 레퍼런스 `react-infinite-calendar` 의 "virtual highlight" 패턴을 ARIA grid 위에 올려 스크린리더가 가상 커서 이동을 인지하도록 한다. (`Calendar.a11y.test.tsx` 로 회귀 보호)
+1. ✅ WAI-ARIA calendar grid 패턴 (하이브리드) — `Calendar.DatePicker` 의 scroll container 에 `role="grid"` + `aria-activedescendant`, 주별 `<ul>` 에 `role="row"` + 월·주차 `aria-label`, `<li>` 에 `role="gridcell"`, `<button>` 에 stable `id` + `aria-selected`(← 기존 `aria-pressed` 교체). roving tabindex 는 의도적으로 채택하지 않음 — 가상화와 포커스 보유 셀 언마운트 충돌을 피하기 위함. 레퍼런스 `react-infinite-calendar` 의 "virtual highlight" 패턴을 ARIA grid 위에 올려 스크린리더가 가상 커서 이동을 인지하도록 한다. (`Calendar.a11y.test.tsx` 로 회귀 보호)
 2. 🚧 보조 뷰 접근성 — 내부 month picker(12월 그리드) 와 time scroll picker(시/분 loop scroll) 의 ARIA 역할·키보드 탐색 정리. 후자는 현재 "스크롤=탐색, 클릭=커밋" 모델이라 키보드 등가 경로(화살표 이동 + Enter 커밋 등) 가 부재
 3. ⏳ 스크린리더 라벨링 점검 (월/년 전환, 선택 상태 변경 안내, time 뷰 진입/이탈)
 4. ⏳ pointer + keyboard + touch 상호작용 동등성 회귀 테스트
