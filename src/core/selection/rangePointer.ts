@@ -25,10 +25,7 @@ export function rangePointerDown(
   }
 }
 
-export function rangePointerPreview(
-  state: RangePointerState,
-  hover: Temporal.PlainDate | null,
-): CommittedRange | null {
+export function rangePointerPreview(state: RangePointerState, hover: Temporal.PlainDate | null): CommittedRange | null {
   if (state.kind !== 'anchored' || hover === null) return null
   return sortRangeEndpoints(state.anchor, hover)
 }

@@ -106,12 +106,7 @@ export function useCalendarMultipleRuntime(props: CalendarMultipleProps): Calend
   const weekdays = useMemo(() => weekdayLabels(locale, weekStartsOn), [locale, weekStartsOn])
   const [currentMonth, setCurrentMonthState] = useState(initialMonth)
 
-  const {
-    displayMode,
-    setDisplayMode,
-    timeEditTarget,
-    openTimeView,
-  } = useCalendarSecondaryView()
+  const { displayMode, setDisplayMode, timeEditTarget, openTimeView } = useCalendarSecondaryView()
 
   const setFocusedDate = useCallback(
     (next: Temporal.PlainDate) => {

@@ -36,9 +36,7 @@ describe('locale format helpers', () => {
 
       const firstDayOfMonth = month.toPlainDate({ day: 1 })
       expect(monthShortLabel(month, locale)).toBe(firstDayOfMonth.toLocaleString(locale, { month: 'short' }))
-      expect(monthLabel(month, locale)).toBe(
-        firstDayOfMonth.toLocaleString(locale, { month: 'long', year: 'numeric' }),
-      )
+      expect(monthLabel(month, locale)).toBe(firstDayOfMonth.toLocaleString(locale, { month: 'long', year: 'numeric' }))
     }
   })
 })

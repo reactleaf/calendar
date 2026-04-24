@@ -64,8 +64,7 @@ export function useCalendarKeyboardNavigation({
     else if (event.key === 'ArrowRight')
       next = clampDate(state.focusedDate.add({ days: 1 }), state.minDay, state.maxDay)
     else if (event.key === 'ArrowUp') next = clampDate(state.focusedDate.add({ days: -7 }), state.minDay, state.maxDay)
-    else if (event.key === 'ArrowDown')
-      next = clampDate(state.focusedDate.add({ days: 7 }), state.minDay, state.maxDay)
+    else if (event.key === 'ArrowDown') next = clampDate(state.focusedDate.add({ days: 7 }), state.minDay, state.maxDay)
     else if (event.key === 'Enter' || event.key === ' ') {
       state.selectDate(state.focusedDate, 'keyboard')
       event.preventDefault()

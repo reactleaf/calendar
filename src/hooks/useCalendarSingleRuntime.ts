@@ -1,7 +1,13 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import type { CalendarRuntime } from '../components/Calendar.types'
-import { clampDate, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE, monthsInclusiveCount, weekdayLabels } from '../components/Calendar.utils'
+import {
+  clampDate,
+  DEFAULT_MAX_DATE,
+  DEFAULT_MIN_DATE,
+  monthsInclusiveCount,
+  weekdayLabels,
+} from '../components/Calendar.utils'
 import type { CalendarSingleProps } from '../core/api.types'
 import { toPlainDate } from '../core/calendarDate'
 import { DEFAULT_CALENDAR_MESSAGES, defaultNavigatorLocale } from '../core/calendarLocale'
@@ -59,12 +65,7 @@ export function useCalendarSingleRuntime(props: CalendarSingleProps): CalendarRu
     [selection.selectDate, selection.setSelectedTime],
   )
 
-  const {
-    displayMode,
-    setDisplayMode,
-    timeEditTarget,
-    openTimeView,
-  } = useCalendarSecondaryView()
+  const { displayMode, setDisplayMode, timeEditTarget, openTimeView } = useCalendarSecondaryView()
 
   const setFocusedDate = useCallback(
     (next: Temporal.PlainDate) => {

@@ -34,11 +34,7 @@ export interface CalendarTodayButtonProps {
  * react-infinite-calendar Today 행: 오늘이 뷰 밖이면만 표시, 스크롤 방향에 따라 쉐브론 방향.
  * TodayButton 은 단일 인스턴스이므로 자체 context 소비를 허용한다.
  */
-export function CalendarTodayButton({
-  scrollToDate,
-  scrollRef,
-  placement,
-}: CalendarTodayButtonProps) {
+export function CalendarTodayButton({ scrollToDate, scrollRef, placement }: CalendarTodayButtonProps) {
   const { displayMode, today, locale, setFocusedDate, keyboardNavigation } = useCalendarContext()
   const label = todayWordLabel(locale)
 

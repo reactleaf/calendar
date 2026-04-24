@@ -529,10 +529,7 @@ export function CalendarHeader({ className, children }: CalendarHeaderProps) {
     () => labelsFromSnapshot(locale, messages, selectionSnapshot),
     [locale, messages, selectionSnapshot],
   )
-  const selectionEmpty = useMemo(
-    () => isHeaderSelectionEmpty(mode, selectionSnapshot),
-    [mode, selectionSnapshot],
-  )
+  const selectionEmpty = useMemo(() => isHeaderSelectionEmpty(mode, selectionSnapshot), [mode, selectionSnapshot])
   const showTimeRow = includeTime === true && !selectionEmpty
   /** 시간 행이 비어 있어도 패딩·간격은 `includeTime` 기준으로 맞춰 헤더 높이를 고정한다. */
   const useTimeHeaderLayout = includeTime === true
