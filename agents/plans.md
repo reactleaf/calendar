@@ -62,7 +62,7 @@
 1. ✅ 내부 compound-style 뼈대 — `Root` / `Header` / mode body / picker 계층 + public facade `Calendar`
 2. ✅ mode variant ↔ runtime hook 결합 (내부 `Root` 가 `runtime` 을 context 로 주입, `.calendar--mode-<mode>` 클래스 부여)
 3. ✅ 스타일 토큰/CSS 분할 — `src/styles/calendar.{base,header,time,day,range,overlay,monthPicker,timeSelect}.css`, `src/Calendar.css` 는 barrel 역할. selection / focused / hover / today / 월 피커 선택 / 시·분 active pip 까지 모두 `--calendar-range-pip` 반경의 원형 표현으로 통일
-4. ✅ 월 단위 가상 스크롤 — `useInfiniteMonthScroll` + 커스텀 virtualizer, overscan 지원
+4. ✅ 월 단위 가상 스크롤 — `useInfiniteMonthScroll` + `SizeAndPositionManager` 기반 커스텀 virtualizer, overscan 지원. 빠른 스크롤 중 day hover hit-test 차단(`10px/event`, 100ms debounce) 포함
 5. ✅ 공통 헤더 톤 — 모든 모드가 accent 배경 + 흰 텍스트. 연도 라벨은 내부 month picker 로 **단방향** 전환, 날짜 라벨은 다시 days 그리드로 **단방향** 전환 (토글 아님)
 6. ✅ 보조 뷰 시스템 — `useCalendarSecondaryView` (`displayMode: 'days' | 'months' | 'time'` + `timeEditTarget: 'primary' | 'rangeStart' | 'rangeEnd'`) 로 상태 일원화. 각 Mode 컴포넌트가 `displayMode` 로 분기 렌더
 7. ✅ 내부 month picker — 6×2 월 그리드, 연도 헤더 단축 표기, 선택된 월(없으면 현재 viewport 월) 을 스크롤 중앙 정렬, 원형 accent pip
@@ -77,14 +77,14 @@
 1. ✅ WAI-ARIA calendar grid 패턴 (하이브리드) — `Calendar.DatePicker` 의 scroll container 에 `role="grid"` + `aria-activedescendant`, 주별 `<ul>` 에 `role="row"` + 월·주차 `aria-label`, `<li>` 에 `role="gridcell"`, `<button>` 에 stable `id` + `aria-selected`(← 기존 `aria-pressed` 교체). roving tabindex 는 의도적으로 채택하지 않음 — 가상화와 포커스 보유 셀 언마운트 충돌을 피하기 위함. 레퍼런스 `react-infinite-calendar` 의 "virtual highlight" 패턴을 ARIA grid 위에 올려 스크린리더가 가상 커서 이동을 인지하도록 한다. (`Calendar.a11y.test.tsx` 로 회귀 보호)
 2. 🚧 보조 뷰 접근성 — 내부 month picker(12월 그리드) 와 time scroll picker(시/분 loop scroll) 의 ARIA 역할·키보드 탐색 정리. 후자는 현재 "스크롤=탐색, 클릭=커밋" 모델이라 키보드 등가 경로(화살표 이동 + Enter 커밋 등) 가 부재
 3. ⏳ 스크린리더 라벨링 점검 (월/년 전환, 선택 상태 변경 안내, time 뷰 진입/이탈)
-4. ⏳ pointer + keyboard + touch 상호작용 동등성 회귀 테스트
+4. 🚧 pointer + keyboard + touch 상호작용 동등성 회귀 테스트 — 빠른 스크롤 중 hover 차단 회귀 테스트는 완료, touch/keyboard 동등성은 남음
 
 ### Phase 6. Docs & Developer Experience 🚧
 
 1. 🚧 문서 사이트 (`docs/`) — 소개·전체 props 페이지 우선 (`content/docs/index.mdx`, `props.mdx`), 홈 데모 유지
 2. ⏳ mode별 예제 추가 (single / multiple / range / custom day/header)
 3. ⏳ 마이그레이션 가이드 작성
-4. ⏳ 성능 가이드 (큰 기간 범위 / overscan 튜닝 / 메모이제이션)
+4. 🚧 성능 가이드 (큰 기간 범위 / overscan 튜닝 / 메모이제이션) — `pnpm run perf:scroll` 측정 명령 추가 완료, 문서화와 baseline 비교는 남음
 5. ✅ **compound export 범위** 재검토 — public surface 는 `Calendar` facade + types 로 제한
 
 ### Phase 7. Release Preparation ⏳
@@ -96,17 +96,18 @@
 
 ## Immediate Next Tasks
 
-1. Phase 5-2: 보조 뷰(`MonthPicker` / `TimeScrollPicker`) 에 ARIA 역할(listbox/option) + 키보드 등가 동작 추가. 특히 TimeScrollPicker 는 화살표/Home/End/Enter 경로 설계가 필요 (현재는 포인터 전용)
-2. Phase 5-3/5-4: 스크린리더 라이브 안내 (월 변경, 선택, time 뷰 진입/이탈) + 포인터·키보드·터치 동등성 통합 테스트
-3. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 계약 + 새 ARIA 계약(`role="grid"` / `aria-activedescendant` / `aria-selected`) 반영
-4. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
-5. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
+1. `pnpm run perf:scroll`을 이전 TanStack virtualizer 커밋/브랜치에서 실행해 before/after baseline 확보
+2. Phase 5-2: 보조 뷰(`MonthPicker` / `TimeScrollPicker`) 에 ARIA 역할(listbox/option) + 키보드 등가 동작 추가. 특히 TimeScrollPicker 는 화살표/Home/End/Enter 경로 설계가 필요 (현재는 포인터 전용)
+3. Phase 5-3/5-4: 스크린리더 라이브 안내 (월 변경, 선택, time 뷰 진입/이탈) + 포인터·키보드·터치 동등성 통합 테스트
+4. `docs/api.md` 와 `docs/hooks.md` 에 `useCalendarSecondaryView` · `openTimeView` · time 보조 뷰 계약 + 새 ARIA 계약(`role="grid"` / `aria-activedescendant` / `aria-selected`) 반영
+5. CI 파이프라인(typecheck + lint + test) GitHub Actions 등으로 자동화 (Phase 0-4)
+6. 레거시 `react-infinite-calendar` props 대응표 초안 (Phase 1-4)
 
 ## Risks & Mitigations
 
 - 날짜/타임존 버그: 도메인 normalize 규칙을 초기에 고정하고 테스트를 먼저 작성
 - 과도한 커스터마이징으로 API 복잡화: 1차 릴리즈는 facade + props 중심으로 제한하고, 확장점은 slot/render prop 형태로 별도 설계 후 도입
-- 성능 저하: 가상 스크롤/메모이제이션 기준을 문서화하고 회귀 테스트 추가
+- 성능 저하: `pnpm run perf:scroll` 측정 결과를 baseline 으로 저장하고, 가상 스크롤/메모이제이션 기준을 문서화
 
 ## Definition of Done (MVP)
 
