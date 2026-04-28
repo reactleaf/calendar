@@ -1,13 +1,6 @@
 import type { Route } from './+types/docs'
 import { DocsLayout } from 'fumadocs-ui/layouts/docs'
-import {
-  DocsBody,
-  DocsDescription,
-  DocsPage,
-  DocsTitle,
-  MarkdownCopyButton,
-  ViewOptionsPopover,
-} from 'fumadocs-ui/layouts/docs/page'
+import { DocsBody, DocsDescription, DocsPage, DocsTitle, ViewOptionsPopover } from 'fumadocs-ui/layouts/docs/page'
 import { getPageMarkdownUrl, source } from '@/lib/source'
 import browserCollections from 'collections/browser'
 import { baseOptions } from '@/lib/layout.shared'
@@ -31,13 +24,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
   component(
     { toc, frontmatter, default: Mdx },
     // you can define props for the component
-    {
-      markdownUrl,
-      path,
-    }: {
-      markdownUrl: string
-      path: string
-    },
+    { markdownUrl, path }: { markdownUrl: string; path: string },
   ) {
     return (
       <DocsPage toc={toc}>
@@ -46,10 +33,9 @@ const clientLoader = browserCollections.docs.createClientLoader({
         <DocsTitle>{frontmatter.title}</DocsTitle>
         <DocsDescription>{frontmatter.description}</DocsDescription>
         <div className="flex flex-row gap-2 items-center border-b -mt-4 pb-6">
-          <MarkdownCopyButton markdownUrl={markdownUrl} />
           <ViewOptionsPopover
             markdownUrl={markdownUrl}
-            githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${path}`}
+            githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/docs/content/docs/${path}`}
           />
         </div>
         <DocsBody>
