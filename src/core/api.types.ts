@@ -46,7 +46,9 @@ export interface CalendarFormatters {
   month?: (month: number, ctx: CalendarFormatContext) => string
   /** Month-year label used by month row overlays. */
   monthYear?: (month: Temporal.PlainYearMonth, ctx: CalendarFormatContext) => string
-  /** Date labels used in selected-date headers and range start/end columns. */
+  /** Month-date labels used in selected-date headers and range start/end columns. */
+  monthDate?: (date: Temporal.PlainDate, ctx: CalendarFormatContext) => string
+  /** Full date labels used in the multiple-selection dropdown. */
   date?: (date: Temporal.PlainDate, ctx: CalendarFormatContext) => string
   /** Date-time label used in the multiple-selection includeTime dropdown. */
   dateTime?: (value: Temporal.PlainDateTime, ctx: CalendarFormatContext) => string

@@ -211,6 +211,38 @@ describe('Calendar preset mode integration', () => {
     expect(container.querySelectorAll('.calendar__headerMultipleListButton').length).toBe(3)
   })
 
+  it('multiple 헤더는 monthDate를 쓰고 드롭다운 목록은 date를 유지한다', async () => {
+    const { container } = render(
+      <Calendar
+        mode="multiple"
+        value={[Temporal.PlainDate.from('2026-04-10'), Temporal.PlainDate.from('2026-04-12')]}
+        minDate={Temporal.PlainDate.from('2026-04-01')}
+        maxDate={Temporal.PlainDate.from('2026-04-30')}
+        formatters={{
+          monthDate: (day) => `MD-${day.month}-${day.day}`,
+          date: (day) => `DATE-${day.year}-${day.month}-${day.day}`,
+        }}
+      />,
+    )
+
+    await waitForVisibleDayCells(container)
+
+    const headerDate = container.querySelector('.calendar__headerDate')
+    expect(headerDate?.textContent?.trim()).toBe('MD-4-12')
+
+    const chip = container.querySelector('.calendar__headerMultipleMore')
+    fireEvent.click(chip as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(container.querySelector('.calendar__headerMultiplePopover')).toBeTruthy()
+    })
+
+    const dropdownLabels = Array.from(container.querySelectorAll('.calendar__headerMultipleListButton')).map((button) =>
+      button.textContent?.trim(),
+    )
+    expect(dropdownLabels).toEqual(['DATE-2026-4-10', 'DATE-2026-4-12'])
+  })
+
   it('multiple 모드에서 클릭/키보드 토글 선택 및 월 변경 콜백이 동작한다', async () => {
     const onSelect = vi.fn()
     const onMonthChange = vi.fn()

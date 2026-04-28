@@ -44,14 +44,18 @@ interface HeaderModeCommonProps {
   openDaysView: () => void
 }
 
-function formatDay(day: Temporal.PlainDate, ctx: CalendarFormatContext, formatters?: CalendarFormatters) {
+function formatMonthDate(day: Temporal.PlainDate, ctx: CalendarFormatContext, formatters?: CalendarFormatters) {
+  return formatters?.monthDate?.(day, ctx) ?? formatPlainDateShort(day, ctx.locale)
+}
+
+function formatDate(day: Temporal.PlainDate, ctx: CalendarFormatContext, formatters?: CalendarFormatters) {
   return formatters?.date?.(day, ctx) ?? formatPlainDateShort(day, ctx.locale)
 }
 
 function formatDateTime(value: Temporal.PlainDateTime, ctx: CalendarFormatContext, formatters?: CalendarFormatters) {
   return (
     formatters?.dateTime?.(value, ctx) ??
-    `${formatDay(value.toPlainDate(), ctx, formatters)} · ${formatPlainTime(value, ctx.locale)}`
+    `${formatDate(value.toPlainDate(), ctx, formatters)} · ${formatPlainTime(value, ctx.locale)}`
   )
 }
 
@@ -69,7 +73,7 @@ function formatMultipleListLabel(
   if (includeTime && value instanceof Temporal.PlainDateTime) {
     return formatDateTime(value, ctx, formatters)
   }
-  return formatDay(day, ctx, formatters)
+  return formatDate(day, ctx, formatters)
 }
 
 function rangeHeaderGrid(
@@ -82,8 +86,8 @@ function rangeHeaderGrid(
   return {
     fromYear: startDay ? String(startDay.year) : '',
     toYear: endDay ? String(endDay.year) : '',
-    fromDate: startDay ? formatDay(startDay, ctx, formatters) : messages.rangeFromPlaceholder,
-    toDate: endDay ? formatDay(endDay, ctx, formatters) : messages.rangeToPlaceholder,
+    fromDate: startDay ? formatMonthDate(startDay, ctx, formatters) : messages.rangeFromPlaceholder,
+    toDate: endDay ? formatMonthDate(endDay, ctx, formatters) : messages.rangeToPlaceholder,
   }
 }
 
@@ -101,13 +105,13 @@ function labelsFromSnapshot(
     case 'single': {
       const selectedDay = snapshot.plain.value
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, ctx, formatters) : messages.blank
+      headerDate = selectedDay ? formatMonthDate(selectedDay, ctx, formatters) : messages.blank
       break
     }
     case 'multiple': {
       const selectedDay = snapshot.plain.primary ?? snapshot.plain.values.at(-1) ?? null
       headerYear = selectedDay ? String(selectedDay.year) : null
-      headerDate = selectedDay ? formatDay(selectedDay, ctx, formatters) : messages.blank
+      headerDate = selectedDay ? formatMonthDate(selectedDay, ctx, formatters) : messages.blank
       break
     }
     case 'range': {
@@ -123,9 +127,9 @@ function labelsFromSnapshot(
             : null
       headerDate =
         startDay && endDay
-          ? `${formatDay(startDay, ctx, formatters)} - ${formatDay(endDay, ctx, formatters)}`
+          ? `${formatMonthDate(startDay, ctx, formatters)} - ${formatMonthDate(endDay, ctx, formatters)}`
           : startDay
-            ? formatDay(startDay, ctx, formatters)
+            ? formatMonthDate(startDay, ctx, formatters)
             : messages.blank
       break
     }

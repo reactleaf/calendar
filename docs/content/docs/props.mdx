@@ -86,11 +86,12 @@ Pass a partial object; any omitted keys fall back to the built-in English defaul
 
 Formatter callbacks receive the date/time value and `{ locale }`. Omitted callbacks fall back to the built-in `Intl` formatting.
 
-| Key          | Type                                                                  | Role                                                       |
-| ------------ | --------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `year`       | `(year: number, ctx: { locale: string }) => string`                   | Year label in the month picker.                            |
-| `month`      | `(month: number, ctx: { locale: string }) => string`                  | Month label in the month picker.                           |
-| `monthYear`  | `(month: Temporal.PlainYearMonth, ctx: { locale: string }) => string` | Month row overlay label.                                   |
-| `date`       | `(date: Temporal.PlainDate, ctx: { locale: string }) => string`       | Date labels in headers, including range start/end columns. |
-| `dateTime`   | `(value: Temporal.PlainDateTime, ctx: { locale: string }) => string`  | Date-time label in the multiple-selection time dropdown.   |
-| `todayLabel` | `(today: Temporal.PlainDate, ctx: { locale: string }) => string`      | Floating Today button and selected-today day cell label.   |
+| Key          | Type                                                                  | Role                                                             |
+| ------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `year`       | `(year: number, ctx: { locale: string }) => string`                   | Year label in the month picker.                                  |
+| `month`      | `(month: number, ctx: { locale: string }) => string`                  | Month label in the month picker.                                 |
+| `monthYear`  | `(month: Temporal.PlainYearMonth, ctx: { locale: string }) => string` | Month row overlay label.                                         |
+| `monthDate`  | `(date: Temporal.PlainDate, ctx: { locale: string }) => string`       | Month-date labels in headers, including range start/end columns. |
+| `date`       | `(date: Temporal.PlainDate, ctx: { locale: string }) => string`       | Full date labels in the multiple-selection dropdown.             |
+| `dateTime`   | `(value: Temporal.PlainDateTime, ctx: { locale: string }) => string`  | Date-time label in the multiple-selection time dropdown.         |
+| `todayLabel` | `(today: Temporal.PlainDate, ctx: { locale: string }) => string`      | Floating Today button and selected-today day cell label.         |

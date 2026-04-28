@@ -10,6 +10,7 @@ const japaneseFormatters: CalendarFormatters = {
   year: (year) => `${year}年`,
   month: (month) => `${month}月`,
   monthYear: (month) => `${month.year}年 ${month.month}月`,
+  monthDate: (day) => `${day.month}月 ${day.day}日`,
   date: (day) => `${day.year}年 ${day.month}月 ${day.day}日`,
   dateTime: (value) =>
     `${value.year}年 ${value.month}月 ${value.day}日 ${padTimePart(value.hour)}:${padTimePart(value.minute)}`,
