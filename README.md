@@ -93,7 +93,7 @@ export function Example() {
 
 ### Range
 
-Choose a start and end date. 
+Choose a start and end date.
 
 ```tsx
 import { useState } from 'react'
