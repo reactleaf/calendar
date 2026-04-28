@@ -49,7 +49,7 @@ export function CalendarTodayButton({ scrollToDate, scrollRef, placement }: Cale
   if (displayMode !== 'days' || placement === null || placement === 'visible') return null
 
   return (
-    <div className="calendar__todayBar">
+    <div className={`calendar__todayBar calendar__todayBar--${placement}`}>
       <button type="button" className="calendar__todayButton" onClick={onClick}>
         <span className="calendar__todayButtonInner">
           <span>{label}</span>

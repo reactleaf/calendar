@@ -60,7 +60,26 @@ describe('Calendar preset mode integration', () => {
       const btn = container.querySelector('.calendar__todayButton')
       expect(btn).toBeInstanceOf(HTMLButtonElement)
     })
+    expect(container.querySelector('.calendar__todayBar--below')).toBeTruthy()
     expect(container.querySelector('.calendar__todayChevron--down')).toBeTruthy()
+  })
+
+  it('days 뷰에서 오늘이 스크롤 위쪽이면 Today 버튼이 상단에 노출된다', async () => {
+    const { container } = render(
+      <Calendar
+        mode="single"
+        minDate={Temporal.PlainDate.from('2020-01-01')}
+        maxDate={Temporal.PlainDate.from('2030-12-31')}
+      />,
+    )
+    await waitForVisibleDayCells(container)
+    const grid = getGrid(container)
+    grid.scrollTop = 999_999
+    fireEvent.scroll(grid)
+    await waitFor(() => {
+      expect(container.querySelector('.calendar__todayBar--above')).toBeTruthy()
+    })
+    expect(container.querySelector('.calendar__todayChevron--up')).toBeTruthy()
   })
 
   it('single 모드에서 클릭/키보드 선택 및 월 변경 콜백이 동작한다', async () => {
