@@ -1,0 +1,28 @@
+# Dependencies and package manager state
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
+
+# Local build and cache artifacts
+graphify-out/
+perf-results/
+*.tsbuildinfo
+
+# Docs, demos, and development-only assets
+docs/
+perf/
+scripts/
+agents/
+.github/
+
+# Tooling and local configuration
+.vscode/
+.DS_Store
+*.local
+.oxlintrc.json
+.prettierrc.json
+.prettierignore
+vitest.config.ts
+vite.config.ts
+tsconfig*.json
+pnpm-workspace.yaml

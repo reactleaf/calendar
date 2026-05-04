@@ -37,6 +37,7 @@
   height: var(--calendar-body-height);
   min-height: 0;
   box-sizing: border-box;
+  background-color: var(--calendar-color-bg, #fff);
 }
 
 .calendar__body .calendar__scroll {

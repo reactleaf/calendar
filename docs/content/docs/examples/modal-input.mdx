@@ -1,0 +1,50 @@
+---
+title: Date input with calendar
+description: Calendar input composed with @reactleaf/modal 2.0.
+---
+
+This example keeps a text input and a modal calendar picker synchronized to the same `Temporal.PlainDate` value.
+
+<ModalInputExample />
+
+```tsx
+import { Temporal } from '@js-temporal/polyfill'
+import { Calendar } from '@reactleaf/calendar'
+import { ModalManager, ModalProvider, useModalInstance } from '@reactleaf/modal'
+import '@reactleaf/calendar/index.css'
+import '@reactleaf/modal/style.css'
+
+const modal = new ModalManager()
+
+function DatePickerModal({ initialDate }: { initialDate: Temporal.PlainDate | null }) {
+  const { closeSelf } = useModalInstance()
+  const [draftDate, setDraftDate] = useState(initialDate ?? Temporal.Now.plainDateISO())
+
+  return (
+    <div>
+      <Calendar mode="single" value={draftDate} onSelect={(next) => next && setDraftDate(next)} />
+      <button type="button" onClick={() => void closeSelf(draftDate)}>
+        Apply
+      </button>
+    </div>
+  )
+}
+
+export function Example() {
+  const [date, setDate] = useState<Temporal.PlainDate | null>(null)
+
+  async function openCalendar() {
+    const result = await modal.open(DatePickerModal, { initialDate: date })
+    if (result !== undefined) setDate(result)
+  }
+
+  return (
+    <ModalProvider manager={modal}>
+      <input value={date?.toString() ?? ''} onChange={(event) => setDate(Temporal.PlainDate.from(event.target.value))} />
+      <button type="button" onClick={openCalendar}>
+        Calendar
+      </button>
+    </ModalProvider>
+  )
+}
+```

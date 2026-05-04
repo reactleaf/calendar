@@ -71,6 +71,7 @@
 
 .calendar__dayItem {
   display: flex;
+  margin: 0;
   width: var(--calendar-cell-width);
 }
 

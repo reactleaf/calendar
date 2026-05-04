@@ -9,6 +9,7 @@
     "examples/range",
     "examples/single-time",
     "examples/range-time",
+    "examples/modal-input",
     "examples/multiple-max-selections",
     "examples/disabled-dates",
     "examples/min-max-dates",

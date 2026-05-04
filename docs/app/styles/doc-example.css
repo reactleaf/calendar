@@ -67,3 +67,258 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   white-space: pre;
 }
+
+.doc-modal-input {
+  --dmi-accent: #2563eb;
+  --dmi-accent-strong: #1d4ed8;
+  --dmi-danger: #dc2626;
+  --dmi-surface: #ffffff;
+  --dmi-surface-soft: #f8fafc;
+  --dmi-text: #0f172a;
+  --dmi-muted: #64748b;
+  --dmi-border: #cbd5e1;
+  --dmi-shadow: 0 24px 80px rgba(15, 23, 42, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .doc-modal-input {
+    --dmi-accent: #60a5fa;
+    --dmi-accent-strong: #93c5fd;
+    --dmi-danger: #f87171;
+    --dmi-surface: #111827;
+    --dmi-surface-soft: #1f2937;
+    --dmi-text: #f8fafc;
+    --dmi-muted: #94a3b8;
+    --dmi-border: #334155;
+    --dmi-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  }
+}
+
+.doc-modal-input__panel {
+  box-sizing: border-box;
+  max-width: 34rem;
+  padding: 1rem;
+  border: 1px solid var(--dmi-border);
+  border-radius: 10px;
+  background: var(--dmi-surface);
+}
+
+.doc-modal-input__panel + .doc-modal-input__panel {
+  margin-top: 0.85rem;
+}
+
+.doc-modal-input__label {
+  display: block;
+  margin: 0 0 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--dmi-text);
+}
+
+.doc-modal-input__field {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 2.75rem;
+  border: 1px solid var(--dmi-border);
+  border-radius: 8px;
+  background: var(--dmi-surface);
+}
+
+.doc-modal-input__field:focus-within {
+  border-color: var(--dmi-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dmi-accent) 18%, transparent);
+}
+
+.doc-modal-input__field.has-error {
+  border-color: var(--dmi-danger);
+}
+
+.doc-modal-input__field input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 0 0.85rem;
+  color: var(--dmi-text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: 0;
+}
+
+.doc-modal-input__field input::placeholder {
+  color: var(--dmi-muted);
+}
+
+.doc-modal-input__calendarButton,
+.doc-modal-input__primaryButton,
+.doc-modal-input__ghostButton,
+.doc-modal-input__iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 0;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.doc-modal-input__calendarButton {
+  flex: 0 0 auto;
+  padding: 0 0.85rem;
+  color: #ffffff;
+  background: var(--dmi-accent);
+}
+
+.doc-modal-input__calendarButton:hover {
+  background: var(--dmi-accent-strong);
+}
+
+.doc-modal-input__hint {
+  min-height: 1.25rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--dmi-muted);
+}
+
+.doc-modal-input__hint.has-error {
+  color: var(--dmi-danger);
+}
+
+.doc-modal-input__overlay.modal-overlay {
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0);
+}
+
+.doc-modal-input__overlay.modal-overlay.dim.visible {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.doc-modal-input__dialog {
+  --dmi-surface: #ffffff;
+  --dmi-surface-soft: #f8fafc;
+  --dmi-text: #0f172a;
+  --dmi-muted: #64748b;
+  --dmi-border: #cbd5e1;
+  box-sizing: border-box;
+  width: min(100%, 28rem);
+  overflow: hidden;
+  border: 1px solid var(--dmi-border);
+  border-radius: 16px;
+  background: var(--dmi-surface);
+  color: var(--dmi-text);
+  box-shadow: var(--dmi-shadow);
+}
+
+.doc-modal-input__dialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--dmi-border);
+}
+
+.doc-modal-input__dialogHeader h3,
+.doc-modal-input__eyebrow {
+  margin: 0;
+}
+
+.doc-modal-input__dialogHeader h3 {
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.doc-modal-input__eyebrow {
+  margin-bottom: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--dmi-muted);
+  text-transform: uppercase;
+}
+
+.doc-modal-input__iconButton {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: var(--dmi-muted);
+  background: transparent;
+}
+
+.doc-modal-input__iconButton:hover {
+  color: var(--dmi-text);
+  background: var(--dmi-surface-soft);
+}
+
+.doc-modal-input__calendarShell {
+  padding: 1rem;
+  background: var(--dmi-surface);
+}
+
+.doc-modal-input__calendar {
+  --calendar-color-accent: #4488e8;
+  --calendar-color-bg: #ffffff;
+  --calendar-color-fg: #0f172a;
+  margin: 0 auto;
+  border: 1px solid var(--dmi-border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--calendar-color-fg);
+}
+
+.doc-modal-input__dialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--dmi-border);
+  background: var(--dmi-surface);
+}
+
+.doc-modal-input__primaryButton,
+.doc-modal-input__ghostButton {
+  min-height: 2.35rem;
+  border-radius: 8px;
+  padding: 0 0.8rem;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.doc-modal-input__primaryButton {
+  color: #ffffff;
+  background: #4488e8;
+}
+
+.doc-modal-input__primaryButton:hover {
+  background: color-mix(in srgb, #4488e8 86%, #000);
+}
+
+.doc-modal-input__ghostButton {
+  border: 1px solid var(--dmi-border);
+  color: var(--dmi-text);
+  background: var(--dmi-surface);
+}
+
+.doc-modal-input__ghostButton:hover {
+  background: var(--dmi-surface-soft);
+}
+
+@media (max-width: 520px) {
+  .doc-modal-input__field,
+  .doc-modal-input__dialogFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .doc-modal-input__field input {
+    min-height: 2.75rem;
+  }
+
+  .doc-modal-input__calendarButton,
+  .doc-modal-input__primaryButton,
+  .doc-modal-input__ghostButton {
+    width: 100%;
+  }
+}
