@@ -4,7 +4,7 @@ Calendar with single, multiple, and range selection — Temporal dates, optional
 
 A modern rewrite of [react-infinite-calendar](https://github.com/clauderic/react-infinite-calendar), built for React 19 with [`@js-temporal/polyfill`](https://github.com/js-temporal/temporal-polyfill) for values.
 
-![@reactleaf/calendar demo](.github/assets/example.gif)
+![@reactleaf/calendar demo](https://raw.githubusercontent.com/reactleaf/calendar/main/.github/assets/example.gif)
 
 ## Documentation
 

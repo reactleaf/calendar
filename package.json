@@ -2,6 +2,11 @@
   "name": "@reactleaf/calendar",
   "version": "0.1.0",
   "packageManager": "pnpm@10.11.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reactleaf/calendar.git"
+  },
+  "homepage": "https://reactleaf.github.io/calendar/",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
