@@ -1,6 +1,5 @@
 {
   "name": "@reactleaf/calendar",
-  "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@10.11.0",
   "type": "module",
@@ -25,7 +24,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "perf:scroll": "node scripts/measure-scroll-perf.mjs",
-    "publish:npm": "pnpm build && npm publish --access public --ignore-scripts",
+    "publish:npm": "pnpm build:lib && npm publish --access public --ignore-scripts",
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build:lib"
