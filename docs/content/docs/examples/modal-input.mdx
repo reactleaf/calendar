@@ -40,7 +40,10 @@ export function Example() {
 
   return (
     <ModalProvider manager={modal}>
-      <input value={date?.toString() ?? ''} onChange={(event) => setDate(Temporal.PlainDate.from(event.target.value))} />
+      <input
+        value={date?.toString() ?? ''}
+        onChange={(event) => setDate(Temporal.PlainDate.from(event.target.value))}
+      />
       <button type="button" onClick={openCalendar}>
         Calendar
       </button>
