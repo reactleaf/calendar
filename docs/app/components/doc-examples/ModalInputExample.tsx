@@ -122,8 +122,8 @@ function toPlainDateTime(value: DateValue, fallbackTime: Temporal.PlainDateTime)
   return value.toPlainDateTime(Temporal.PlainTime.from({ hour: fallbackTime.hour, minute: fallbackTime.minute }))
 }
 
-const DatePickerModal: ModalComponent<DatePickerModalProps> = ({ initialDate }) => {
-  const { visible, closeSelf } = useModalInstance()
+const DatePickerModal: ModalComponent<DatePickerModalProps, Temporal.PlainDate | null> = ({ initialDate }) => {
+  const { visible, closeSelf } = useModalInstance<Temporal.PlainDate | null>()
   const [draftDate, setDraftDate] = useState<Temporal.PlainDate>(initialDate ?? TODAY)
 
   return (
@@ -181,8 +181,10 @@ const DatePickerModal: ModalComponent<DatePickerModalProps> = ({ initialDate }) 
   )
 }
 
-const DateTimePickerModal: ModalComponent<DateTimePickerModalProps> = ({ initialDateTime }) => {
-  const { visible, closeSelf } = useModalInstance()
+const DateTimePickerModal: ModalComponent<DateTimePickerModalProps, Temporal.PlainDateTime | null> = ({
+  initialDateTime,
+}) => {
+  const { visible, closeSelf } = useModalInstance<Temporal.PlainDateTime | null>()
   const [draftDateTime, setDraftDateTime] = useState<Temporal.PlainDateTime>(initialDateTime ?? DEFAULT_DATE_TIME)
 
   return (
@@ -308,37 +310,27 @@ export function ModalInputExample() {
   }
 
   async function openCalendar() {
-    const nextDate = await modal.open<DatePickerModalProps, Temporal.PlainDate | null>(
-      DatePickerModal,
-      { initialDate: date },
-      {
-        className: 'doc-modal-input__overlay',
-        closeDelay: 180,
-        closeOnOutsideClick: true,
-        dim: true,
-      },
-    )
+    const nextDate = await modal.open(DatePickerModal, { initialDate: date }, { className: 'doc-modal-input__layer' })
 
     if (nextDate === null || nextDate instanceof Temporal.PlainDate) applyDate(nextDate)
   }
 
   async function openDateTimeCalendar() {
-    const nextDateTime = await modal.open<DateTimePickerModalProps, Temporal.PlainDateTime | null>(
+    const nextDateTime = await modal.open(
       DateTimePickerModal,
       { initialDateTime: dateTime },
-      {
-        className: 'doc-modal-input__overlay',
-        closeDelay: 180,
-        closeOnOutsideClick: true,
-        dim: true,
-      },
+      { className: 'doc-modal-input__layer' },
     )
 
     if (nextDateTime === null || nextDateTime instanceof Temporal.PlainDateTime) applyDateTime(nextDateTime)
   }
 
   return (
-    <ModalProvider manager={modal} defaultLayerOptions={{ closeDelay: 180, closeOnOutsideClick: true, dim: true }}>
+    <ModalProvider
+      manager={modal}
+      defaultLayerOptions={{ closeDelay: 180, closeOnOutsideClick: true, dim: true }}
+      rootOptions={{ preventScroll: true }}
+    >
       <div className="doc-example doc-modal-input not-prose">
         <div className="doc-modal-input__panel">
           <label className="doc-modal-input__label" htmlFor={fieldId}>

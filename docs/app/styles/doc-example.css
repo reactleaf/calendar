@@ -186,12 +186,12 @@
   color: var(--dmi-danger);
 }
 
-.doc-modal-input__overlay.modal-overlay {
+.doc-modal-input__layer.modal-layer {
   padding: 1rem;
   background: rgba(15, 23, 42, 0);
 }
 
-.doc-modal-input__overlay.modal-overlay.dim.visible {
+.doc-modal-input__layer.modal-layer.dim.visible {
   background: rgba(15, 23, 42, 0.5);
 }
 

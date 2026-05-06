@@ -10,19 +10,30 @@ This example keeps a text input and a modal calendar picker synchronized to the 
 ```tsx
 import { Temporal } from '@js-temporal/polyfill'
 import { Calendar } from '@reactleaf/calendar'
-import { ModalManager, ModalProvider, useModalInstance } from '@reactleaf/modal'
+import { ModalManager, ModalProvider, type ModalComponent, useModalInstance } from '@reactleaf/modal'
+import { useState } from 'react'
 import '@reactleaf/calendar/index.css'
 import '@reactleaf/modal/style.css'
 
 const modal = new ModalManager()
 
-function DatePickerModal({ initialDate }: { initialDate: Temporal.PlainDate | null }) {
-  const { closeSelf } = useModalInstance()
+type DatePickerModalProps = {
+  initialDate: Temporal.PlainDate | null
+}
+
+const DatePickerModal: ModalComponent<DatePickerModalProps, Temporal.PlainDate | null> = ({ initialDate }) => {
+  const { closeSelf } = useModalInstance<Temporal.PlainDate | null>()
   const [draftDate, setDraftDate] = useState(initialDate ?? Temporal.Now.plainDateISO())
 
   return (
     <div>
-      <Calendar mode="single" value={draftDate} onSelect={(next) => next && setDraftDate(next)} />
+      <Calendar
+        mode="single"
+        value={draftDate}
+        onSelect={(next) => {
+          if (next) setDraftDate(next instanceof Temporal.PlainDateTime ? next.toPlainDate() : next)
+        }}
+      />
       <button type="button" onClick={() => void closeSelf(draftDate)}>
         Apply
       </button>
@@ -39,7 +50,7 @@ export function Example() {
   }
 
   return (
-    <ModalProvider manager={modal}>
+    <ModalProvider manager={modal} defaultLayerOptions={{ closeDelay: 180 }} rootOptions={{ preventScroll: true }}>
       <input
         value={date?.toString() ?? ''}
         onChange={(event) => setDate(Temporal.PlainDate.from(event.target.value))}
