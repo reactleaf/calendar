@@ -65,15 +65,27 @@
 .home-page__nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem 1rem;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .home-page__navLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  min-height: 2.25rem;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--hp-fg);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.home-page__navIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
 }
 
 .home-page__navLink--primary {
@@ -86,6 +98,19 @@
 
 .home-page__navLink--primary:hover {
   filter: brightness(1.05);
+}
+
+.home-page__navLink--secondary {
+  text-decoration: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--hp-border);
+  background: var(--hp-card-bg);
+}
+
+.home-page__navLink--secondary:hover {
+  border-color: color-mix(in srgb, var(--color-fd-primary, #3b82f6) 42%, var(--hp-border));
+  background: color-mix(in srgb, var(--color-fd-primary, #3b82f6) 8%, var(--hp-card-bg));
 }
 
 .home-page__demoTitle {
